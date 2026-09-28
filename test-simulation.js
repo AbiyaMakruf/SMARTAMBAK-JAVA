@@ -96,6 +96,19 @@ async function runSimulation() {
     throw new Error('Reaction failed to reach host!');
   }
 
+  // 4b. Test Anti-Cheat Focus Lost Alert
+  let alertReceived = false;
+  hostSocket.on('host_player_alert', (data) => {
+    if (data.name === 'Student 1') alertReceived = true;
+  });
+  players[0].socket.emit('player_focus_lost');
+  await new Promise(r => setTimeout(r, 200));
+  if (alertReceived) {
+    console.log('✅ Anti-Cheat Focus Lost Alert verified (host received alert for Student 1).');
+  } else {
+    throw new Error('Anti-Cheat focus lost alert failed to reach host!');
+  }
+
   // 5. Start Quiz
   console.log('🏁 Host triggering quiz start...');
   hostSocket.emit('host_start_quiz');

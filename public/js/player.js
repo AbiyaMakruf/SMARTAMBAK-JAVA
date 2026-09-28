@@ -82,7 +82,147 @@ const inputName = document.getElementById('input-name');
 const inputNim = document.getElementById('input-nim');
 const joinError = document.getElementById('join-error');
 
+// Anti-Cheat Elements
+const privacyShield = document.getElementById('privacy-shield');
+const btnResumeQuiz = document.getElementById('btn-resume-quiz');
+const tabSwitchToast = document.getElementById('tab-switch-toast');
+const tabSwitchCountEl = document.getElementById('tab-switch-count');
+const studentWatermarkOverlay = document.getElementById('student-watermark-overlay');
+const appContainer = document.querySelector('.app-container');
+
+let tabSwitchCount = 0;
+let currentScreenKey = 'join';
+
+function setupStudentWatermark(name, nim) {
+  if (!studentWatermarkOverlay) return;
+  studentWatermarkOverlay.innerHTML = '';
+  const text = `${name} • ${nim}`;
+  for (let i = 0; i < 8; i++) {
+    const item = document.createElement('div');
+    item.className = 'watermark-item';
+    item.innerText = text;
+    studentWatermarkOverlay.appendChild(item);
+  }
+}
+
+function showTabSwitchWarning() {
+  if (!tabSwitchToast) return;
+  if (tabSwitchCountEl) tabSwitchCountEl.innerText = tabSwitchCount;
+  tabSwitchToast.style.display = 'block';
+  setTimeout(() => {
+    tabSwitchToast.style.display = 'none';
+  }, 4000);
+}
+
+function activatePrivacyShield() {
+  const activeQuizScreens = ['question', 'submitted', 'result'];
+  if (activeQuizScreens.includes(currentScreenKey)) {
+    if (appContainer) appContainer.classList.add('blur-on-unfocus');
+    if (privacyShield) privacyShield.classList.add('active');
+  }
+}
+
+function deactivatePrivacyShield() {
+  if (appContainer) appContainer.classList.remove('blur-on-unfocus');
+  if (privacyShield) privacyShield.classList.remove('active');
+}
+
+if (btnResumeQuiz) {
+  btnResumeQuiz.addEventListener('click', () => {
+    deactivatePrivacyShield();
+  });
+}
+
+// 1. Prevent Right-Click / Context Menu & Long-Press
+document.addEventListener('contextmenu', (e) => {
+  e.preventDefault();
+  return false;
+});
+
+// 2. Prevent Copy, Cut, Selectstart, Drag
+document.addEventListener('copy', (e) => {
+  if (e.target && e.target.id === 'fill-in-input') return;
+  e.preventDefault();
+  return false;
+});
+document.addEventListener('cut', (e) => {
+  if (e.target && e.target.id === 'fill-in-input') return;
+  e.preventDefault();
+  return false;
+});
+document.addEventListener('selectstart', (e) => {
+  if (e.target && e.target.id === 'fill-in-input') return;
+  e.preventDefault();
+  return false;
+});
+document.addEventListener('dragstart', (e) => {
+  e.preventDefault();
+  return false;
+});
+
+// 3. Block Hotkeys (Ctrl+C, Ctrl+U, Ctrl+S, Ctrl+P, F12, Ctrl+Shift+I, PrintScreen)
+document.addEventListener('keydown', (e) => {
+  if (e.target && e.target.id === 'fill-in-input' && !e.ctrlKey && !e.metaKey) {
+    return;
+  }
+
+  if (e.key === 'PrintScreen') {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText('');
+    }
+    activatePrivacyShield();
+    e.preventDefault();
+    return false;
+  }
+
+  if (e.ctrlKey || e.metaKey) {
+    const key = e.key.toLowerCase();
+    if (['c', 'u', 's', 'p', 'a'].includes(key)) {
+      e.preventDefault();
+      return false;
+    }
+  }
+
+  if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C'))) {
+    e.preventDefault();
+    return false;
+  }
+});
+
+document.addEventListener('keyup', (e) => {
+  if (e.key === 'PrintScreen') {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText('');
+    }
+  }
+});
+
+// 4. Focus Loss & Tab/App-Switch Detection
+let blurCooldown = false;
+function handleFocusLost() {
+  const activeQuizScreens = ['question', 'submitted', 'result'];
+  if (!activeQuizScreens.includes(currentScreenKey)) return;
+
+  activatePrivacyShield();
+
+  if (!blurCooldown) {
+    blurCooldown = true;
+    tabSwitchCount++;
+    socket.emit('player_focus_lost');
+    showTabSwitchWarning();
+    setTimeout(() => { blurCooldown = false; }, 1500);
+  }
+}
+
+window.addEventListener('blur', handleFocusLost);
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    handleFocusLost();
+  }
+});
+
 function switchScreen(screenKey) {
+  currentScreenKey = screenKey;
   Object.keys(screens).forEach(key => {
     if (screens[key]) {
       screens[key].classList.toggle('active', key === screenKey);
@@ -100,6 +240,15 @@ function switchScreen(screenKey) {
     const showProgressScreens = ['question', 'submitted', 'result', 'leaderboard'];
     progressTracker.style.display = showProgressScreens.includes(screenKey) ? 'block' : 'none';
   }
+
+  // Watermark visibility
+  if (studentWatermarkOverlay) {
+    const showWatermarkScreens = ['question', 'submitted', 'result', 'leaderboard'];
+    studentWatermarkOverlay.style.display = showWatermarkScreens.includes(screenKey) ? 'grid' : 'none';
+  }
+
+  // Remove blur when changing screen cleanly
+  deactivatePrivacyShield();
 }
 
 // Sound toggle
@@ -202,6 +351,8 @@ socket.on('reconnect_success', (data) => {
   document.getElementById('lobby-player-nim').innerText = myPlayer.nim;
   quizHeader.style.display = 'flex';
 
+  setupStudentWatermark(myPlayer.name, myPlayer.nim);
+
   if (data.currentQuestion) {
     renderProgressTracker(data.currentQuestion.index, data.currentQuestion.total);
   }
@@ -282,6 +433,8 @@ socket.on('join_success', (data) => {
   playerScore.innerText = '0';
   document.getElementById('lobby-player-name').innerText = myPlayer.name;
   document.getElementById('lobby-player-nim').innerText = myPlayer.nim;
+
+  setupStudentWatermark(myPlayer.name, myPlayer.nim);
 
   quizHeader.style.display = 'flex';
   switchScreen('lobby');

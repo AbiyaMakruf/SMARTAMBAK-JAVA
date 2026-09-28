@@ -542,6 +542,7 @@ function renderMatrixTable(players, totalQuestions) {
     <th>Full Name</th>
     <th>Score</th>
     <th>Correct</th>
+    <th>Tab Switches</th>
   `;
 
   for (let i = 1; i <= totalQuestions; i++) {
@@ -558,6 +559,10 @@ function renderMatrixTable(players, totalQuestions) {
     const tr = document.createElement('tr');
     tr.dataset.name = (p.name || '').toLowerCase();
     tr.dataset.nim = (p.nim || '').toLowerCase();
+
+    const tabSwitchBadge = (p.tabSwitches && p.tabSwitches > 0)
+      ? `<span style="background: rgba(226, 27, 60, 0.2); color: #ff5252; padding: 2px 8px; border-radius: 6px; font-weight: 700;">⚠️ ${p.tabSwitches}x</span>`
+      : `<span style="color: #00e676; font-size: 12px;">✓ Clean</span>`;
 
     let qCellsHtml = '';
     p.answers.forEach(a => {
@@ -578,12 +583,42 @@ function renderMatrixTable(players, totalQuestions) {
       <td><strong>${p.name}</strong></td>
       <td style="color: #ffca28; font-weight: 700;">${p.score.toLocaleString()}</td>
       <td style="color: #00e676; font-weight: 700;">${p.correctCount} / ${totalQuestions}</td>
+      <td style="text-align: center;">${tabSwitchBadge}</td>
       ${qCellsHtml}
     `;
 
     tbody.appendChild(tr);
   });
 }
+
+// Live Anti-Cheat alert to Host
+socket.on('host_player_alert', (data) => {
+  const alertToast = document.createElement('div');
+  alertToast.style.cssText = `
+    position: fixed;
+    top: 60px;
+    right: 20px;
+    background: #e21b3c;
+    color: white;
+    padding: 12px 18px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    z-index: 999999;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  `;
+  alertToast.innerHTML = `⚠️ <span>${data.name} (${data.nim}) left the quiz screen! (Count: ${data.tabSwitches}x)</span>`;
+  document.body.appendChild(alertToast);
+
+  setTimeout(() => {
+    if (alertToast && alertToast.parentNode) {
+      alertToast.parentNode.removeChild(alertToast);
+    }
+  }, 4500);
+});
 
 // Search Filter
 document.getElementById('matrix-search').addEventListener('input', (e) => {

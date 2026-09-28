@@ -277,7 +277,7 @@ app.get('/api/export-csv', (req, res) => {
 
     playersList.sort((a, b) => b.score - a.score);
 
-    const headerCols = ['Rank', 'NIM', 'Full Name', 'Total Score', 'Correct Count'];
+    const headerCols = ['Rank', 'NIM', 'Full Name', 'Total Score', 'Correct Count', 'Tab Switches (Cheat Alert)'];
     questions.forEach((q, idx) => {
       headerCols.push(`Q${idx + 1} Status`);
       headerCols.push(`Q${idx + 1} Answer`);
@@ -287,13 +287,6 @@ app.get('/api/export-csv', (req, res) => {
 
     playersList.forEach((player, rankIdx) => {
       let correctCount = 0;
-      const row = [
-        rankIdx + 1,
-        `"${(player.nim || '').replace(/"/g, '""')}"`,
-        `"${(player.name || '').replace(/"/g, '""')}"`,
-        player.score,
-      ];
-
       const questionCols = [];
       questions.forEach((q, qIdx) => {
         const ansRecord = player.answers[q.id];
@@ -308,7 +301,15 @@ app.get('/api/export-csv', (req, res) => {
         }
       });
 
-      row.push(correctCount);
+      const row = [
+        rankIdx + 1,
+        `"${(player.nim || '').replace(/"/g, '""')}"`,
+        `"${(player.name || '').replace(/"/g, '""')}"`,
+        player.score,
+        correctCount,
+        player.tabSwitches || 0
+      ];
+
       const fullRow = row.concat(questionCols);
       rows.push(fullRow.join(','));
     });
@@ -359,7 +360,8 @@ function sanitizePlayer(player) {
     name: player.name,
     nim: player.nim,
     score: player.score,
-    streak: player.streak
+    streak: player.streak,
+    tabSwitches: player.tabSwitches || 0
   };
 }
 
@@ -599,6 +601,7 @@ function endGame() {
       nim: p.nim,
       score: p.score,
       correctCount: correctCount,
+      tabSwitches: rawPlayer ? (rawPlayer.tabSwitches || 0) : 0,
       answers: answerBreakdown
     };
   });
@@ -833,6 +836,7 @@ io.on('connection', (socket) => {
       nim: nim,
       score: 0,
       streak: 0,
+      tabSwitches: 0,
       answers: {}
     };
 
@@ -849,6 +853,24 @@ io.on('connection', (socket) => {
     });
 
     saveSessionBackup();
+  });
+
+  // Anti-cheat: Track when student leaves the tab / browser
+  socket.on('player_focus_lost', () => {
+    const player = gameState.players[socket.id];
+    if (player) {
+      player.tabSwitches = (player.tabSwitches || 0) + 1;
+      console.log(`⚠️ Tab switch detected: ${player.name} (${player.nim}) - Count: ${player.tabSwitches}`);
+      if (gameState.hostSocketId) {
+        io.to(gameState.hostSocketId).emit('host_player_alert', {
+          playerId: socket.id,
+          name: player.name,
+          nim: player.nim,
+          tabSwitches: player.tabSwitches
+        });
+      }
+      saveSessionBackup();
+    }
   });
 
   // Host starts quiz

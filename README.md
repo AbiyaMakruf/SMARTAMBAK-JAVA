@@ -15,7 +15,12 @@ A modern, lightweight, low-latency live multiplayer quiz platform built with **N
 - **📱 Touch-First Mobile Player UI:**
   - Optimized for mobile screens with large hit-targets and high-contrast shapes (▲, ◆, ●, ■).
   - **Live Segmented Progress Stepper:** Students see their question progress and real-time correct/incorrect indicators.
-- **🛡️ Anti-Cheating Option Randomizer:** Shuffles answer button orders individually per device so students sitting next to each other cannot copy by screen position.
+- **🛡️ Comprehensive Anti-Cheat & Anti-AI Protection:**
+  - **Anti-Copy & Selection Lock:** Disables text selection, mobile long-press copy menu, right-click, cut, and dev shortcuts (`Ctrl+C`, `Ctrl+U`, `Ctrl+S`, `F12`).
+  - **Anti-Screenshot Privacy Shield & Heavy Blur:** Instantly blurs/blacks out the quiz content whenever the student leaves the active tab or presses `PrintScreen` (with clipboard wipe).
+  - **Dynamic Student Watermark:** Tiled semi-transparent overlay showing each student's **Full Name and NIM** across the questions to prevent anonymous photo/screen sharing.
+  - **Live Tab-Switch Detection:** Logs every time a student leaves the quiz screen, warns the student, and alerts the host presenter in real-time. Total tab switches are exported to CSV.
+  - **Anti-Cheating Option Randomizer:** Shuffles answer button orders individually per device so students sitting next to each other cannot copy by screen position.
 - **🔄 Auto-Reconnect & Crash Recovery:**
   - Automatic reconnection via local storage tokens if mobile screens lock or browsers reload.
   - In-memory state backed up atomically to JSON on disk.

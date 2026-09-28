@@ -175,6 +175,26 @@
 
   </div>
 
+  <!-- Dynamic Tiled Student Watermark -->
+  <div id="student-watermark-overlay"></div>
+
+  <!-- Tab Switch / Focus Loss Warning Toast -->
+  <div id="tab-switch-toast" class="tab-switch-warning">
+    ⚠️ Warning: Focus lost! Switching apps or tabs is recorded (<span id="tab-switch-count">0</span>x).
+  </div>
+
+  <!-- Anti-Screenshot & Focus-Loss Privacy Shield -->
+  <div id="privacy-shield">
+    <div class="shield-icon">🛡️</div>
+    <h2 style="font-size: 20px; color: #ff5252; margin-bottom: 8px;">Content Protected</h2>
+    <p style="font-size: 14px; color: var(--text-muted); max-width: 320px; line-height: 1.5;">
+      Taking screenshots or leaving the active quiz tab is restricted during the test. Your activity is logged.
+    </p>
+    <button type="button" id="btn-resume-quiz" class="btn-primary" style="margin-top: 22px; width: auto; padding: 12px 28px;">
+      Tap to Resume Quiz
+    </button>
+  </div>
+
   <script src="/socket.io/socket.io.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-java.min.js"></script>

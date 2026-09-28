@@ -124,13 +124,21 @@ The game flows sequentially controlled by the Host:
 
 ## 🛡️ 6. Reliability & Anti-Cheating Architecture
 
-1. **Anti-Cheating Option Shuffling:**
+1. **Anti-Copy & Text Selection Blocker:**
+   CSS `user-select: none !important;` and `-webkit-touch-callout: none !important;` prevent highlighting or long-press popups on mobile. JavaScript event listeners block `copy`, `cut`, `selectstart`, `dragstart`, `contextmenu`, and hotkeys (`Ctrl+C`, `Ctrl+U`, `Ctrl+S`, `Ctrl+P`, `F12`, `Ctrl+Shift+I`).
+2. **Anti-Screenshot & Focus-Loss Privacy Shield:**
+   When a student switches apps on mobile, opens another browser tab, or presses `PrintScreen`, the screen immediately triggers a heavy blur filter (`blur-on-unfocus`) and displays an opaque `#privacy-shield`. If `PrintScreen` is pressed, the system clears the clipboard (`navigator.clipboard.writeText('')`).
+3. **Dynamic Tiled Student Watermark:**
+   A repeating semi-transparent background watermark displaying the student's **Full Name and Student ID (NIM)** is overlaid across all active quiz screens. Any external camera photograph or screenshot immediately identifies the student.
+4. **Real-Time Tab-Switch Detection & Host Alert:**
+   Leaving the active quiz tab emits `player_focus_lost`. The student receives an on-screen warning toast (`⚠️ Warning: Focus lost!`), and the presenter screen receives a live alert (`host_player_alert`). Total tab switches are logged and included in the final matrix table and CSV export (`Tab Switches (Cheat Alert)`).
+5. **Anti-Cheating Option Shuffling:**
    Option ordering is randomized locally on each mobile device using Fisher-Yates shuffle while preserving original index mapping for submission. Host screen displays canonical options.
-2. **Session Persistence & Auto-Reconnect:**
+6. **Session Persistence & Auto-Reconnect:**
    `localStorage` stores `sessionToken` + `nim`. If a participant reloads or their mobile screen locks, they resume instantly without losing score or streak.
-3. **Crash Protection via Atomic File Writing:**
+7. **Crash Protection via Atomic File Writing:**
    Session state is dumped atomically to `data/session_backup.json.tmp` and renamed to `session_backup.json` to prevent Windows file-lock race conditions.
-4. **Pure Web Audio API:**
+8. **Pure Web Audio API:**
    No external audio files to download. Synthesizes ticks, chimes, buzzers, and fanfare using Web Audio oscillators and gain envelopes.
 
 ---

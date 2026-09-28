@@ -585,4 +585,118 @@ body {
   100% { transform: translate(calc(-50% + var(--dx, 0px)), -180px) scale(0.8); opacity: 0; }
 }
 
+/* =========================================================
+   ANTI-COPY & ANTI-SCREENSHOT SECURITY SUITE
+   ========================================================= */
+
+/* 1. Prevent Text Selection & Mobile Callouts */
+body, .screen, .question-card, .answers-grid, pre, code, .review-card {
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  user-select: none !important;
+  -webkit-touch-callout: none !important; /* Disables iOS long-press callout */
+}
+
+/* Allow selection inside fill-in text input so user can type/backspace */
+#fill-in-input {
+  -webkit-user-select: auto !important;
+  user-select: auto !important;
+}
+
+/* 2. Dynamic Tiled Watermark Overlay (Identifies screen photo/screenshot origin) */
+#student-watermark-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 80;
+  display: none;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(4, 1fr);
+  opacity: 0.08;
+  overflow: hidden;
+  user-select: none;
+}
+
+.watermark-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: rotate(-22deg);
+  font-size: 13px;
+  font-weight: 800;
+  color: #ffffff;
+  white-space: nowrap;
+  letter-spacing: 1.5px;
+}
+
+/* 3. Anti-Screenshot & Focus-Loss Privacy Shield */
+#privacy-shield {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(15, 16, 29, 0.98);
+  backdrop-filter: blur(25px);
+  z-index: 99999;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 30px;
+}
+
+#privacy-shield.active {
+  display: flex;
+}
+
+.shield-icon {
+  font-size: 54px;
+  margin-bottom: 16px;
+  animation: pulseShield 1.5s infinite alternate;
+}
+
+@keyframes pulseShield {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.12); }
+}
+
+.blur-on-unfocus {
+  filter: blur(28px) !important;
+  transition: filter 0.1s ease-out;
+}
+
+/* 4. Tab Switch Warning Toast */
+.tab-switch-warning {
+  position: fixed;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #e21b3c;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  box-shadow: 0 8px 30px rgba(226, 27, 60, 0.5);
+  z-index: 100000;
+  display: none;
+  animation: shakeAlert 0.4s ease-in-out;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  width: 90%;
+  max-width: 420px;
+  text-align: center;
+}
+
+@keyframes shakeAlert {
+  0%, 100% { transform: translateX(-50%); }
+  20%, 60% { transform: translateX(calc(-50% - 6px)); }
+  40%, 80% { transform: translateX(calc(-50% + 6px)); }
+}
+
 

@@ -138,9 +138,45 @@
 
     <!-- 5. LEADERBOARD SCREEN -->
     <section id="host-leaderboard" class="host-screen">
-      <h2 style="text-align: center; margin-bottom: 24px; font-size: 28px;">🏆 Top Performers</h2>
-      <div id="host-leader-list" class="leaderboard-list">
-        <!-- Top 5 players -->
+      <div class="leaderboard-header-bar">
+        <div>
+          <h2 style="font-size: 28px; margin: 0;">🏆 Session Leaderboard</h2>
+          <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">
+            Current standings & live student focus status
+          </p>
+        </div>
+        <div class="lb-view-toggle">
+          <button id="btn-lb-top5" class="btn-toggle active" type="button">Top 5</button>
+          <button id="btn-lb-all" class="btn-toggle" type="button">All Students (<span id="lb-all-count">0</span>)</button>
+        </div>
+      </div>
+
+      <div class="leaderboard-grid-layout">
+        <!-- Main Rankings -->
+        <div class="leaderboard-ranking-panel">
+          <div id="host-leader-list" class="leaderboard-list">
+            <!-- Top players -->
+          </div>
+        </div>
+
+        <!-- Focus & Screen Leave Watchlist -->
+        <div class="leaderboard-focus-panel">
+          <div class="focus-watchlist-box">
+            <div class="watchlist-header">
+              <div class="watchlist-title">
+                <span class="watchlist-radar-dot"></span>
+                <span>🚨 Focus Watchlist</span>
+              </div>
+              <span id="lb-focus-total-badge" class="badge-focus-status badge-ok">0 Left Screen</span>
+            </div>
+            <p class="watchlist-subtext">
+              Real-time tracker of students who switched tabs or left quiz screen.
+            </p>
+            <div id="lb-focus-items" class="focus-items-container">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 

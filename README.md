@@ -100,6 +100,20 @@ Copy the generated `https://xxxx.ngrok-free.app` URL and share it with your stud
 
 ---
 
+## 🛡️ Anti-Cheating & Real-Time Focus Monitor
+
+The engine includes active classroom protection against AI copy-pasting, cheating, and distraction:
+1. **Copy & Screenshot Prevention:** Text selection is locked (`user-select: none !important`), touch callouts are disabled, and clipboard/devtools hotkeys are blocked (`Ctrl+C`, `PrintScreen`, `F12`, etc.).
+2. **Privacy Shield & Screen Blur:** Switching browser tabs or minimizing the app immediately activates heavy screen blur and displays an opaque privacy shield.
+3. **Dynamic Tiled Watermark:** Participant Name and NIM are watermarked across the screen in real-time to deter photographing questions.
+4. **Session Leaderboard Focus Watchlist:**
+   - On the interim leaderboard between questions, each student card displays their total screen-leave count (`⚠️ 2x Left Screen` or `🛡️ Focused`).
+   - A dedicated **Focus Watchlist panel** displays all students who have left the screen, ordered by highest violations, allowing the host to warn them immediately.
+   - Host can toggle view between **Top 5** and **All Students**.
+5. **Detailed Matrix & CSV Export:** The final game-over matrix and downloaded CSV report record exact tab-switch counts for every student.
+
+---
+
 ## 🧪 Automated Testing
 
 An automated simulation tests 40 concurrent participants, reconnects, kicks, question rounds, insights, and CSV exports:

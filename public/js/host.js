@@ -380,27 +380,41 @@ function animateScoreCount(elementId, start, end, duration) {
   requestAnimationFrame(update);
 }
 
-// Animated Leaderboard
-socket.on('show_leaderboard', (data) => {
-  hostState.status = 'LEADERBOARD';
-  sessionStatus.innerText = 'LEADERBOARD';
+// Animated Leaderboard with Live Focus Monitor
+let latestLeaderboardData = [];
+let lbViewMode = 'top5'; // 'top5' or 'all'
 
-  switchScreen('leaderboard');
+const btnLbTop5 = document.getElementById('btn-lb-top5');
+const btnLbAll = document.getElementById('btn-lb-all');
 
-  btnHostSkip.style.display = 'none';
-  btnHostAction.style.display = 'inline-flex';
-  const isLast = hostState.currentQuestion && (hostState.currentQuestion.index + 1 >= hostState.totalQuestions);
-  btnHostAction.innerText = isLast ? 'Show Final Results 🏆' : 'Next Question ➔';
+if (btnLbTop5 && btnLbAll) {
+  btnLbTop5.addEventListener('click', () => {
+    lbViewMode = 'top5';
+    btnLbTop5.classList.add('active');
+    btnLbAll.classList.remove('active');
+    renderLeaderboardView();
+  });
 
+  btnLbAll.addEventListener('click', () => {
+    lbViewMode = 'all';
+    btnLbAll.classList.add('active');
+    btnLbTop5.classList.remove('active');
+    renderLeaderboardView();
+  });
+}
+
+function renderLeaderboardView() {
   const list = document.getElementById('host-leader-list');
+  if (!list) return;
   list.innerHTML = '';
 
-  const top5 = data.leaderboard.slice(0, 5);
+  const allCountEl = document.getElementById('lb-all-count');
+  if (allCountEl) allCountEl.innerText = latestLeaderboardData.length;
+
+  const playersToShow = lbViewMode === 'all' ? latestLeaderboardData : latestLeaderboardData.slice(0, 5);
   const currentMap = {};
 
-  if (window.soundFX) window.soundFX.playScoreRoll();
-
-  top5.forEach((p, idx) => {
+  playersToShow.forEach((p, idx) => {
     const currentRank = idx + 1;
     const prev = hostState.previousLeaderboardMap ? hostState.previousLeaderboardMap[p.id] : null;
     const prevRank = prev ? prev.rank : currentRank;
@@ -430,16 +444,24 @@ socket.on('show_leaderboard', (data) => {
     const streakHtml = p.streak >= 2 ? `<div class="streak-tag">🔥 ${p.streak} in a row!</div>` : '';
     const deltaHtml = (scoreDiff > 0 && prev) ? `<span class="score-delta">+${scoreDiff.toLocaleString()}</span>` : '';
 
+    const leaves = Number(p.tabSwitches) || 0;
+    const leaveBadgeHtml = leaves > 0
+      ? `<span class="lb-leave-pill warning" title="${p.name} left quiz screen ${leaves}x">⚠️ ${leaves}x Left Screen</span>`
+      : `<span class="lb-leave-pill clean" title="Zero screen leaves">🛡️ Focused</span>`;
+
     const item = document.createElement('div');
     item.className = `leader-item ${cardClimbClass}`;
-    item.style.animationDelay = `${idx * 0.12}s`;
+    item.style.animationDelay = `${Math.min(idx * 0.1, 0.8)}s`;
     item.innerHTML = `
       <div class="leader-rank-wrapper">
         <div class="leader-rank">#${currentRank}</div>
         ${rankBadgeHtml}
       </div>
       <div class="leader-name">
-        <span>${p.name}</span>
+        <div class="leader-name-row">
+          <span class="p-fullname">${p.name}</span>
+          ${leaveBadgeHtml}
+        </div>
         <span class="leader-nim">NIM: ${p.nim}</span>
         ${streakHtml}
       </div>
@@ -450,11 +472,72 @@ socket.on('show_leaderboard', (data) => {
     `;
     list.appendChild(item);
 
-    // Roll-up score animation
-    animateScoreCount(`score-counter-${p.id}`, prevScore, p.score, 1100 + (idx * 120));
+    animateScoreCount(`score-counter-${p.id}`, prevScore, p.score, 1100 + (Math.min(idx, 5) * 120));
   });
 
-  hostState.previousLeaderboardMap = currentMap;
+  if (lbViewMode !== 'all') {
+    hostState.previousLeaderboardMap = currentMap;
+  }
+
+  // Render Focus Watchlist
+  renderFocusWatchlist();
+}
+
+function renderFocusWatchlist() {
+  const container = document.getElementById('lb-focus-items');
+  const countBadge = document.getElementById('lb-focus-total-badge');
+  if (!container || !countBadge) return;
+
+  const violators = latestLeaderboardData
+    .filter(p => (Number(p.tabSwitches) || 0) > 0)
+    .sort((a, b) => (Number(b.tabSwitches) || 0) - (Number(a.tabSwitches) || 0));
+
+  if (violators.length === 0) {
+    countBadge.innerText = '0 Left Screen';
+    countBadge.className = 'badge-focus-status badge-ok';
+    container.innerHTML = `
+      <div class="focus-empty-state">
+        <div class="focus-empty-icon">🛡️</div>
+        <div style="font-weight: 700; color: #00e676; margin-bottom: 4px;">Clean Session</div>
+        <div style="font-size: 12px; color: var(--text-muted);">All active students are focused on the quiz screen.</div>
+      </div>
+    `;
+  } else {
+    countBadge.innerText = `${violators.length} Left Screen`;
+    countBadge.className = 'badge-focus-status badge-warn';
+    container.innerHTML = '';
+
+    violators.forEach(p => {
+      const row = document.createElement('div');
+      row.className = 'focus-item-row';
+      row.innerHTML = `
+        <div class="focus-item-info">
+          <span class="focus-item-name">${p.name}</span>
+          <span class="focus-item-nim">NIM: ${p.nim}</span>
+        </div>
+        <span class="focus-item-tag">⚠️ ${p.tabSwitches}x Left Screen</span>
+      `;
+      container.appendChild(row);
+    });
+  }
+}
+
+socket.on('show_leaderboard', (data) => {
+  hostState.status = 'LEADERBOARD';
+  sessionStatus.innerText = 'LEADERBOARD';
+
+  switchScreen('leaderboard');
+
+  btnHostSkip.style.display = 'none';
+  btnHostAction.style.display = 'inline-flex';
+  const isLast = hostState.currentQuestion && (hostState.currentQuestion.index + 1 >= hostState.totalQuestions);
+  btnHostAction.innerText = isLast ? 'Show Final Results 🏆' : 'Next Question ➔';
+
+  latestLeaderboardData = data.leaderboard || [];
+
+  if (window.soundFX) window.soundFX.playScoreRoll();
+
+  renderLeaderboardView();
 });
 
 // Game Over & Matrix Table
@@ -593,6 +676,14 @@ function renderMatrixTable(players, totalQuestions) {
 
 // Live Anti-Cheat alert to Host
 socket.on('host_player_alert', (data) => {
+  const p = latestLeaderboardData.find(item => item.id === data.playerId || item.nim === data.nim);
+  if (p) {
+    p.tabSwitches = data.tabSwitches;
+    if (hostState.status === 'LEADERBOARD') {
+      renderLeaderboardView();
+    }
+  }
+
   const alertToast = document.createElement('div');
   alertToast.style.cssText = `
     position: fixed;

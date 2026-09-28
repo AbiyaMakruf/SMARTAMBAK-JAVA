@@ -130,8 +130,12 @@ The game flows sequentially controlled by the Host:
    When a student switches apps on mobile, opens another browser tab, or presses `PrintScreen`, the screen immediately triggers a heavy blur filter (`blur-on-unfocus`) and displays an opaque `#privacy-shield`. If `PrintScreen` is pressed, the system clears the clipboard (`navigator.clipboard.writeText('')`).
 3. **Dynamic Tiled Student Watermark:**
    A repeating semi-transparent background watermark displaying the student's **Full Name and Student ID (NIM)** is overlaid across all active quiz screens. Any external camera photograph or screenshot immediately identifies the student.
-4. **Real-Time Tab-Switch Detection & Host Alert:**
-   Leaving the active quiz tab emits `player_focus_lost`. The student receives an on-screen warning toast (`⚠️ Warning: Focus lost!`), and the presenter screen receives a live alert (`host_player_alert`). Total tab switches are logged and included in the final matrix table and CSV export (`Tab Switches (Cheat Alert)`).
+4. **Real-Time Tab-Switch Detection & Session Leaderboard Focus Watchlist:**
+   Leaving the active quiz tab emits `player_focus_lost`. The student receives an on-screen warning toast (`⚠️ Warning: Focus lost!`), and the presenter screen receives a live alert toast (`host_player_alert`). On the **Session Leaderboard** screen between questions:
+   - Every participant card displays their total screen-leave count (e.g. `⚠️ 3x Left Screen` or `🛡️ Focused`).
+   - A dedicated **Focus Watchlist panel** on the host screen immediately displays all students who have left the screen, ordered by most violations, enabling the teacher/host to immediately call out and warn distracted students.
+   - Host can toggle between viewing "Top 5" and "All Students" on the session leaderboard.
+   - Total tab switches are logged and included in the final matrix table and CSV export (`Tab Switches (Cheat Alert)`).
 5. **Anti-Cheating Option Shuffling:**
    Option ordering is randomized locally on each mobile device using Fisher-Yates shuffle while preserving original index mapping for submission. Host screen displays canonical options.
 6. **Session Persistence & Auto-Reconnect:**

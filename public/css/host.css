@@ -526,6 +526,253 @@ body {
   animation: popBadge 0.5s ease-out;
 }
 
+/* Leaderboard Screen Header & Toggle */
+.leaderboard-header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border-color);
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.lb-view-toggle {
+  display: flex;
+  background: rgba(255, 255, 255, 0.06);
+  padding: 4px;
+  border-radius: 10px;
+  gap: 4px;
+  border: 1px solid var(--border-color);
+}
+
+.btn-toggle {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-toggle:hover {
+  color: var(--text-main);
+}
+
+.btn-toggle.active {
+  background: var(--primary);
+  color: white;
+  box-shadow: 0 2px 8px rgba(70, 23, 143, 0.4);
+}
+
+/* Leaderboard Grid Layout */
+.leaderboard-grid-layout {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 24px;
+  align-items: start;
+}
+
+@media (max-width: 1024px) {
+  .leaderboard-grid-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.leaderboard-ranking-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Name row inside leader item */
+.leader-name-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.p-fullname {
+  font-size: 18px;
+  font-weight: 800;
+}
+
+/* Pill badges for screen leaves in leader rows */
+.lb-leave-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 6px;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+}
+
+.lb-leave-pill.warning {
+  background: rgba(226, 27, 60, 0.2);
+  color: #ff5252;
+  border: 1px solid rgba(255, 82, 82, 0.5);
+  box-shadow: 0 0 10px rgba(226, 27, 60, 0.2);
+  animation: leavePulse 1.8s infinite;
+}
+
+@keyframes leavePulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+}
+
+.lb-leave-pill.clean {
+  background: rgba(0, 230, 118, 0.12);
+  color: #00e676;
+  border: 1px solid rgba(0, 230, 118, 0.3);
+}
+
+/* Focus Watchlist Panel */
+.focus-watchlist-box {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 20px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  position: sticky;
+  top: 80px;
+}
+
+.watchlist-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.watchlist-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 800;
+  color: #ff9800;
+}
+
+.watchlist-radar-dot {
+  width: 10px;
+  height: 10px;
+  background: #ff5252;
+  border-radius: 50%;
+  display: inline-block;
+  box-shadow: 0 0 8px #ff5252;
+  animation: radarBlip 1.4s infinite;
+}
+
+@keyframes radarBlip {
+  0% { transform: scale(0.9); opacity: 1; }
+  50% { transform: scale(1.4); opacity: 0.5; }
+  100% { transform: scale(0.9); opacity: 1; }
+}
+
+.watchlist-subtext {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+  line-height: 1.4;
+}
+
+.badge-focus-status {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 12px;
+}
+
+.badge-focus-status.badge-ok {
+  background: rgba(0, 230, 118, 0.15);
+  color: #00e676;
+  border: 1px solid rgba(0, 230, 118, 0.4);
+}
+
+.badge-focus-status.badge-warn {
+  background: rgba(226, 27, 60, 0.25);
+  color: #ff5252;
+  border: 1px solid rgba(226, 27, 60, 0.6);
+  animation: leavePulse 1.5s infinite;
+}
+
+.focus-items-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 380px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.focus-item-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(226, 27, 60, 0.08);
+  border: 1px solid rgba(255, 82, 82, 0.25);
+  padding: 10px 12px;
+  border-radius: 8px;
+  transition: transform 0.2s ease;
+}
+
+.focus-item-row:hover {
+  transform: translateX(3px);
+  border-color: rgba(255, 82, 82, 0.5);
+}
+
+.focus-item-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.focus-item-name {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.focus-item-nim {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.focus-item-tag {
+  font-size: 12px;
+  font-weight: 800;
+  color: #ff5252;
+  background: rgba(226, 27, 60, 0.2);
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 82, 82, 0.4);
+  white-space: nowrap;
+}
+
+.focus-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 12px;
+  text-align: center;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 8px;
+  border: 1px dashed var(--border-color);
+}
+
+.focus-empty-icon {
+  font-size: 28px;
+  margin-bottom: 8px;
+}
+
 /* Game Over & Podium */
 .podium-container {
   display: flex;

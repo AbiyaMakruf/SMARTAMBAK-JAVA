@@ -1,0 +1,140 @@
+{
+  "id": "java",
+  "title": "Java Fundamentals",
+  "language": "java",
+  "description": "Core Java concepts: OOP, immutability, memory, collections, and exception handling.",
+  "questions": [
+    {
+      "id": 1,
+      "type": "multiple_choice",
+      "question": "Which keyword is used in Java to prevent a method from being overridden by subclasses?",
+      "code": "public class Animal {\n    public ___ void makeSound() {\n        System.out.println(\"Sound\");\n    }\n}",
+      "options": [
+        "static",
+        "final",
+        "abstract",
+        "synchronized"
+      ],
+      "correctAnswer": 1,
+      "timeLimit": 25,
+      "explanation": "The 'final' keyword prevents a method from being overridden and a class from being inherited."
+    },
+    {
+      "id": 2,
+      "type": "true_false",
+      "question": "In Java, String objects are immutable, meaning their state cannot be changed after creation.",
+      "code": "String str = \"Hello\";\nstr.concat(\" World\");\nSystem.out.println(str); // Outputs: Hello",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 0,
+      "timeLimit": 20,
+      "explanation": "True! String is immutable. Any modification method (like concat, replace) returns a new String instance."
+    },
+    {
+      "id": 3,
+      "type": "fill_in",
+      "question": "Fill in the blank for the standard entry point method signature in Java:",
+      "code": "public static ___ main(String[] args)",
+      "correctAnswers": [
+        "void"
+      ],
+      "timeLimit": 25,
+      "explanation": "The main method does not return any value, so its return type must be 'void'."
+    },
+    {
+      "id": 4,
+      "type": "multiple_choice",
+      "question": "What is the default value of an uninitialized instance boolean variable in Java?",
+      "code": "public class Demo {\n    boolean flag;\n}",
+      "options": [
+        "null",
+        "0",
+        "false",
+        "true"
+      ],
+      "correctAnswer": 2,
+      "timeLimit": 20,
+      "explanation": "Instance and static boolean variables in Java default to 'false'. Local variables have no default."
+    },
+    {
+      "id": 5,
+      "type": "true_false",
+      "question": "A Java class can directly extend multiple classes simultaneously (multiple inheritance with classes).",
+      "code": "// Is this allowed?\nclass C extends A, B { }",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 1,
+      "timeLimit": 20,
+      "explanation": "False! Java does not support multiple class inheritance to avoid the diamond problem. However, a class can implement multiple interfaces."
+    },
+    {
+      "id": 6,
+      "type": "fill_in",
+      "question": "What keyword is used by a class to inherit another class in Java?",
+      "code": "public class Dog ___ Animal {\n}",
+      "correctAnswers": [
+        "extends"
+      ],
+      "timeLimit": 25,
+      "explanation": "The 'extends' keyword is used for class inheritance (or interface extending another interface)."
+    },
+    {
+      "id": 7,
+      "type": "multiple_choice",
+      "question": "Which of the following Collections maintains insertion order and allows duplicate elements?",
+      "code": null,
+      "options": [
+        "HashSet",
+        "TreeSet",
+        "ArrayList",
+        "HashMap"
+      ],
+      "correctAnswer": 2,
+      "timeLimit": 25,
+      "explanation": "ArrayList is an ordered List implementation that preserves insertion order and allows duplicate elements."
+    },
+    {
+      "id": 8,
+      "type": "true_false",
+      "question": "In Java, the '==' operator compares object reference (memory address), while .equals() compares logical values (if overridden).",
+      "code": "String s1 = new String(\"Java\");\nString s2 = new String(\"Java\");\nboolean b = (s1 == s2); // false",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 0,
+      "timeLimit": 20,
+      "explanation": "True! '==' checks whether both references point to the exact same object in memory, while .equals() checks logical equality."
+    },
+    {
+      "id": 9,
+      "type": "fill_in",
+      "question": "Which block in Java exception handling will execute regardless of whether an exception occurred or was caught?",
+      "code": "try {\n    // risky code\n} catch (Exception e) {\n    // handle\n} ___ {\n    // cleanup code\n}",
+      "correctAnswers": [
+        "finally"
+      ],
+      "timeLimit": 25,
+      "explanation": "The 'finally' block always executes after try/catch, typically used to clean up resources like closing streams or database connections."
+    },
+    {
+      "id": 10,
+      "type": "multiple_choice",
+      "question": "Which access modifier allows access within the same package AND by subclasses in different packages?",
+      "code": null,
+      "options": [
+        "private",
+        "default (package-private)",
+        "protected",
+        "public"
+      ],
+      "correctAnswer": 2,
+      "timeLimit": 25,
+      "explanation": "'protected' grants access to members within the same package and to subclasses even if they reside in different packages."
+    }
+  ]
+}

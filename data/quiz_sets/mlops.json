@@ -1,0 +1,143 @@
+{
+  "id": "mlops",
+  "title": "MLOps & Machine Learning Systems",
+  "language": "python",
+  "description": "MLOps concepts: Model registry, CI/CD, data drift, tracking, containerization, and monitoring.",
+  "questions": [
+    {
+      "id": 1,
+      "type": "multiple_choice",
+      "question": "Which open-source platform is widely used for tracking experiments, packaging code, and sharing models in MLOps?",
+      "code": "import ___ as tracker\ntracker.log_param('learning_rate', 0.01)\ntracker.log_metric('accuracy', 0.95)",
+      "options": [
+        "Kubernetes",
+        "MLflow",
+        "Spark",
+        "Airflow"
+      ],
+      "correctAnswer": 1,
+      "timeLimit": 20,
+      "explanation": "MLflow is an open-source platform for managing the end-to-end machine learning lifecycle, including experiment tracking and model registry."
+    },
+    {
+      "id": 2,
+      "type": "true_false",
+      "question": "Data Drift refers to changes in the statistical properties of input data over time, while Concept Drift refers to changes in the relationship between input features and target labels.",
+      "code": "// P(X) changes vs P(Y|X) changes",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 0,
+      "timeLimit": 25,
+      "explanation": "True! Data drift (covariate shift) is a change in feature distribution P(X). Concept drift is a change in the mapping P(Y|X)."
+    },
+    {
+      "id": 3,
+      "type": "fill_in",
+      "question": "What common MLOps component serves as a centralized repository to store, discover, and serve consistent feature values for both training and online inference?",
+      "code": "// Examples: Feast, Hopsworks, Tecton\n// Term: ___ store",
+      "correctAnswers": [
+        "feature",
+        "feature store"
+      ],
+      "timeLimit": 25,
+      "explanation": "A Feature Store provides a unified interface to calculate, store, and serve features to models during training and low-latency inference."
+    },
+    {
+      "id": 4,
+      "type": "multiple_choice",
+      "question": "Which deployment strategy routes a small percentage (e.g. 5%) of live traffic to the new model version before rolling it out to 100% of users?",
+      "code": null,
+      "options": [
+        "Blue/Green Deployment",
+        "Canary Deployment",
+        "Shadow Deployment",
+        "Rolling Update"
+      ],
+      "correctAnswer": 1,
+      "timeLimit": 20,
+      "explanation": "Canary deployment exposes a subset of production traffic to the new candidate model to detect bugs and performance degradation safely."
+    },
+    {
+      "id": 5,
+      "type": "true_false",
+      "question": "In shadow deployment, the new model receives live production queries and serves its predictions directly back to the end user.",
+      "code": null,
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 1,
+      "timeLimit": 20,
+      "explanation": "False! In shadow deployment, the new model processes traffic asynchronously alongside the current model, but its outputs are logged for evaluation and never returned to the user."
+    },
+    {
+      "id": 6,
+      "type": "fill_in",
+      "question": "What is the name of the open-source version control system specifically designed for tracking large datasets and ML models alongside Git?",
+      "code": "// Terminal command example:\n___ add data/dataset.csv\n___ push",
+      "correctAnswers": [
+        "dvc",
+        "DVC"
+      ],
+      "timeLimit": 25,
+      "explanation": "DVC (Data Version Control) tracks large data files and model checkpoints using Git-like workflows connected to cloud storage."
+    },
+    {
+      "id": 7,
+      "type": "multiple_choice",
+      "question": "Which technique reduces model precision from 32-bit floating point (FP32) to 8-bit integers (INT8) to accelerate inference latency and reduce RAM usage?",
+      "code": null,
+      "options": [
+        "Pruning",
+        "Distillation",
+        "Quantization",
+        "Embedding"
+      ],
+      "correctAnswer": 2,
+      "timeLimit": 20,
+      "explanation": "Quantization converts high-precision model weights/activations to lower-bit representations (e.g., FP32 to INT8), drastically improving inference throughput."
+    },
+    {
+      "id": 8,
+      "type": "true_false",
+      "question": "Model Explainability techniques like SHAP and LIME are post-hoc methods used to interpret black-box model predictions.",
+      "code": "import shap\nexplainer = shap.TreeExplainer(model)\nshap_values = explainer.shap_values(X)",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 0,
+      "timeLimit": 20,
+      "explanation": "True! SHAP (Shapley Additive exPlanations) and LIME provide model-agnostic feature attributions to explain individual predictions."
+    },
+    {
+      "id": 9,
+      "type": "fill_in",
+      "question": "What workflow orchestration tool developed by Apache is commonly used to schedule DAGs (Directed Acyclic Graphs) for ML data pipelines?",
+      "code": "from ___ import DAG\nfrom ___.operators.python import PythonOperator",
+      "correctAnswers": [
+        "airflow",
+        "apache airflow"
+      ],
+      "timeLimit": 25,
+      "explanation": "Apache Airflow allows engineering teams to author, schedule, and monitor complex data and ML training workflows as DAGs in Python."
+    },
+    {
+      "id": 10,
+      "type": "multiple_choice",
+      "question": "What is the primary risk addressed by logging and tracking both training code commits, dataset hashes, and hyperparameters in MLOps?",
+      "code": null,
+      "options": [
+        "Network latency",
+        "Reproducibility",
+        "CSS responsiveness",
+        "Database sharding"
+      ],
+      "correctAnswer": 1,
+      "timeLimit": 20,
+      "explanation": "Logging code, data lineage, and hyperparameters ensures strict reproducibility of models across environments and teams."
+    }
+  ]
+}

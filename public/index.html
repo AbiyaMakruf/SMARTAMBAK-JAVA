@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Java Quiz Live</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+</head>
+<body>
+  <div class="app-container">
+    
+    <!-- Top Bar (Visible when in quiz) -->
+    <header id="quiz-header" class="quiz-header" style="display: none;">
+      <span id="player-display-name">Player</span>
+      <div style="display: flex; gap: 8px; align-items: center;">
+        <button type="button" id="btn-sound-toggle" class="sound-toggle-btn" title="Toggle Sound">🔊</button>
+        <span class="score-badge"><span id="player-score">0</span> pts</span>
+      </div>
+    </header>
+
+    <!-- Visual Question Stepper & Progress Tracker -->
+    <div id="quiz-progress-tracker" class="progress-tracker-box" style="display: none;">
+      <div class="progress-label-row">
+        <span id="progress-text">Question 1 of 10</span>
+        <span id="progress-percent">10%</span>
+      </div>
+      <!-- Segmented Bar / Dots -->
+      <div id="progress-segments" class="segments-container"></div>
+    </div>
+
+    <!-- SCREEN 1: Join / Registration -->
+    <section id="screen-join" class="screen active">
+      <div class="card-box">
+        <h1 class="brand-title" id="player-brand-title">Live Quiz</h1>
+        <p class="subtitle">Enter your details to join the session</p>
+
+        <div id="kicked-banner" class="error-msg" style="margin-bottom: 12px; background: rgba(255, 82, 82, 0.2); padding: 8px; border-radius: 8px;"></div>
+        
+        <form id="join-form">
+          <div class="form-group">
+            <label for="input-name">Full Name</label>
+            <input type="text" id="input-name" class="input-field" placeholder="e.g. Alex Pratama" required autocomplete="name">
+          </div>
+          <div class="form-group">
+            <label for="input-nim">Student ID (NIM)</label>
+            <input type="text" id="input-nim" class="input-field" placeholder="e.g. 21010045" required>
+          </div>
+          <button type="submit" class="btn-primary" id="btn-join">Join Game</button>
+          <div id="join-error" class="error-msg"></div>
+        </form>
+      </div>
+    </section>
+
+    <!-- SCREEN 2: Lobby Waiting -->
+    <section id="screen-lobby" class="screen">
+      <div class="lobby-waiting">
+        <div class="pulse-circle">☕</div>
+        <h2>You're in!</h2>
+        <p class="subtitle" style="margin-top: 8px;">See your name on the host's screen</p>
+        <div class="player-tag">
+          <span id="lobby-player-name">Player</span> (<span id="lobby-player-nim">NIM</span>)
+        </div>
+        <div>
+          <div class="total-questions-chip">📝 Total Questions: <strong id="lobby-total-questions" style="color: white; margin-left: 4px;">10 Questions</strong></div>
+        </div>
+        <p style="margin-top: 24px; font-size: 13px; color: var(--text-muted);">
+          Waiting for the host to start the quiz...
+        </p>
+      </div>
+    </section>
+
+    <!-- SCREEN 3: Countdown 3.. 2.. 1.. -->
+    <section id="screen-countdown" class="screen">
+      <div style="text-align: center;">
+        <h3 style="color: var(--text-muted); font-size: 18px; margin-bottom: 12px;">Get Ready!</h3>
+        <div id="countdown-val" style="font-size: 100px; font-weight: 900; color: #ffca28;">3</div>
+      </div>
+    </section>
+
+    <!-- SCREEN 4: Active Question -->
+    <section id="screen-question" class="screen">
+      <div class="timer-container">
+        <div id="timer-bar" class="timer-bar"></div>
+      </div>
+
+      <div class="question-card">
+        <div style="display: flex; justify-content: space-between; font-size: 13px; color: var(--text-muted); margin-bottom: 6px;">
+          <span id="question-number">Question 1 of 10</span>
+          <span id="time-text" style="color: #ff5252; font-weight: 700;">25s</span>
+        </div>
+        <div id="question-text" class="question-text">Question prompt goes here...</div>
+        <pre id="question-code-pre" class="language-java" style="border-radius: 8px; margin: 10px 0; display: none;"><code id="question-code" class="language-java"></code></pre>
+      </div>
+
+      <!-- Multiple Choice & True/False Buttons Container -->
+      <div id="options-container" class="answers-grid">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <!-- Fill in the blank Container -->
+      <div id="fill-in-container" class="fill-in-container" style="display: none;">
+        <input type="text" id="fill-in-input" class="fill-in-input" placeholder="Type answer here..." autocapitalize="none" autocomplete="off" spellcheck="false">
+        <button type="button" id="btn-submit-fill" class="btn-primary" style="background: linear-gradient(135deg, #00e676, #00b0ff);">Submit Answer</button>
+      </div>
+    </section>
+
+    <!-- SCREEN 5: Answer Submitted (Waiting for Question End) -->
+    <section id="screen-submitted" class="screen">
+      <div class="state-feedback">
+        <div class="icon">⌛</div>
+        <h2>Answer Submitted!</h2>
+        <p class="subtitle" style="margin-top: 10px;">Waiting for time to expire or others to finish...</p>
+      </div>
+    </section>
+
+    <!-- SCREEN 6: Question Result Reveal -->
+    <section id="screen-result" class="screen">
+      <div id="result-card" class="result-card correct">
+        <div id="result-title" class="result-title">CORRECT!</div>
+        <div id="result-points" class="points-gained">+850 pts</div>
+        <div style="font-size: 14px; color: var(--text-muted);">
+          Streak: <span id="result-streak" style="font-weight: 700; color: #ffca28;">🔥 1</span> | Rank: <span id="result-rank" style="font-weight: 700; color: #00e676;">#3</span>
+        </div>
+      </div>
+
+      <div class="correct-answer-reveal">
+        <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;">Correct Answer:</div>
+        <div id="result-correct-answer" style="font-weight: 700; color: #00e676; margin-bottom: 8px;">void</div>
+        <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;">Explanation:</div>
+        <div id="result-explanation" style="font-size: 13px; line-height: 1.4;">...</div>
+      </div>
+    </section>
+
+    <!-- SCREEN 7: Intermediary Leaderboard Wait -->
+    <section id="screen-leaderboard" class="screen">
+      <div class="state-feedback">
+        <div class="icon">📊</div>
+        <h2>Leaderboard Update</h2>
+        <p class="subtitle" style="margin-top: 8px;">Check out the host screen to see the top ranks!</p>
+        <div class="player-tag" style="margin-top: 20px;">
+          Your Score: <span id="lb-player-score" style="color: #ffca28;">0</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- SCREEN 8: Final Podium / Game Over & Personal Review -->
+    <section id="screen-gameover" class="screen">
+      <div class="podium-card card-box">
+        <div class="trophy">🏆</div>
+        <h2>Quiz Completed!</h2>
+        <div id="final-rank-text" class="final-rank">Rank #1</div>
+        <div id="final-score-text" class="final-score">Final Score: 8,450 pts</div>
+        <p class="subtitle">Thank you for participating!</p>
+
+        <!-- Personal Review Container -->
+        <div class="review-section">
+          <div class="review-section-title">📝 Review Your Answers</div>
+          <div id="player-review-list">
+            <!-- Review cards inserted here -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Floating Reaction Bar (Visible during quiz) -->
+    <div id="reaction-bar" class="reaction-bar" style="display: none;">
+      <button type="button" class="reaction-btn" data-emoji="❤️">❤️</button>
+      <button type="button" class="reaction-btn" data-emoji="🔥">🔥</button>
+      <button type="button" class="reaction-btn" data-emoji="👏">👏</button>
+      <button type="button" class="reaction-btn" data-emoji="🤯">🤯</button>
+      <button type="button" class="reaction-btn" data-emoji="💡">💡</button>
+      <button type="button" class="reaction-btn" data-emoji="☕">☕</button>
+    </div>
+
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-java.min.js"></script>
+  <script src="/js/audio.js"></script>
+  <script src="/js/player.js"></script>
+</body>
+</html>

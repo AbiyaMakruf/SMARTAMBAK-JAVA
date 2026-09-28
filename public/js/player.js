@@ -1,0 +1,535 @@
+// Participant Client Script with Auto-Reconnect, Sound Effects, Anti-Cheating Shuffle, Reactions, and Prism Highlighting
+const socket = io();
+
+// State
+let myPlayer = {
+  name: '',
+  nim: '',
+  sessionToken: '',
+  score: 0
+};
+let currentQuestion = null;
+let currentMaxTime = 25;
+const STORAGE_KEY = 'java_quiz_session';
+
+// DOM Elements
+const screens = {
+  join: document.getElementById('screen-join'),
+  lobby: document.getElementById('screen-lobby'),
+  countdown: document.getElementById('screen-countdown'),
+  question: document.getElementById('screen-question'),
+  submitted: document.getElementById('screen-submitted'),
+  result: document.getElementById('screen-result'),
+  leaderboard: document.getElementById('screen-leaderboard'),
+  gameover: document.getElementById('screen-gameover')
+};
+
+const quizHeader = document.getElementById('quiz-header');
+const playerDisplayName = document.getElementById('player-display-name');
+const playerScore = document.getElementById('player-score');
+const kickedBanner = document.getElementById('kicked-banner');
+const btnSoundToggle = document.getElementById('btn-sound-toggle');
+const reactionBar = document.getElementById('reaction-bar');
+
+// Progress Tracker Elements
+const progressTracker = document.getElementById('quiz-progress-tracker');
+const progressText = document.getElementById('progress-text');
+const progressPercent = document.getElementById('progress-percent');
+const progressSegments = document.getElementById('progress-segments');
+const lobbyTotalQuestions = document.getElementById('lobby-total-questions');
+
+let totalQuestionsCount = 10;
+let answersStatusMap = {}; // questionIndex -> boolean (true / false)
+
+function renderProgressTracker(currentIndex, total) {
+  if (!progressTracker) return;
+  totalQuestionsCount = total || totalQuestionsCount;
+  
+  if (progressText) {
+    progressText.innerText = `Question ${currentIndex + 1} of ${totalQuestionsCount}`;
+  }
+  if (progressPercent) {
+    const pct = Math.round(((currentIndex + 1) / totalQuestionsCount) * 100);
+    progressPercent.innerText = `${pct}%`;
+  }
+  
+  if (progressSegments) {
+    progressSegments.innerHTML = '';
+    for (let i = 0; i < totalQuestionsCount; i++) {
+      const seg = document.createElement('div');
+      let statusClass = 'upcoming';
+
+      if (i === currentIndex) {
+        statusClass = 'current';
+      } else if (answersStatusMap[i] === true) {
+        statusClass = 'correct';
+      } else if (answersStatusMap[i] === false) {
+        statusClass = 'incorrect';
+      } else if (i < currentIndex) {
+        statusClass = 'upcoming';
+      }
+
+      seg.className = `segment-step ${statusClass}`;
+      seg.title = `Question ${i + 1}`;
+      progressSegments.appendChild(seg);
+    }
+  }
+}
+
+// Forms & Inputs
+const joinForm = document.getElementById('join-form');
+const inputName = document.getElementById('input-name');
+const inputNim = document.getElementById('input-nim');
+const joinError = document.getElementById('join-error');
+
+function switchScreen(screenKey) {
+  Object.keys(screens).forEach(key => {
+    if (screens[key]) {
+      screens[key].classList.toggle('active', key === screenKey);
+    }
+  });
+
+  // Reaction bar visibility
+  if (reactionBar) {
+    const showReactionScreens = ['lobby', 'submitted', 'result', 'leaderboard', 'gameover'];
+    reactionBar.style.display = showReactionScreens.includes(screenKey) ? 'flex' : 'none';
+  }
+
+  // Progress tracker visibility (visible while kuis berlangsung)
+  if (progressTracker) {
+    const showProgressScreens = ['question', 'submitted', 'result', 'leaderboard'];
+    progressTracker.style.display = showProgressScreens.includes(screenKey) ? 'block' : 'none';
+  }
+}
+
+// Sound toggle
+if (btnSoundToggle) {
+  btnSoundToggle.addEventListener('click', () => {
+    if (window.soundFX) {
+      const isMuted = window.soundFX.toggleMute();
+      btnSoundToggle.innerText = isMuted ? '🔇' : '🔊';
+    }
+  });
+}
+
+// Floating Emoji Reactions setup
+document.querySelectorAll('.reaction-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const emoji = btn.dataset.emoji;
+    if (!emoji) return;
+
+    socket.emit('send_reaction', { emoji });
+
+    // Local animated floating bubble on student's screen
+    const bubble = document.createElement('div');
+    bubble.className = 'local-reaction';
+    bubble.innerText = emoji;
+    const dx = (Math.random() - 0.5) * 80;
+    bubble.style.setProperty('--dx', `${dx}px`);
+    document.body.appendChild(bubble);
+
+    setTimeout(() => {
+      if (bubble && bubble.parentNode) {
+        bubble.parentNode.removeChild(bubble);
+      }
+    }, 1600);
+  });
+});
+
+// 1. Check for stored session on startup (Auto Reconnect)
+socket.on('connect', () => {
+  const savedSession = localStorage.getItem(STORAGE_KEY);
+  if (savedSession) {
+    try {
+      const parsed = JSON.parse(savedSession);
+      if (parsed.nim && parsed.sessionToken) {
+        socket.emit('player_reconnect', {
+          nim: parsed.nim,
+          sessionToken: parsed.sessionToken
+        });
+      }
+    } catch (e) {
+      localStorage.removeItem(STORAGE_KEY);
+    }
+  }
+});
+
+const playerBrandTitle = document.getElementById('player-brand-title');
+
+function updateQuizTitle(title) {
+  if (!title) return;
+  if (playerBrandTitle) playerBrandTitle.innerText = title;
+  document.title = `${title} - Live Quiz`;
+}
+
+socket.on('init_state', (data) => {
+  if (data) {
+    if (data.totalQuestions) {
+      totalQuestionsCount = data.totalQuestions;
+      if (lobbyTotalQuestions) {
+        lobbyTotalQuestions.innerText = `${totalQuestionsCount} Questions in this session`;
+      }
+    }
+    if (data.quizTitle) {
+      updateQuizTitle(data.quizTitle);
+    }
+  }
+});
+
+socket.on('quiz_info_updated', (data) => {
+  if (data) {
+    if (data.totalQuestions) {
+      totalQuestionsCount = data.totalQuestions;
+      if (lobbyTotalQuestions) {
+        lobbyTotalQuestions.innerText = `${totalQuestionsCount} Questions in this session`;
+      }
+    }
+    if (data.quizTitle) {
+      updateQuizTitle(data.quizTitle);
+    }
+  }
+});
+
+// Reconnect success handler
+socket.on('reconnect_success', (data) => {
+  myPlayer.name = data.name;
+  myPlayer.nim = data.nim;
+  myPlayer.score = data.score || 0;
+
+  playerDisplayName.innerText = myPlayer.name;
+  playerScore.innerText = myPlayer.score.toLocaleString();
+  document.getElementById('lobby-player-name').innerText = myPlayer.name;
+  document.getElementById('lobby-player-nim').innerText = myPlayer.nim;
+  quizHeader.style.display = 'flex';
+
+  if (data.currentQuestion) {
+    renderProgressTracker(data.currentQuestion.index, data.currentQuestion.total);
+  }
+
+  if (data.status === 'LOBBY') {
+    switchScreen('lobby');
+  } else if (data.status === 'QUESTION_ACTIVE') {
+    if (data.hasAnswered) {
+      switchScreen('submitted');
+    } else if (data.currentQuestion) {
+      renderQuestion(data.currentQuestion);
+    }
+  } else if (data.status === 'QUESTION_RESULT') {
+    switchScreen('submitted');
+  } else if (data.status === 'LEADERBOARD') {
+    document.getElementById('lb-player-score').innerText = myPlayer.score.toLocaleString();
+    switchScreen('leaderboard');
+  } else if (data.status === 'GAME_OVER') {
+    switchScreen('gameover');
+  }
+});
+
+socket.on('reconnect_failed', () => {
+  localStorage.removeItem(STORAGE_KEY);
+});
+
+// Handle player kicked by host
+socket.on('player_kicked', (data) => {
+  localStorage.removeItem(STORAGE_KEY);
+  myPlayer.score = 0;
+  quizHeader.style.display = 'none';
+
+  if (kickedBanner) {
+    kickedBanner.innerText = data.message || 'You were removed from the session by the host.';
+    kickedBanner.style.display = 'block';
+  }
+  switchScreen('join');
+});
+
+// Join form submit
+joinForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  joinError.style.display = 'none';
+  if (kickedBanner) kickedBanner.style.display = 'none';
+
+  const name = inputName.value.trim();
+  const nim = inputNim.value.trim();
+
+  if (!name || !nim) {
+    joinError.innerText = 'Please enter both Name and NIM.';
+    joinError.style.display = 'block';
+    return;
+  }
+
+  if (window.soundFX) window.soundFX.init();
+
+  socket.emit('player_join', { name, nim });
+});
+
+// Socket Events
+socket.on('join_error', (data) => {
+  joinError.innerText = data.message || 'Could not join session.';
+  joinError.style.display = 'block';
+});
+
+socket.on('join_success', (data) => {
+  myPlayer.name = data.name;
+  myPlayer.nim = data.nim;
+  myPlayer.sessionToken = data.sessionToken;
+
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({
+    name: data.name,
+    nim: data.nim,
+    sessionToken: data.sessionToken
+  }));
+
+  playerDisplayName.innerText = myPlayer.name;
+  playerScore.innerText = '0';
+  document.getElementById('lobby-player-name').innerText = myPlayer.name;
+  document.getElementById('lobby-player-nim').innerText = myPlayer.nim;
+
+  quizHeader.style.display = 'flex';
+  switchScreen('lobby');
+});
+
+socket.on('start_countdown', (data) => {
+  switchScreen('countdown');
+  const cdVal = document.getElementById('countdown-val');
+  if (cdVal) cdVal.innerText = data.count;
+  if (window.soundFX) window.soundFX.playTick();
+});
+
+function renderQuestion(q) {
+  currentQuestion = q;
+  currentMaxTime = q.timeLimit || 25;
+
+  renderProgressTracker(q.index, q.total);
+
+  document.getElementById('question-number').innerText = `Question ${q.index + 1} of ${q.total}`;
+  document.getElementById('question-text').innerText = q.question;
+  document.getElementById('time-text').innerText = `${currentMaxTime}s`;
+
+  // Timer Bar reset
+  const timerBar = document.getElementById('timer-bar');
+  if (timerBar) {
+    timerBar.style.width = '100%';
+    timerBar.style.transition = 'none';
+    setTimeout(() => {
+      timerBar.style.transition = 'width 1s linear';
+    }, 50);
+  }
+
+  // Java Code Snippet with Prism Highlighting
+  const codePre = document.getElementById('question-code-pre');
+  const codeEl = document.getElementById('question-code');
+  if (q.code) {
+    codeEl.textContent = q.code;
+    codePre.style.display = 'block';
+    if (window.Prism) Prism.highlightElement(codeEl);
+  } else {
+    codePre.style.display = 'none';
+  }
+
+  const optionsContainer = document.getElementById('options-container');
+  const fillInContainer = document.getElementById('fill-in-container');
+  const fillInInput = document.getElementById('fill-in-input');
+  fillInInput.value = '';
+
+  optionsContainer.innerHTML = '';
+
+  if (q.type === 'multiple_choice' || q.type === 'true_false') {
+    fillInContainer.style.display = 'none';
+    optionsContainer.style.display = 'grid';
+
+    if (q.type === 'true_false') {
+      optionsContainer.className = 'answers-grid two-cols';
+    } else {
+      optionsContainer.className = 'answers-grid';
+    }
+
+    // Anti-Cheating: Shuffle Options per device
+    let itemsToRender = (q.options || []).map((opt, origIdx) => ({
+      text: opt,
+      originalIndex: origIdx
+    }));
+
+    if (q.shuffle && q.type === 'multiple_choice') {
+      for (let i = itemsToRender.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [itemsToRender[i], itemsToRender[j]] = [itemsToRender[j], itemsToRender[i]];
+      }
+    }
+
+    const colorClasses = ['btn-red', 'btn-blue', 'btn-yellow', 'btn-green'];
+    const shapes = ['▲', '◆', '●', '■'];
+
+    itemsToRender.forEach((item, posIdx) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = `answer-btn ${colorClasses[posIdx % colorClasses.length]}`;
+      btn.innerHTML = `<span class="shape-icon">${shapes[posIdx % shapes.length]}</span><span>${item.text}</span>`;
+      btn.addEventListener('click', () => {
+        submitAnswer(item.originalIndex);
+      });
+      optionsContainer.appendChild(btn);
+    });
+  } else if (q.type === 'fill_in') {
+    optionsContainer.style.display = 'none';
+    fillInContainer.style.display = 'flex';
+    setTimeout(() => fillInInput.focus(), 150);
+  }
+
+  switchScreen('question');
+}
+
+socket.on('new_question', (q) => {
+  renderQuestion(q);
+});
+
+// Timer tick
+socket.on('timer_tick', (data) => {
+  const timeText = document.getElementById('time-text');
+  if (timeText) timeText.innerText = `${data.timeLeft}s`;
+
+  const timerBar = document.getElementById('timer-bar');
+  if (timerBar && currentMaxTime > 0) {
+    const percent = Math.max(0, (data.timeLeft / currentMaxTime) * 100);
+    timerBar.style.width = `${percent}%`;
+  }
+
+  if (window.soundFX) {
+    if (data.timeLeft <= 5 && data.timeLeft > 0) {
+      window.soundFX.playUrgentTick();
+    } else if (data.timeLeft > 0 && data.timeLeft % 5 === 0) {
+      window.soundFX.playTick();
+    }
+  }
+});
+
+// Submit answer helper
+function submitAnswer(ans) {
+  socket.emit('submit_answer', { answer: ans });
+  switchScreen('submitted');
+}
+
+// Fill-in submit listener
+document.getElementById('btn-submit-fill').addEventListener('click', () => {
+  const val = document.getElementById('fill-in-input').value.trim();
+  submitAnswer(val);
+});
+
+document.getElementById('fill-in-input').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    const val = document.getElementById('fill-in-input').value.trim();
+    submitAnswer(val);
+  }
+});
+
+// Individual question result
+socket.on('player_question_result', (data) => {
+  myPlayer.score = data.totalScore;
+  playerScore.innerText = myPlayer.score.toLocaleString();
+
+  if (currentQuestion) {
+    answersStatusMap[currentQuestion.index] = data.isCorrect;
+    renderProgressTracker(currentQuestion.index, currentQuestion.total);
+  }
+
+  const resultCard = document.getElementById('result-card');
+  const resultTitle = document.getElementById('result-title');
+  const resultPoints = document.getElementById('result-points');
+  const resultStreak = document.getElementById('result-streak');
+  const resultRank = document.getElementById('result-rank');
+  const resultCorrectAns = document.getElementById('result-correct-answer');
+  const resultExplanation = document.getElementById('result-explanation');
+
+  if (data.isCorrect) {
+    resultCard.className = 'result-card correct';
+    resultTitle.innerText = 'CORRECT! 🎉';
+    resultPoints.innerText = `+${data.pointsEarned.toLocaleString()} pts`;
+    if (window.soundFX) window.soundFX.playCorrect();
+  } else {
+    resultCard.className = 'result-card incorrect';
+    resultTitle.innerText = 'INCORRECT! ❌';
+    resultPoints.innerText = '+0 pts';
+    if (window.soundFX) window.soundFX.playIncorrect();
+  }
+
+  resultStreak.innerText = `🔥 ${data.streak}`;
+  resultRank.innerText = `#${data.rank}`;
+  resultCorrectAns.innerText = data.correctAnswer || '-';
+  resultExplanation.innerText = data.explanation || 'No explanation provided.';
+
+  switchScreen('result');
+});
+
+// Show leaderboard
+socket.on('show_leaderboard', () => {
+  document.getElementById('lb-player-score').innerText = myPlayer.score.toLocaleString();
+  switchScreen('leaderboard');
+});
+
+// Final Game Over
+socket.on('game_over', (data) => {
+  const myRankIdx = data.leaderboard.findIndex(p => p.id === socket.id);
+  const rank = myRankIdx >= 0 ? myRankIdx + 1 : '-';
+
+  document.getElementById('final-rank-text').innerText = `Rank #${rank} of ${data.leaderboard.length}`;
+  document.getElementById('final-score-text').innerText = `Final Score: ${myPlayer.score.toLocaleString()} pts`;
+
+  if (window.soundFX) window.soundFX.playFanfare();
+
+  switchScreen('gameover');
+});
+
+// Personal Review List
+socket.on('player_game_over_review', (data) => {
+  const reviewContainer = document.getElementById('player-review-list');
+  if (!reviewContainer) return;
+
+  reviewContainer.innerHTML = '';
+
+  (data.review || []).forEach((item, idx) => {
+    const card = document.createElement('div');
+    card.className = `review-card ${item.isCorrect ? 'correct' : 'incorrect'}`;
+
+    let codeBlock = '';
+    if (item.code) {
+      codeBlock = `<pre class="language-java" style="border-radius: 6px; margin: 8px 0; font-size: 12px;"><code class="language-java">${escapeHtml(item.code)}</code></pre>`;
+    }
+
+    card.innerHTML = `
+      <div class="review-q-num">Question ${idx + 1} • ${item.isCorrect ? '✓ Correct' : '✗ Incorrect'}</div>
+      <div class="review-q-text">${escapeHtml(item.question)}</div>
+      ${codeBlock}
+      <div class="review-ans-row">
+        <div>Your Answer: <strong style="color: ${item.isCorrect ? '#00e676' : '#ff5252'};">${escapeHtml(String(item.submitted))}</strong></div>
+        ${!item.isCorrect ? `<div>Correct Answer: <strong style="color: #00e676;">${escapeHtml(String(item.correctAnswer))}</strong></div>` : ''}
+      </div>
+      ${item.explanation ? `<div class="review-explanation"><strong>Explanation:</strong> ${escapeHtml(item.explanation)}</div>` : ''}
+    `;
+
+    reviewContainer.appendChild(card);
+  });
+
+  if (window.Prism) {
+    Prism.highlightAll();
+  }
+});
+
+function escapeHtml(text) {
+  if (!text) return '';
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+// Reset
+socket.on('quiz_reset', () => {
+  localStorage.removeItem(STORAGE_KEY);
+  myPlayer.score = 0;
+  answersStatusMap = {};
+  if (progressTracker) progressTracker.style.display = 'none';
+  quizHeader.style.display = 'none';
+  if (reactionBar) reactionBar.style.display = 'none';
+  switchScreen('join');
+});

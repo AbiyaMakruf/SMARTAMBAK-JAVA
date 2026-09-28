@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Host / Presenter - Java Live Quiz</title>
+  <link rel="stylesheet" href="/css/host.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+  <!-- Lightweight QR Code library from CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <nav class="host-nav">
+    <div class="logo-group">
+      <div class="logo-badge" id="host-quiz-badge">☕ JAVA QUIZ</div>
+      <div class="pin-badge">
+        <span>Session:</span>
+        <strong id="session-status" style="color: #00e676;">LOBBY</strong>
+      </div>
+      <div id="host-quiz-selector-container" style="display: inline-flex; align-items: center; gap: 6px; margin-left: 8px;">
+        <span style="font-size: 13px; color: var(--text-muted);">Quiz:</span>
+        <select id="select-host-quiz" style="background: #1e2238; color: #fff; border: 1px solid #4a5280; border-radius: 8px; padding: 4px 10px; font-size: 13px; outline: none; cursor: pointer; font-weight: 600;">
+          <option value="java">☕ Java Fundamentals</option>
+          <option value="python">🐍 Python Essentials</option>
+          <option value="mlops">🚀 MLOps & ML Systems</option>
+        </select>
+      </div>
+      <label style="display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-muted); cursor: pointer; margin-left: 8px;">
+        <input type="checkbox" id="check-shuffle-options" checked>
+        <span>🔀 Anti-Cheating</span>
+      </label>
+    </div>
+
+    <div class="nav-actions">
+      <!-- Dynamic contextual controls -->
+      <a href="/manage" target="_blank" class="btn-host btn-secondary" title="Manage Questions">⚙️ Questions</a>
+      <button id="btn-host-sound" class="btn-host btn-secondary" title="Toggle Sound">🔊 Sound</button>
+      <button id="btn-host-action" class="btn-host btn-accent" style="display: none;">Start Quiz</button>
+      <button id="btn-host-skip" class="btn-host btn-secondary" style="display: none;">Skip Timer</button>
+      <button id="btn-export-csv" class="btn-host btn-secondary" style="display: none;">📥 Download CSV</button>
+      <button id="btn-host-reset" class="btn-host btn-danger" style="margin-left: 10px;">Reset</button>
+    </div>
+  </nav>
+
+  <div class="host-container">
+
+    <!-- 1. LOBBY SCREEN -->
+    <section id="host-lobby" class="host-screen active">
+      <div class="lobby-header">
+        <div class="join-info">
+          <div class="join-title">Join by opening on your phone:</div>
+          <div id="display-join-url" class="join-url">http://localhost:4000</div>
+          <div style="font-size: 14px; color: var(--text-muted); margin-top: 4px;">
+            Or scan the QR code below:
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 24px; align-items: center;">
+          <div id="qrcode-box" style="background: white; padding: 10px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);"></div>
+          
+          <div class="player-count-banner">
+            <span>👥</span>
+            <span id="lobby-count">0</span>
+            <span style="font-size: 16px; color: var(--text-muted);">Joined</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <h3 style="font-size: 18px; color: var(--text-muted);">Registered Participants (Name & NIM)</h3>
+        <button id="btn-lobby-start" class="btn-host btn-accent" style="font-size: 18px; padding: 12px 32px;">
+          🚀 Start Game
+        </button>
+      </div>
+
+      <div id="player-grid" class="player-grid">
+        <!-- Player chips rendered here -->
+      </div>
+    </section>
+
+    <!-- 2. COUNTDOWN SCREEN -->
+    <section id="host-countdown" class="host-screen">
+      <div class="countdown-box">
+        <h2 style="font-size: 32px; color: var(--text-muted); margin-bottom: 20px;">Ready, Set...</h2>
+        <div id="host-countdown-val" class="countdown-number">3</div>
+      </div>
+    </section>
+
+    <!-- 3. QUESTION SCREEN -->
+    <section id="host-question" class="host-screen">
+      <div class="question-top-bar">
+        <div id="host-q-indicator" class="q-indicator">Question 1 of 10</div>
+        
+        <div class="timer-circle" id="host-timer-circle">25</div>
+
+        <div class="answer-counter">
+          Answers: <span id="host-answered-count" style="color: #00e676;">0</span> / <span id="host-total-count">0</span>
+        </div>
+      </div>
+
+      <div class="host-question-card">
+        <div id="host-q-text" class="host-q-text">Question text here...</div>
+        <pre id="host-code-pre" class="language-java" style="border-radius: 10px; margin: 14px 0; display: none;"><code id="host-code-snippet" class="language-java"></code></pre>
+      </div>
+
+      <!-- Options Grid -->
+      <div id="host-options-grid" class="host-options-grid">
+        <!-- Option cards rendered here -->
+      </div>
+    </section>
+
+    <!-- 4. QUESTION RESULT & DISTRIBUTION -->
+    <section id="host-result" class="host-screen">
+      <div class="question-top-bar">
+        <div id="result-q-indicator" class="q-indicator">Results: Question 1</div>
+        <div class="answer-counter">
+          Total Answers: <span id="result-total-answered" style="color: #00e676;">0</span>
+        </div>
+      </div>
+
+      <div class="host-question-card">
+        <div id="result-q-text" class="host-q-text">Question text...</div>
+      </div>
+
+      <!-- Options with distribution stats -->
+      <div id="result-options-grid" class="host-options-grid">
+        <!-- Result cards with answer counts -->
+      </div>
+
+      <!-- Explanation -->
+      <div class="explanation-box">
+        <strong style="color: #60a5fa;">💡 Explanation:</strong>
+        <p id="result-explanation-text" style="margin-top: 6px;">Explanation goes here</p>
+      </div>
+    </section>
+
+    <!-- 5. LEADERBOARD SCREEN -->
+    <section id="host-leaderboard" class="host-screen">
+      <h2 style="text-align: center; margin-bottom: 24px; font-size: 28px;">🏆 Top Performers</h2>
+      <div id="host-leader-list" class="leaderboard-list">
+        <!-- Top 5 players -->
+      </div>
+    </section>
+
+    <!-- 6. GAME OVER & DETAILED MATRIX -->
+    <section id="host-gameover" class="host-screen">
+      <h1 style="text-align: center; font-size: 36px; margin-bottom: 10px;">🎉 Quiz Finished! 🎉</h1>
+      <p style="text-align: center; color: var(--text-muted); margin-bottom: 30px;">Here are the champions and full participant report</p>
+
+      <!-- Podium Top 3 -->
+      <div id="podium-container" class="podium-container">
+        <!-- Dynamic steps for 1st, 2nd, 3rd -->
+      </div>
+
+      <!-- Classroom Insights Dashboard -->
+      <div id="insights-container" class="insights-grid" style="display: none;">
+        <!-- Injected dynamically -->
+      </div>
+
+      <!-- Full Answer Summary Matrix Table -->
+      <div class="matrix-section">
+        <div class="matrix-header">
+          <div>
+            <h2 style="font-size: 20px;">Detailed Student Answer Matrix</h2>
+            <p style="font-size: 13px; color: var(--text-muted); margin-top: 2px;">
+              See what each student answered for every single question and their final score
+            </p>
+          </div>
+          <div style="display: flex; gap: 12px; align-items: center;">
+            <input type="text" id="matrix-search" class="search-box" placeholder="Search Name or NIM...">
+            <button id="btn-export-csv-table" class="btn-host btn-accent">
+              📥 Download CSV (Excel)
+            </button>
+          </div>
+        </div>
+
+        <div class="matrix-table-wrapper">
+          <table class="matrix-table">
+            <thead>
+              <tr id="matrix-thead-tr">
+                <th>Rank</th>
+                <th>NIM</th>
+                <th>Full Name</th>
+                <th>Score</th>
+                <th>Correct</th>
+                <!-- Q1..Qn headers inserted dynamically -->
+              </tr>
+            </thead>
+            <tbody id="matrix-tbody">
+              <!-- Student rows inserted dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-java.min.js"></script>
+  <script src="/js/audio.js"></script>
+  <script src="/js/host.js"></script>
+</body>
+</html>

@@ -17,7 +17,8 @@ async function runSimulation() {
     hostSocket.on('connect', () => {
       console.log('✅ Host connected.');
       hostSocket.emit('host_join');
-      resolve();
+      hostSocket.emit('host_reset_quiz');
+      setTimeout(resolve, 200);
     });
   });
 

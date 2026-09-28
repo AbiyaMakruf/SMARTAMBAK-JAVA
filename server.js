@@ -936,6 +936,10 @@ io.on('connection', (socket) => {
     }
   });
 
+  socket.on('host_end_quiz', () => {
+    endGame();
+  });
+
   socket.on('host_skip_question', () => {
     if (gameState.status === 'QUESTION_ACTIVE') {
       broadcastQuestionResult();

@@ -175,12 +175,9 @@ async function runSimulation() {
   });
 
   // Advance to end
-  hostSocket.emit('host_next_question');
   setTimeout(() => {
-    for (let i = 0; i < 10; i++) {
-      hostSocket.emit('host_next_question');
-    }
-  }, 500);
+    hostSocket.emit('host_end_quiz');
+  }, 200);
 
   await gameOverPromise;
 

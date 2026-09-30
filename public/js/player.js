@@ -376,8 +376,38 @@ socket.on('reconnect_success', (data) => {
 });
 
 socket.on('reconnect_failed', () => {
-  localStorage.removeItem(STORAGE_KEY);
+  // Session expired or not found, but prefill inputs so student does not have to retype
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (parsed.name && inputName) inputName.value = parsed.name;
+      if (parsed.nim && inputNim) inputNim.value = parsed.nim;
+    }
+  } catch (e) {}
 });
+
+function showLateJoinBanner(missedCount, totalQuestions) {
+  const toast = document.createElement('div');
+  toast.className = 'tab-switch-toast';
+  toast.style.display = 'block';
+  toast.style.background = '#ff9800';
+  toast.style.color = '#1a1a1a';
+  toast.style.fontWeight = 'bold';
+  toast.style.padding = '12px 18px';
+  toast.style.borderRadius = '10px';
+  toast.style.position = 'fixed';
+  toast.style.top = '70px';
+  toast.style.left = '50%';
+  toast.style.transform = 'translateX(-50%)';
+  toast.style.zIndex = '999999';
+  toast.style.boxShadow = '0 6px 20px rgba(0,0,0,0.4)';
+  toast.innerHTML = `⚠️ Anda bergabung di tengah kuis (${missedCount} soal sebelumnya terlewat & dinilai 0 pts). Silakan kerjakan soal aktif!`;
+  document.body.appendChild(toast);
+  setTimeout(() => {
+    if (toast && toast.parentNode) toast.parentNode.removeChild(toast);
+  }, 6000);
+}
 
 // Handle player kicked by host
 socket.on('player_kicked', (data) => {
@@ -422,6 +452,7 @@ socket.on('join_success', (data) => {
   myPlayer.name = data.name;
   myPlayer.nim = data.nim;
   myPlayer.sessionToken = data.sessionToken;
+  myPlayer.score = data.score || 0;
 
   localStorage.setItem(STORAGE_KEY, JSON.stringify({
     name: data.name,
@@ -430,14 +461,37 @@ socket.on('join_success', (data) => {
   }));
 
   playerDisplayName.innerText = myPlayer.name;
-  playerScore.innerText = '0';
+  playerScore.innerText = myPlayer.score.toLocaleString();
   document.getElementById('lobby-player-name').innerText = myPlayer.name;
   document.getElementById('lobby-player-nim').innerText = myPlayer.nim;
 
   setupStudentWatermark(myPlayer.name, myPlayer.nim);
-
   quizHeader.style.display = 'flex';
-  switchScreen('lobby');
+
+  if (data.status === 'LOBBY') {
+    switchScreen('lobby');
+  } else if (data.status === 'QUESTION_ACTIVE') {
+    if (data.hasAnswered) {
+      switchScreen('submitted');
+    } else if (data.currentQuestion) {
+      renderQuestion(data.currentQuestion);
+    } else {
+      switchScreen('submitted');
+    }
+  } else if (data.status === 'QUESTION_RESULT') {
+    switchScreen('submitted');
+  } else if (data.status === 'LEADERBOARD') {
+    document.getElementById('lb-player-score').innerText = myPlayer.score.toLocaleString();
+    switchScreen('leaderboard');
+  } else if (data.status === 'GAME_OVER') {
+    switchScreen('gameover');
+  } else {
+    switchScreen('lobby');
+  }
+
+  if (data.isLateJoiner && data.missedCount > 0) {
+    showLateJoinBanner(data.missedCount, data.totalQuestions);
+  }
 });
 
 socket.on('start_countdown', (data) => {
@@ -521,6 +575,56 @@ function renderQuestion(q) {
       });
       optionsContainer.appendChild(btn);
     });
+  } else if (q.type === 'multi_select') {
+    fillInContainer.style.display = 'none';
+    optionsContainer.style.display = 'grid';
+    optionsContainer.className = 'answers-grid';
+
+    const selectedIndices = new Set();
+    const colorClasses = ['btn-red', 'btn-blue', 'btn-yellow', 'btn-green'];
+    const shapes = ['▲', '◆', '●', '■'];
+
+    let itemsToRender = (q.options || []).map((opt, origIdx) => ({
+      text: opt,
+      originalIndex: origIdx
+    }));
+
+    itemsToRender.forEach((item, posIdx) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = `answer-btn multi-select-btn ${colorClasses[posIdx % colorClasses.length]}`;
+      btn.innerHTML = `<span class="shape-icon">${shapes[posIdx % shapes.length]}</span><span style="flex: 1; text-align: left; margin: 0 10px;">${item.text}</span><span class="chk-box">☐</span>`;
+      btn.addEventListener('click', () => {
+        if (selectedIndices.has(item.originalIndex)) {
+          selectedIndices.delete(item.originalIndex);
+          btn.classList.remove('selected');
+          btn.querySelector('.chk-box').innerText = '☐';
+        } else {
+          selectedIndices.add(item.originalIndex);
+          btn.classList.add('selected');
+          btn.querySelector('.chk-box').innerText = '☑';
+        }
+        submitMultiBtn.innerText = `Kirim Jawaban (${selectedIndices.size} dipilih)`;
+        submitMultiBtn.disabled = selectedIndices.size === 0;
+      });
+      optionsContainer.appendChild(btn);
+    });
+
+    const submitMultiBtn = document.createElement('button');
+    submitMultiBtn.type = 'button';
+    submitMultiBtn.className = 'multi-submit-btn';
+    submitMultiBtn.innerText = 'Pilih jawaban di atas...';
+    submitMultiBtn.disabled = true;
+    submitMultiBtn.style.gridColumn = '1 / -1';
+    submitMultiBtn.style.margin = '10px 0';
+    submitMultiBtn.style.padding = '14px';
+    submitMultiBtn.style.fontSize = '16px';
+    submitMultiBtn.addEventListener('click', () => {
+      if (selectedIndices.size > 0) {
+        submitAnswer(Array.from(selectedIndices).sort((a, b) => a - b));
+      }
+    });
+    optionsContainer.appendChild(submitMultiBtn);
   } else if (q.type === 'fill_in') {
     optionsContainer.style.display = 'none';
     fillInContainer.style.display = 'flex';
@@ -620,11 +724,13 @@ socket.on('show_leaderboard', () => {
 
 // Final Game Over
 socket.on('game_over', (data) => {
-  const myRankIdx = data.leaderboard.findIndex(p => p.id === socket.id);
+  const myRecord = (data.leaderboard || []).find(p => p.id === socket.id || p.nim === myPlayer.nim);
+  const myRankIdx = (data.leaderboard || []).findIndex(p => p.id === socket.id || p.nim === myPlayer.nim);
   const rank = myRankIdx >= 0 ? myRankIdx + 1 : '-';
+  const finalScore = myRecord ? myRecord.score : myPlayer.score;
 
   document.getElementById('final-rank-text').innerText = `Rank #${rank} of ${data.leaderboard.length}`;
-  document.getElementById('final-score-text').innerText = `Final Score: ${myPlayer.score.toLocaleString()} pts`;
+  document.getElementById('final-score-text').innerText = `Final Score: ${finalScore.toLocaleString()} pts`;
 
   if (window.soundFX) window.soundFX.playFanfare();
 

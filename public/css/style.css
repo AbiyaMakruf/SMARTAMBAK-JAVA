@@ -699,4 +699,45 @@ body, .screen, .question-card, .answers-grid, pre, code, .review-card {
   40%, 80% { transform: translateX(calc(-50% + 6px)); }
 }
 
+/* 5. Multi-Select Styles */
+.multi-select-btn {
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px !important;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.multi-select-btn.selected {
+  outline: 4px solid #fff;
+  filter: brightness(1.2);
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.45);
+  transform: scale(0.98);
+}
+
+.multi-select-btn .chk-box {
+  font-size: 20px;
+  font-weight: 900;
+  margin-left: 8px;
+}
+
+.multi-submit-btn {
+  width: 100%;
+  font-weight: 800;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #00e676, #00b0ff);
+  color: #0f101d;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 230, 118, 0.4);
+  border: none;
+}
+
+.multi-submit-btn:disabled {
+  background: #333854;
+  color: #777d9c;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
 

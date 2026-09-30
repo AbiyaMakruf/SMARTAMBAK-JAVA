@@ -331,6 +331,20 @@ socket.on('question_result', (data) => {
       `;
       resultGrid.appendChild(card);
     });
+  } else if (q.type === 'multi_select') {
+    (q.options || []).forEach((opt, idx) => {
+      const isCorrect = (q.correctAnswers || []).includes(idx);
+      const count = data.distribution[idx] || 0;
+
+      const card = document.createElement('div');
+      card.className = `host-opt-card opt-${idx % 4} ${isCorrect ? 'is-correct' : 'dimmed'}`;
+      card.innerHTML = `
+        <span style="font-size: 26px;">${shapes[idx % 4]}</span>
+        <span>${opt} ${isCorrect ? '✓ [Key]' : ''}</span>
+        <span class="opt-stat-badge">${count} selected</span>
+      `;
+      resultGrid.appendChild(card);
+    });
   } else if (q.type === 'fill_in') {
     const cardCorrect = document.createElement('div');
     cardCorrect.className = 'host-opt-card opt-3 is-correct';
@@ -709,6 +723,39 @@ socket.on('host_player_alert', (data) => {
       alertToast.parentNode.removeChild(alertToast);
     }
   }, 4500);
+});
+
+// Live Late Joiner alert to Host
+socket.on('host_late_joiner_alert', (data) => {
+  const alertToast = document.createElement('div');
+  alertToast.style.cssText = `
+    position: fixed;
+    top: 120px;
+    right: 20px;
+    background: #ff9800;
+    color: #1a1a1a;
+    padding: 12px 18px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 800;
+    z-index: 999999;
+    box-shadow: 0 6px 25px rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 2px solid #fff;
+    animation: popBadge 0.4s ease-out;
+  `;
+  alertToast.innerHTML = `⏳ <span><strong>${data.name}</strong> (${data.nim}) join di tengah sesi pada Soal ${data.joinedAtQuestion}/${data.totalQuestions} (${data.missedCount} soal terlewat, 0 pts)</span>`;
+  document.body.appendChild(alertToast);
+
+  if (window.soundFX) window.soundFX.playTick();
+
+  setTimeout(() => {
+    if (alertToast && alertToast.parentNode) {
+      alertToast.parentNode.removeChild(alertToast);
+    }
+  }, 6000);
 });
 
 // Search Filter

@@ -13,6 +13,11 @@ async function runSimulation() {
 
   // 1. Connect Host
   const hostSocket = io(SERVER_URL);
+  let activeQuizId = 'java';
+  hostSocket.on('host_synced', (data) => {
+    if (data && data.quizId) activeQuizId = data.quizId;
+  });
+
   await new Promise((resolve) => {
     hostSocket.on('connect', () => {
       console.log('✅ Host connected.');
@@ -158,10 +163,69 @@ async function runSimulation() {
       });
     });
 
-    hostSocket.on('question_result', (data) => {
+    // 6b. Test Mid-Game Joiner (Late student joins during active question)
+    let lateJoinAlertReceived = false;
+    hostSocket.on('host_late_joiner_alert', (data) => {
+      if (data.nim === '21010099') lateJoinAlertReceived = true;
+    });
+
+    const lateSocket = io(SERVER_URL);
+    let latePlayerJoined = false;
+    let latePlayerScore = 0;
+
+    const submitLateAnswer = () => {
+      let correctAns = 1;
+      try {
+        const quizData = JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'quiz_sets', `${activeQuizId}.json`), 'utf8'));
+        const q1 = quizData.questions[0];
+        correctAns = q1.correctAnswer !== undefined ? q1.correctAnswer : (q1.correctAnswers ? q1.correctAnswers[0] : 1);
+      } catch (e) {
+        console.error('Failed to read quiz for correct answer:', e);
+      }
+      lateSocket.emit('submit_answer', { answer: correctAns });
+    };
+
+    lateSocket.on('connect', () => {
+      lateSocket.emit('player_join', { name: 'Late Student', nim: '21010099' });
+    });
+
+    lateSocket.on('join_success', (data) => {
+      latePlayerJoined = true;
+      console.log(`✅ Late Student joined mid-game! Status: ${data.status}, isLateJoiner: ${data.isLateJoiner}, missed: ${data.missedCount}`);
+      if (data.status === 'QUESTION_ACTIVE') {
+        submitLateAnswer();
+      }
+    });
+
+    lateSocket.on('new_question', () => {
+      submitLateAnswer();
+    });
+
+    const lateResultPromise = new Promise((res) => {
+      lateSocket.on('player_question_result', (data) => {
+        latePlayerScore = data.totalScore;
+        console.log(`✅ Late Student received points on active question: +${data.pointsEarned} pts (Total: ${data.totalScore} pts)`);
+        res();
+      });
+    });
+
+    hostSocket.on('question_result', async (data) => {
       console.log(`✅ Host received question_result for Question ${data.question.id}:`);
       console.log(`   Total answered: ${data.totalAnswered} / ${data.totalPlayers}`);
       console.log(`   Distribution:`, data.distribution);
+
+      await lateResultPromise;
+
+      if (lateJoinAlertReceived) {
+        console.log(`✅ Host successfully received host_late_joiner_alert for Late Student!`);
+      } else {
+        throw new Error('Host failed to receive host_late_joiner_alert!');
+      }
+
+      if (!latePlayerJoined || latePlayerScore <= 0) {
+        throw new Error(`Late student score bug detected! Score was: ${latePlayerScore}`);
+      }
+      console.log(`✅ Bug Fix Verified: Mid-game joiner successfully accumulated ${latePlayerScore} pts (NOT 0 pts)!`);
       resolve();
     });
   });
@@ -246,8 +310,8 @@ async function runSimulation() {
   console.log(`✅ CSV Header: ${lines[0].substring(0, 80)}...`);
   console.log(`✅ CSV Total Data Rows: ${lines.length - 1}`);
 
-  if (lines.length - 1 === NUM_PLAYERS) {
-    console.log(`\n🎉 ALL TESTS (1, 3, 4, 5, 6) PASSED WITH FLYING COLORS!`);
+  if (lines.length - 1 >= NUM_PLAYERS) {
+    console.log(`\n🎉 ALL TESTS (1, 3, 4, 5, 6, Late Joiner & Bug Fixes) PASSED WITH FLYING COLORS!`);
   }
 
   // Cleanup

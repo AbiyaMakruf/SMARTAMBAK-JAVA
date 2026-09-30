@@ -139,10 +139,18 @@ The game flows sequentially controlled by the Host:
 5. **Anti-Cheating Option Shuffling:**
    Option ordering is randomized locally on each mobile device using Fisher-Yates shuffle while preserving original index mapping for submission. Host screen displays canonical options.
 6. **Session Persistence & Auto-Reconnect:**
-   `localStorage` stores `sessionToken` + `nim`. If a participant reloads or their mobile screen locks, they resume instantly without losing score or streak.
-7. **Crash Protection via Atomic File Writing:**
+   `localStorage` caches `name`, `nim`, and `sessionToken`. If a participant reloads, their device locks, or their connection drops:
+   - They resume instantly without having to re-insert Name or NIM.
+   - Server preserves their full score, answers, and streak seamlessly via `player_reconnect` or duplicate NIM `player_join`.
+7. **Mid-Game Joining (Late Joiners) & 0 Pts Bug Fix:**
+   - Students who join mid-quiz are allowed in; all previously finished questions are initialized as missed (`0 pts`).
+   - Late joiners actively receive the current and subsequent questions and their points accumulate properly (fixing the prior bug where late joiners ended with 0 pts overall).
+   - Host receives a live banner notification (`host_late_joiner_alert`) indicating the student name, NIM, and number of missed questions.
+8. **Interactive Modes (MCQ, True/False, Fill-in-Blank, Multi-Select):**
+   - Supports `multi_select` where participants can check multiple boxes and submit together. Server grades with full/partial evaluation and host screen shows detailed multi-option distributions.
+9. **Crash Protection via Atomic File Writing:**
    Session state is dumped atomically to `data/session_backup.json.tmp` and renamed to `session_backup.json` to prevent Windows file-lock race conditions.
-8. **Pure Web Audio API:**
+10. **Pure Web Audio API:**
    No external audio files to download. Synthesizes ticks, chimes, buzzers, and fanfare using Web Audio oscillators and gain envelopes.
 
 ---
@@ -161,12 +169,13 @@ The test checks:
 2. Troll player kick from lobby
 3. 40 concurrent players joining with unique NIM
 4. Emoji reaction broadcast
-5. Disconnect and session recovery
-6. Question 1 full answer round with score calculation
-7. Game over transition and Classroom Insights calculation
-8. Visual question editor API (`/api/questions`)
-9. Multi-quiz sets API (`/api/quiz-sets`)
-10. CSV export formatting (`/api/export-csv`)
+5. Disconnect and session recovery (mobile disconnect & auto-reconnect)
+6. Mid-game joiner handling, host alert, and score accumulation (0 pts bug check)
+7. Question 1 full answer round with score calculation
+8. Game over transition and Classroom Insights calculation
+9. Visual question editor API (`/api/questions`)
+10. Multi-quiz sets API (`/api/quiz-sets`)
+11. CSV export formatting (`/api/export-csv`)
 
 ---
 

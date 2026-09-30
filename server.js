@@ -388,12 +388,20 @@ function checkAnswerCorrectness(question, submittedAnswer) {
     return question.correctAnswers.some(ans => ans.trim().toLowerCase() === cleanSub);
   }
 
+  if (question.type === 'multi_select') {
+    if (!Array.isArray(submittedAnswer) || submittedAnswer.length === 0) return false;
+    const expected = (question.correctAnswers || []).map(Number).sort((a, b) => a - b);
+    const actual = submittedAnswer.map(Number).sort((a, b) => a - b);
+    if (expected.length !== actual.length) return false;
+    return expected.every((val, idx) => val === actual[idx]);
+  }
+
   return false;
 }
 
 function getAnswerDistribution(question) {
   const dist = {};
-  if (question.type === 'multiple_choice') {
+  if (question.type === 'multiple_choice' || question.type === 'multi_select') {
     question.options.forEach((_, i) => dist[i] = 0);
   } else if (question.type === 'true_false') {
     dist[0] = 0;
@@ -407,6 +415,12 @@ function getAnswerDistribution(question) {
     if (question.type === 'multiple_choice' || question.type === 'true_false') {
       if (dist[ans.submittedAnswer] !== undefined) {
         dist[ans.submittedAnswer]++;
+      }
+    } else if (question.type === 'multi_select') {
+      if (Array.isArray(ans.submittedAnswer)) {
+        ans.submittedAnswer.forEach(choice => {
+          if (dist[choice] !== undefined) dist[choice]++;
+        });
       }
     } else if (question.type === 'fill_in') {
       if (ans.isCorrect) dist.correct++;
@@ -517,13 +531,22 @@ function broadcastQuestionResult() {
     const ans = gameState.currentQuestionAnswers[socketId];
     const rank = leaderboard.findIndex(p => p.id === socketId) + 1;
 
+    let correctText = '';
+    if (currentQ.type === 'fill_in') {
+      correctText = currentQ.correctAnswers ? currentQ.correctAnswers[0] : '';
+    } else if (currentQ.type === 'multi_select') {
+      correctText = (currentQ.correctAnswers || []).map(i => currentQ.options[i]).join(', ');
+    } else {
+      correctText = currentQ.options[currentQ.correctAnswer];
+    }
+
     io.to(socketId).emit('player_question_result', {
       isCorrect: ans ? ans.isCorrect : false,
       pointsEarned: ans ? ans.pointsEarned : 0,
       totalScore: player.score,
       streak: player.streak,
       rank: rank,
-      correctAnswer: currentQ.type === 'fill_in' ? currentQ.correctAnswers[0] : currentQ.options[currentQ.correctAnswer],
+      correctAnswer: correctText,
       explanation: currentQ.explanation
     });
   });
@@ -627,6 +650,8 @@ function endGame() {
       let correctDisplay = '';
       if (q.type === 'multiple_choice' || q.type === 'true_false') {
         correctDisplay = q.options[q.correctAnswer];
+      } else if (q.type === 'multi_select') {
+        correctDisplay = (q.correctAnswers || []).map(i => q.options[i]).join(', ');
       } else {
         correctDisplay = q.correctAnswers.join(', ');
       }
@@ -635,6 +660,12 @@ function endGame() {
       if (ansRecord && ansRecord.submittedAnswer !== null && ansRecord.submittedAnswer !== undefined) {
         if (q.type === 'multiple_choice' || q.type === 'true_false') {
           submittedDisplay = q.options[ansRecord.submittedAnswer] || ansRecord.submittedAnswer;
+        } else if (q.type === 'multi_select') {
+          if (Array.isArray(ansRecord.submittedAnswer)) {
+            submittedDisplay = ansRecord.submittedAnswer.map(i => q.options[i] || i).join(', ');
+          } else {
+            submittedDisplay = String(ansRecord.submittedAnswer);
+          }
         } else {
           submittedDisplay = ansRecord.submittedAnswer;
         }
@@ -755,14 +786,21 @@ io.on('connection', (socket) => {
   // Player session reconnect
   socket.on('player_reconnect', (data) => {
     const { nim, sessionToken } = data || {};
-    if (!nim || !sessionToken) {
-      return socket.emit('reconnect_failed', { message: 'Invalid session' });
+    if (!nim) {
+      return socket.emit('reconnect_failed', { message: 'NIM is required' });
     }
 
-    const existingSocketId = Object.keys(gameState.players).find(sid => {
+    let existingSocketId = Object.keys(gameState.players).find(sid => {
       const p = gameState.players[sid];
-      return p.nim.toLowerCase() === nim.toLowerCase() && p.sessionToken === sessionToken;
+      return p.nim.toLowerCase() === nim.toLowerCase() && sessionToken && p.sessionToken === sessionToken;
     });
+
+    if (!existingSocketId) {
+      existingSocketId = Object.keys(gameState.players).find(sid => {
+        const p = gameState.players[sid];
+        return p.nim.toLowerCase() === nim.toLowerCase();
+      });
+    }
 
     if (!existingSocketId) {
       return socket.emit('reconnect_failed', { message: 'Session expired or not found' });
@@ -785,6 +823,7 @@ io.on('connection', (socket) => {
 
     socket.emit('reconnect_success', {
       id: socket.id,
+      sessionToken: player.sessionToken,
       name: player.name,
       nim: player.nim,
       score: player.score,
@@ -809,7 +848,7 @@ io.on('connection', (socket) => {
     saveSessionBackup();
   });
 
-  // Player joins lobby
+  // Player joins lobby or mid-game session
   socket.on('player_join', (data) => {
     const name = (data.name || '').trim();
     const nim = (data.nim || '').trim();
@@ -818,18 +857,64 @@ io.on('connection', (socket) => {
       return socket.emit('join_error', { message: 'Name and NIM are required!' });
     }
 
-    if (gameState.status !== 'LOBBY') {
-      return socket.emit('join_error', { message: 'Quiz has already started!' });
+    // Check if this student is already registered (re-joining / reconnecting via form)
+    const existingSocketId = Object.keys(gameState.players).find(sid => {
+      const p = gameState.players[sid];
+      return p.nim.toLowerCase() === nim.toLowerCase();
+    });
+
+    if (existingSocketId) {
+      // Seamlessly reconnect existing student! Keep their score, streak, answers!
+      const player = gameState.players[existingSocketId];
+      delete gameState.players[existingSocketId];
+      player.id = socket.id;
+      player.name = name || player.name;
+      gameState.players[socket.id] = player;
+
+      if (gameState.currentQuestionAnswers[existingSocketId]) {
+        gameState.currentQuestionAnswers[socket.id] = gameState.currentQuestionAnswers[existingSocketId];
+        delete gameState.currentQuestionAnswers[existingSocketId];
+      }
+
+      saveSessionBackup();
+
+      const currentQ = questions[gameState.currentQuestionIndex];
+      const hasAnswered = !!gameState.currentQuestionAnswers[socket.id];
+      const leaderboard = getLeaderboard();
+      const rank = leaderboard.findIndex(p => p.id === socket.id) + 1;
+
+      socket.emit('join_success', {
+        id: socket.id,
+        sessionToken: player.sessionToken,
+        name: player.name,
+        nim: player.nim,
+        score: player.score,
+        status: gameState.status,
+        currentQuestionIndex: gameState.currentQuestionIndex,
+        totalQuestions: questions.length,
+        currentQuestion: (currentQ && gameState.status === 'QUESTION_ACTIVE') ? {
+          index: gameState.currentQuestionIndex,
+          total: questions.length,
+          id: currentQ.id,
+          type: currentQ.type,
+          question: currentQ.question,
+          code: currentQ.code || null,
+          options: currentQ.options || null,
+          timeLimit: currentQ.timeLimit,
+          shuffle: gameState.shuffleOptions
+        } : null,
+        timeLeft: gameState.timeLeft,
+        hasAnswered: hasAnswered,
+        isRejoin: true
+      });
+      return;
     }
 
-    const existing = Object.values(gameState.players).find(p => p.nim.toLowerCase() === nim.toLowerCase());
-    if (existing && existing.id !== socket.id) {
-      return socket.emit('join_error', { message: `NIM ${nim} is already registered!` });
-    }
-
+    // Brand new student
+    const isLate = (gameState.status !== 'LOBBY');
     const sessionToken = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2);
 
-    gameState.players[socket.id] = {
+    const player = {
       id: socket.id,
       sessionToken: sessionToken,
       name: name,
@@ -837,22 +922,73 @@ io.on('connection', (socket) => {
       score: 0,
       streak: 0,
       tabSwitches: 0,
+      isLateJoiner: isLate,
+      joinedAtQuestionIndex: gameState.currentQuestionIndex,
       answers: {}
     };
+
+    // If joining mid-game, mark all prior questions as missed (0 pts)
+    if (isLate && gameState.currentQuestionIndex >= 0) {
+      for (let i = 0; i < gameState.currentQuestionIndex; i++) {
+        const pastQ = questions[i];
+        if (pastQ) {
+          player.answers[pastQ.id] = {
+            submittedAnswer: null,
+            isCorrect: false,
+            pointsEarned: 0,
+            timeSpent: 0,
+            missed: true
+          };
+        }
+      }
+    }
+
+    gameState.players[socket.id] = player;
+    saveSessionBackup();
+
+    const currentQ = questions[gameState.currentQuestionIndex];
 
     socket.emit('join_success', {
       id: socket.id,
       sessionToken: sessionToken,
       name: name,
-      nim: nim
+      nim: nim,
+      score: 0,
+      status: gameState.status,
+      currentQuestionIndex: gameState.currentQuestionIndex,
+      totalQuestions: questions.length,
+      currentQuestion: (currentQ && gameState.status === 'QUESTION_ACTIVE') ? {
+        index: gameState.currentQuestionIndex,
+        total: questions.length,
+        id: currentQ.id,
+        type: currentQ.type,
+        question: currentQ.question,
+        code: currentQ.code || null,
+        options: currentQ.options || null,
+        timeLimit: currentQ.timeLimit,
+        shuffle: gameState.shuffleOptions
+      } : null,
+      timeLeft: gameState.timeLeft,
+      hasAnswered: false,
+      isLateJoiner: isLate,
+      missedCount: Math.max(0, gameState.currentQuestionIndex)
     });
+
+    // Notify Host if student joined mid-session!
+    if (isLate && gameState.hostSocketId) {
+      io.to(gameState.hostSocketId).emit('host_late_joiner_alert', {
+        name: player.name,
+        nim: player.nim,
+        joinedAtQuestion: gameState.currentQuestionIndex + 1,
+        totalQuestions: questions.length,
+        missedCount: Math.max(0, gameState.currentQuestionIndex)
+      });
+    }
 
     io.emit('player_list_update', {
       count: Object.keys(gameState.players).length,
       players: Object.values(gameState.players).map(p => sanitizePlayer(p))
     });
-
-    saveSessionBackup();
   });
 
   // Anti-cheat: Track when student leaves the tab / browser

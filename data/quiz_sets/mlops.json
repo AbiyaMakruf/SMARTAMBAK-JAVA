@@ -1,143 +1,724 @@
 {
   "id": "mlops",
-  "title": "MLOps & Machine Learning Systems",
+  "title": "Membangun Sistem Machine Learning (MLOps)",
   "language": "python",
-  "description": "MLOps concepts: Model registry, CI/CD, data drift, tracking, containerization, and monitoring.",
+  "description": "Kurikulum resmi MLOps Dicoding (Kelas 713): MLOps Lifecycle, Metadata & Tracking dengan MLflow, Versioning dengan DVC, CI/CD GitHub Actions, Serving FastAPI & Docker, serta Monitoring Drift dengan Evidently.",
   "questions": [
     {
-      "id": 1,
       "type": "multiple_choice",
-      "question": "Which open-source platform is widely used for tracking experiments, packaging code, and sharing models in MLOps?",
-      "code": "import ___ as tracker\ntracker.log_param('learning_rate', 0.01)\ntracker.log_metric('accuracy', 0.95)",
+      "timeLimit": 30,
+      "question": "Berdasarkan laporan industri (seperti Gartner), mengapa disiplin MLOps (Machine Learning Operations) sangat krusial dalam siklus pengembangan AI saat ini?",
+      "code": null,
       "options": [
-        "Kubernetes",
+        "Lebih dari 85% model machine learning gagal mencapai tahap produksi akibat kendala operasional dan integrasi sistem",
+        "Untuk menggantikan peran Data Scientist dengan sistem otomatis sepenuhnya tanpa memerlukan kode",
+        "MLOps membuat model deep learning dapat berjalan di mikrokontroler tanpa daya listrik",
+        "Karena algoritma machine learning tradisional sudah tidak lagi didukung oleh sistem operasi modern"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Laporan industri menunjukkan lebih dari 85% proyek ML hanya berhenti di fase riset/notebook dan tidak pernah berhasil diterapkan di produksi. MLOps hadir untuk menjembatani kesenjangan tersebut melalui otomatisasi, versioning, dan pemantauan sistem secara andal.",
+      "id": 1
+    },
+    {
+      "type": "true_false",
+      "timeLimit": 25,
+      "question": "MLOps merupakan penggabungan dari tiga disiplin ilmu utama, yaitu Machine Learning, DevOps, dan Data Engineering.",
+      "code": "// Konsep: ML + DevOps + Data Engineering = MLOps",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Benar! MLOps mengadaptasi praktik terbaik rekayasa perangkat lunak (DevOps) dan rekayasa data untuk mengelola siklus hidup model Machine Learning yang bersifat probabilistik dan bergantung pada data.",
+      "id": 2
+    },
+    {
+      "type": "multiple_choice",
+      "timeLimit": 30,
+      "question": "Apakah perbedaan paling fundamental antara DevOps tradisional dengan MLOps?",
+      "code": null,
+      "options": [
+        "DevOps hanya mengelola versi Kode (Code), sedangkan MLOps harus mengelola Kode, Data, dan Model biner secara simultan",
+        "DevOps tidak memerlukan testing otomatis, sedangkan MLOps wajib menggunakan unit testing",
+        "DevOps hanya digunakan untuk bahasa Java, sedangkan MLOps khusus untuk bahasa Python",
+        "DevOps berfokus pada hardware fisik, sedangkan MLOps berfokus pada software cloud"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Perbedaan mendasar: Pada software engineering klasik, artifact software dibentuk dari Kode. Namun pada ML, artifact model dibentuk dari kombinasi Kode + Data pelatihan. Perubahan pada data akan mengubah model meskipun kode tidak berubah sama sekali.",
+      "id": 3
+    },
+    {
+      "type": "fill_in",
+      "timeLimit": 30,
+      "question": "Karakteristik unik hutang teknis pada sistem ML di mana perubahan pada satu fitur input dapat secara tak terduga memengaruhi seluruh prediksi sistem dikenal dengan prinsip CACE: 'Changing Anything Changes _____'.",
+      "code": "// Akronim: CACE (Changing Anything Changes _____)",
+      "correctAnswers": [
+        "everything"
+      ],
+      "explanation": "Prinsip CACE (Changing Anything Changes Everything) menggarisbawahi bahwa komponen dalam sistem ML sangat terikat erat secara statistik. Mengubah satu distribusi fitur, hiperparameter, atau pembersihan data dapat mengubah seluruh perilaku model.",
+      "id": 4
+    },
+    {
+      "type": "multi_select",
+      "timeLimit": 35,
+      "question": "Manakah dari prinsip-prinsip berikut yang merupakan pilar utama dalam implementasi MLOps di lingkungan produksi? (Pilih semua yang benar)",
+      "code": null,
+      "options": [
+        "Reproducibility (Keterulangan eksperimen & model)",
+        "Automation (Otomatisasi pipeline data, training, dan deployment)",
+        "Continuous Monitoring (Pemantauan performa dan drift model secara terus menerus)",
+        "Penghapusan seluruh data historis setelah model selesai di-training"
+      ],
+      "correctAnswers": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "Pilar utama MLOps adalah Reproducibility (menjamin hasil dapat direplikasi), Automation (menghilangkan proses manual yang rentan error), dan Continuous Monitoring (mendeteksi degradasi performa di produksi). Menghapus data historis adalah tindakan keliru karena data dibutuhkan untuk retraining dan audit.",
+      "id": 5
+    },
+    {
+      "type": "multiple_choice",
+      "timeLimit": 30,
+      "question": "Pada kerangka kerja MLOps Maturity Level menurut Google, karakteristik utama dari MLOps Level 0 adalah...",
+      "code": null,
+      "options": [
+        "Seluruh tahapan dari persiapan data, pelatihan, hingga deployment model dilakukan secara manual dan script-driven",
+        "Pipeline retraining model berjalan otomatis secara event-driven saat ada data baru",
+        "CI/CD pipeline sudah terotomatisasi penuh menggunakan GitHub Actions dan Kubernetes",
+        "Tidak ada model yang boleh digunakan di produksi sama sekali"
+      ],
+      "correctAnswer": 0,
+      "explanation": "MLOps Level 0 (Manual Process): Setiap langkah (ekstraksi data, analisis, training, evaluasi, dan deployment) dijalankan secara manual oleh engineer melalui notebook atau skrip terpisah tanpa pipeline otomatis.",
+      "id": 6
+    },
+    {
+      "type": "true_false",
+      "timeLimit": 25,
+      "question": "Pada MLOps Maturity Level 1, sistem telah memiliki otomatisasi pada Continuous Training (CT) sehingga pipeline pelatihan model dapat berjalan secara otomatis ketika data baru tersedia.",
+      "code": "// Maturity Level: Level 0 (Manual) -> Level 1 (Continuous Training) -> Level 2 (CI/CD Automated)",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Benar! Pada MLOps Level 1, pipeline training diotomatisasi (Continuous Training) untuk melayani model retraining otomatis tanpa intervensi manual setiap kali ada data baru atau degradasi performa.",
+      "id": 7
+    },
+    {
+      "type": "multiple_choice",
+      "timeLimit": 30,
+      "question": "Apa pencapaian utama yang membedakan MLOps Maturity Level 2 dari Level 1?",
+      "code": null,
+      "options": [
+        "Otomatisasi penuh pada pipeline CI/CD untuk pengujian, perakitan, dan penyebaran pipeline ML itu sendiri ke lingkungan produksi",
+        "Model machine learning tidak lagi memerlukan data validasi sebelum deployment",
+        "Penggunaan kartu grafis (GPU) fisik menggantikan CPU di seluruh server",
+        "Peniadaan proses pemantauan (monitoring) karena model sudah dianggap sempurna"
+      ],
+      "correctAnswer": 0,
+      "explanation": "MLOps Level 2 (CI/CD Pipeline Automation): Tidak hanya model yang di-deploy secara otomatis, tetapi pipeline ML (kode komponen, dependensi, dan pengujian integrasi) dibangun, diuji, dan di-deploy ke production melalui CI/CD yang terotomatisasi penuh.",
+      "id": 8
+    },
+    {
+      "type": "fill_in",
+      "timeLimit": 30,
+      "question": "Berdasarkan paper legendaris Google mengenai 'Hidden Technical Debt in Machine Learning', mayoritas infrastruktur sistem produksi sebenarnya didominasi oleh sistem penunjang (data validation, serving, monitoring), sementara kode algoritma inti hanya mencakup sebagian kecil kotak berlabel ____ code.",
+      "code": "// Google Paper: 'Hidden Technical Debt in Machine Learning Systems'\n// Istilah: ____ Code (kode algoritma model)",
+      "correctAnswers": [
+        "ml",
+        "machine learning"
+      ],
+      "explanation": "Dalam arsitektur sistem ML dunia nyata, kode algoritma ML aktual (ML Code) hanyalah sebagian kecil (sering < 5%) dari keseluruhan ekosistem. Sisanya adalah sistem penunjang seperti data ingestion, verifikasi, konfigurasi, serving, dan monitoring.",
+      "id": 9
+    },
+    {
+      "type": "multiple_choice",
+      "timeLimit": 30,
+      "question": "Di dalam struktur tim teknologi modern, apa tanggung jawab utama seorang MLOps Engineer?",
+      "code": null,
+      "options": [
+        "Membangun infrastruktur, pipeline otomatisasi (CI/CD/CT), dan sistem monitoring agar model ML dapat beroperasi di produksi secara andal dan terukur",
+        "Mendesain antarmuka pengguna (UI/UX) dan animasi pada aplikasi frontend mobile",
+        "Menulis materi promosi pemasaran produk machine learning kepada konsumen ritel",
+        "Menggantikan database administrator dalam mengelola query SQL penjualan harian"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Tanggung jawab utama MLOps Engineer adalah merancang, membangun, dan memelihara pipeline data/ML, otomatisasi CI/CD, deployment kontainer, serta observabilitas sistem ML di lingkungan produksi.",
+      "id": 10
+    },
+    {
+      "type": "multiple_choice",
+      "timeLimit": 30,
+      "question": "Mengapa sistem version control standar seperti Git tidak direkomendasikan untuk menyimpan file dataset berukuran gigabyte atau file model biner (.pkl, .h5, .pt)?",
+      "code": null,
+      "options": [
+        "Git menyimpan riwayat delta secara komplit sehingga ukuran repository akan membengkak drastis dan memperlambat proses cloning",
+        "Git tidak mendukung ekstensi file selain file berbasis teks biasa seperti .py atau .txt",
+        "Karena file biner otomatis terhapus oleh server GitHub setelah 24 jam",
+        "Karena sistem operasi Linux tidak mengizinkan Git membaca file biner"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Git dirancang untuk file teks source code. Setiap kali file biner besar diperbarui, Git menyimpan salinan penuh file tersebut dalam riwayat commit (.git folder), menyebabkan repository membengkak luar biasa dan membuat clone/push menjadi sangat lambat.",
+      "id": 11
+    },
+    {
+      "type": "multiple_choice",
+      "timeLimit": 30,
+      "question": "Tool open-source apa yang bekerja berdampingan dengan Git untuk melacak versi dataset dan model biner besar dengan memanfaatkan file pointer metadata berekstensi .dvc?",
+      "code": null,
+      "options": [
+        "DVC (Data Version Control)",
+        "Docker Compose",
+        "Prometheus",
+        "Nginx"
+      ],
+      "correctAnswer": 0,
+      "explanation": "DVC (Data Version Control) adalah tool open-source yang memisahkan penyimpanan data fisik ke remote storage (S3, GCS, MinIO) dan hanya menyimpan file pointer teks kecil (.dvc) di dalam Git.",
+      "id": 12
+    },
+    {
+      "type": "fill_in",
+      "timeLimit": 30,
+      "question": "Perintah DVC untuk mulai melacak file dataset bernama 'customers.csv' sehingga tercipta file metadata 'customers.csv.dvc' adalah 'dvc ____ customers.csv'.",
+      "code": "// Perintah: dvc ____ customers.csv",
+      "correctAnswers": [
+        "add"
+      ],
+      "explanation": "Perintah 'dvc add customers.csv' memindahkan data fisik ke cache DVC, membuat file teks pointer 'customers.csv.dvc', dan menambahkan 'customers.csv' ke file .gitignore agar tidak ter-push ke Git.",
+      "id": 13
+    },
+    {
+      "type": "true_false",
+      "timeLimit": 25,
+      "question": "File berekstensi .dvc yang dibuat oleh DVC berukuran sangat kecil (hanya berisi hash MD5 dan ukuran file) sehingga aman dan dianjurkan untuk di-commit ke Git repository biasa.",
+      "code": "// File: data.csv.dvc (berisi: md5: 9a8b7c6d...)\n// Apakah aman di-commit ke Git?",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Benar! File .dvc hanyalah metadata teks ringan berukuran beberapa byte yang mencatat hash data unik, sehingga sangat aman dan memang dirancang untuk di-commit ke GitHub.",
+      "id": 14
+    },
+    {
+      "type": "multiple_choice",
+      "timeLimit": 30,
+      "question": "Setelah melakukan 'dvc add' dan mengonfigurasi remote storage, perintah DVC apa yang digunakan untuk mengunggah file data fisik sebenarnya ke remote storage (misal Google Drive, AWS S3, atau MinIO)?",
+      "code": null,
+      "options": [
+        "dvc push",
+        "dvc commit -m 'upload'",
+        "dvc upload --all",
+        "git push --data"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Perintah 'dvc push' menyalin file data atau model dari local cache DVC ke remote storage yang telah dikonfigurasi (misalnya S3 bucket atau Google Cloud Storage).",
+      "id": 15
+    },
+    {
+      "type": "multiple_choice",
+      "timeLimit": 30,
+      "question": "Platform open-source yang dipelajari pada kelas Dicoding untuk melacak eksperimen, memaketkan model, dan mengelola model registry secara terpusat adalah...",
+      "code": null,
+      "options": [
         "MLflow",
-        "Spark",
-        "Airflow"
+        "Kubernetes",
+        "Ansible",
+        "Apache Spark"
       ],
-      "correctAnswer": 1,
-      "timeLimit": 20,
-      "explanation": "MLflow is an open-source platform for managing the end-to-end machine learning lifecycle, including experiment tracking and model registry."
+      "correctAnswer": 0,
+      "explanation": "MLflow adalah platform open-source terkemuka yang dikembangkan untuk mengelola siklus hidup machine learning menyeluruh, mencakup MLflow Tracking, MLflow Models, dan MLflow Model Registry.",
+      "id": 16
     },
     {
-      "id": 2,
+      "type": "multi_select",
+      "timeLimit": 35,
+      "question": "Manakah dari elemen berikut yang merupakan 3 entitas metadata utama yang dicatat pada setiap run di MLflow Tracking? (Pilih semua yang benar)",
+      "code": null,
+      "options": [
+        "Parameters (Hiperparameter konfigurasi training)",
+        "Metrics (Nilai metrik evaluasi seperti akurasi atau loss)",
+        "Artifacts (Output file seperti model biner, gambar plot, konfigurasi)",
+        "Source Code Kernel Linux pengguna"
+      ],
+      "correctAnswers": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "Tiga pilar metadata di MLflow Tracking adalah: Parameters (input konfigurasi), Metrics (output numerik evaluasi performa), dan Artifacts (file keluaran seperti model terkompresi, visualisasi, dan laporan).",
+      "id": 17
+    },
+    {
+      "type": "multiple_choice",
+      "timeLimit": 30,
+      "question": "Fungsi dari pustaka MLflow yang tepat untuk mencatat nilai hiperparameter seperti n_estimators atau learning_rate adalah...",
+      "code": "import mlflow\nmlflow.____('n_estimators', 100)",
+      "options": [
+        "mlflow.log_param()",
+        "mlflow.record_variable()",
+        "mlflow.set_hyperparameter()",
+        "mlflow.save_config()"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Fungsi 'mlflow.log_param(key, value)' digunakan untuk mencatat hiperparameter atau variabel konfigurasi eksperimen ke dalam MLflow Tracking server.",
+      "id": 18
+    },
+    {
+      "type": "multiple_choice",
+      "timeLimit": 30,
+      "question": "Fungsi MLflow apa yang digunakan untuk mencatat metrik evaluasi numerik seperti accuracy, f1_score, atau loss sepanjang iterasi training?",
+      "code": "import mlflow\nmlflow.____('accuracy', 0.945)",
+      "options": [
+        "mlflow.log_metric()",
+        "mlflow.log_score()",
+        "mlflow.track_performance()",
+        "mlflow.save_evaluation()"
+      ],
+      "correctAnswer": 0,
+      "explanation": "'mlflow.log_metric(key, value, step=None)' digunakan untuk mencatat metrik performa numerik ke MLflow. Parameter step opsional dapat merekam perubahan metrik per epoch.",
+      "id": 19
+    },
+    {
       "type": "true_false",
-      "question": "Data Drift refers to changes in the statistical properties of input data over time, while Concept Drift refers to changes in the relationship between input features and target labels.",
-      "code": "// P(X) changes vs P(Y|X) changes",
+      "timeLimit": 25,
+      "question": "Fitur mlflow.autolog() memungkinkan pencatatan parameter, metrik evaluasi, dan model artifact secara otomatis tanpa perlu memanggil log_param atau log_metric satu per satu.",
+      "code": "import mlflow\nmlflow.autolog()\n# Melatih model scikit-learn / tensorflow...",
       "options": [
         "True",
         "False"
       ],
       "correctAnswer": 0,
-      "timeLimit": 25,
-      "explanation": "True! Data drift (covariate shift) is a change in feature distribution P(X). Concept drift is a change in the mapping P(Y|X)."
+      "explanation": "Benar! Fitur autologging pada MLflow (seperti mlflow.sklearn.autolog() atau mlflow.autolog()) secara otomatis meng-intersep proses .fit() library populer untuk mencatat parameter, metrik, dan menyimpan model.",
+      "id": 20
     },
     {
-      "id": 3,
       "type": "fill_in",
-      "question": "What common MLOps component serves as a centralized repository to store, discover, and serve consistent feature values for both training and online inference?",
-      "code": "// Examples: Feast, Hopsworks, Tecton\n// Term: ___ store",
+      "timeLimit": 30,
+      "question": "File biner model (.pkl), visualisasi matriks korelasi, dan kurva ROC yang disimpan pada sistem penyimpanan MLflow digolongkan ke dalam kategori file ____.",
+      "code": "// Kategori output file pada MLflow: ____",
       "correctAnswers": [
-        "feature",
-        "feature store"
+        "artifact",
+        "artifacts"
       ],
-      "timeLimit": 25,
-      "explanation": "A Feature Store provides a unified interface to calculate, store, and serve features to models during training and low-latency inference."
+      "explanation": "Artifact adalah istilah pada MLflow untuk file output non-skalar (seperti model biner, gambar plot, file konfigurasi YAML, atau file CSV sampel) yang disimpan di Artifact Store.",
+      "id": 21
     },
     {
-      "id": 4,
       "type": "multiple_choice",
-      "question": "Which deployment strategy routes a small percentage (e.g. 5%) of live traffic to the new model version before rolling it out to 100% of users?",
+      "timeLimit": 35,
+      "question": "Dalam arsitektur server MLflow mandiri (production), apa perbedaan antara Backend Store dan Artifact Store?",
       "code": null,
       "options": [
-        "Blue/Green Deployment",
-        "Canary Deployment",
-        "Shadow Deployment",
-        "Rolling Update"
+        "Backend store menyimpan metadata runs dan metrik di database relasional (SQL), sedangkan Artifact store menyimpan file model/biner di object storage (S3/GCS/MinIO)",
+        "Backend store menyimpan gambar grafik, sedangkan Artifact store menyimpan password pengguna",
+        "Backend store hanya berjalan di komputer lokal, sedangkan Artifact store berjalan di browser",
+        "Tidak ada perbedaan, keduanya adalah istilah yang sama persis untuk RAM komputer"
       ],
-      "correctAnswer": 1,
-      "timeLimit": 20,
-      "explanation": "Canary deployment exposes a subset of production traffic to the new candidate model to detect bugs and performance degradation safely."
+      "correctAnswer": 0,
+      "explanation": "Arsitektur MLflow memisahkan backend storage (database SQL seperti PostgreSQL/MySQL untuk query cepat parameter dan metrik) dari artifact storage (object storage seperti S3 atau MinIO untuk menyimpan file biner model berukuran besar).",
+      "id": 22
     },
     {
-      "id": 5,
-      "type": "true_false",
-      "question": "In shadow deployment, the new model receives live production queries and serves its predictions directly back to the end user.",
+      "type": "multi_select",
+      "timeLimit": 35,
+      "question": "Pada komponen MLflow Model Registry, manakah status/tahapan (Stages) resmi yang disediakan untuk mengelola siklus hidup model? (Pilih semua yang benar)",
       "code": null,
       "options": [
-        "True",
-        "False"
+        "Staging (Model sedang diuji di lingkungan simulasi/pre-production)",
+        "Production (Model aktif melayani prediksi user secara live)",
+        "Archived (Model versi terdahulu yang dinonaktifkan namun disimpan untuk audit)",
+        "Deprecated (Model yang otomatis dihapus dari memori server dalam 1 jam)"
       ],
-      "correctAnswer": 1,
-      "timeLimit": 20,
-      "explanation": "False! In shadow deployment, the new model processes traffic asynchronously alongside the current model, but its outputs are logged for evaluation and never returned to the user."
-    },
-    {
-      "id": 6,
-      "type": "fill_in",
-      "question": "What is the name of the open-source version control system specifically designed for tracking large datasets and ML models alongside Git?",
-      "code": "// Terminal command example:\n___ add data/dataset.csv\n___ push",
       "correctAnswers": [
-        "dvc",
-        "DVC"
+        0,
+        1,
+        2
       ],
-      "timeLimit": 25,
-      "explanation": "DVC (Data Version Control) tracks large data files and model checkpoints using Git-like workflows connected to cloud storage."
+      "explanation": "MLflow Model Registry secara default memiliki 4 stage: None, Staging, Production, dan Archived. Mengelompokkan versi model ke dalam stage ini mempermudah transisi deployment dari pengujian ke live production.",
+      "id": 23
     },
     {
-      "id": 7,
-      "type": "multiple_choice",
-      "question": "Which technique reduces model precision from 32-bit floating point (FP32) to 8-bit integers (INT8) to accelerate inference latency and reduce RAM usage?",
-      "code": null,
-      "options": [
-        "Pruning",
-        "Distillation",
-        "Quantization",
-        "Embedding"
-      ],
-      "correctAnswer": 2,
-      "timeLimit": 20,
-      "explanation": "Quantization converts high-precision model weights/activations to lower-bit representations (e.g., FP32 to INT8), drastically improving inference throughput."
-    },
-    {
-      "id": 8,
       "type": "true_false",
-      "question": "Model Explainability techniques like SHAP and LIME are post-hoc methods used to interpret black-box model predictions.",
-      "code": "import shap\nexplainer = shap.TreeExplainer(model)\nshap_values = explainer.shap_values(X)",
+      "timeLimit": 25,
+      "question": "Model yang terdaftar pada MLflow Model Registry memiliki nomor versi inkremental (Version 1, Version 2, dst.) sehingga memudahkan tim untuk melakukan rollback ke versi sebelumnya jika terjadi masalah.",
+      "code": null,
       "options": [
         "True",
         "False"
       ],
       "correctAnswer": 0,
-      "timeLimit": 20,
-      "explanation": "True! SHAP (Shapley Additive exPlanations) and LIME provide model-agnostic feature attributions to explain individual predictions."
+      "explanation": "Benar! Setiap kali model baru didaftarkan dengan nama yang sama di Model Registry, MLflow secara otomatis memberikan nomor versi baru dan menjaga riwayat versi sebelumnya untuk keperluan rollback.",
+      "id": 24
     },
     {
-      "id": 9,
       "type": "fill_in",
-      "question": "What workflow orchestration tool developed by Apache is commonly used to schedule DAGs (Directed Acyclic Graphs) for ML data pipelines?",
-      "code": "from ___ import DAG\nfrom ___.operators.python import PythonOperator",
+      "timeLimit": 30,
+      "question": "Format file konfigurasi YAML standar yang dibuat oleh MLflow di dalam direktori model untuk mendeskripsikan model flavors dan dependensi software adalah file bernama ____.",
+      "code": "// Nama file metadata model MLflow: ____",
       "correctAnswers": [
-        "airflow",
-        "apache airflow"
+        "mlmodel"
       ],
-      "timeLimit": 25,
-      "explanation": "Apache Airflow allows engineering teams to author, schedule, and monitor complex data and ML training workflows as DAGs in Python."
+      "explanation": "File 'MLmodel' adalah file konfigurasi berformat YAML yang mendeskripsikan bagaimana model tersebut disimpan (misalnya python_function atau sklearn flavor) dan dependensi library apa yang dibutuhkan untuk memuatnya kembali.",
+      "id": 25
     },
     {
-      "id": 10,
       "type": "multiple_choice",
-      "question": "What is the primary risk addressed by logging and tracking both training code commits, dataset hashes, and hyperparameters in MLOps?",
+      "timeLimit": 30,
+      "question": "Mengapa tahap Data Validation (Validasi Data) wajib diletakkan sebelum proses pelatihan model pada pipeline MLOps?",
       "code": null,
       "options": [
-        "Network latency",
-        "Reproducibility",
-        "CSS responsiveness",
-        "Database sharding"
+        "Mencegah prinsip 'Garbage In, Garbage Out' dengan mendeteksi perubahan skema, nilai ekstrem (outliers), dan missing values sebelum merusak bobot model",
+        "Untuk menghapus seluruh fitur kategorikal agar dataset hanya berisi angka genap",
+        "Agar proses training model dapat diselesaikan dalam waktu kurang dari 1 detik",
+        "Untuk memastikan model machine learning tidak memerlukan algoritma optimasi"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Data Validation memastikan data masukan memenuhi kontrak ekspektasi skema dan kualitas. Jika data kotor atau skema berubah tanpa validasi, model yang dihasilkan akan berkinerja buruk atau proses training gagal di tengah jalan.",
+      "id": 26
+    },
+    {
+      "type": "true_false",
+      "timeLimit": 25,
+      "question": "Library open-source seperti Great Expectations atau TensorFlow Data Validation (TFDV) digunakan untuk menyusun aturan ekspektasi (assertions) terhadap dataset secara otomatis dalam pipeline MLOps.",
+      "code": "// Contoh: expect_column_values_to_not_be_null('user_id')",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Benar! Great Expectations dan TFDV memungkinkan pembuatan kontrak data terotomatisasi (misal kolom 'age' tidak boleh null dan harus berada di rentang 18-100) dalam pipeline integrasi data.",
+      "id": 27
+    },
+    {
+      "type": "multiple_choice",
+      "timeLimit": 30,
+      "question": "Dalam platform GitHub, fitur bawaan apa yang digunakan untuk mengotomatisasi pengujian kode (unit test), linter, dan eksekusi pipeline CI/CD saat ada commit atau Pull Request baru?",
+      "code": null,
+      "options": [
+        "GitHub Actions",
+        "GitHub Copilot",
+        "GitHub Gist",
+        "GitHub Pages"
+      ],
+      "correctAnswer": 0,
+      "explanation": "GitHub Actions adalah platform Continuous Integration dan Continuous Delivery (CI/CD) terintegrasi pada GitHub yang memungkinkan otomatisasi build, test, dan deployment pipeline secara declarative via file YAML.",
+      "id": 28
+    },
+    {
+      "type": "fill_in",
+      "timeLimit": 30,
+      "question": "Framework pengujian unit (unit testing) standar di ekosistem Python yang dijalankan pada workflow CI GitHub Actions untuk memvalidasi fungsi pra-pemrosesan data adalah ____.",
+      "code": "// Command di workflow CI: ____ tests/",
+      "correctAnswers": [
+        "pytest"
+      ],
+      "explanation": "Pytest adalah framework pengujian paling populer di Python yang digunakan dalam pipeline CI untuk menjalankan skrip pengujian otomatis (seperti menguji fungsi feature engineering dan output shape model).",
+      "id": 29
+    },
+    {
+      "type": "multi_select",
+      "timeLimit": 35,
+      "question": "Manakah kondisi berikut yang merupakan pemicu (trigger) yang valid untuk memulai proses Automated Re-training pada sistem MLOps? (Pilih semua yang benar)",
+      "code": null,
+      "options": [
+        "Jadwal berkala (Schedule-based, misal setiap hari Minggu tengah malam)",
+        "Event-driven saat volume data pelatihan baru telah mencapai ambang batas tertentu",
+        "Performance-driven saat sistem monitoring mendeteksi penurunan metrik atau Data Drift",
+        "Saat laptop programmer dimatikan di malam hari"
+      ],
+      "correctAnswers": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "Automated Re-training dapat dipicu oleh jadwal berkala (time-based), kedatangan data baru dalam jumlah cukup (event-based), atau sinyal penurunan akurasi/drift dari sistem monitoring (performance-driven).",
+      "id": 30
+    },
+    {
+      "type": "multiple_choice",
+      "timeLimit": 30,
+      "question": "Apakah arti dari prinsip 'Reproducibility' (Keterulangan) dalam pengembangan model machine learning?",
+      "code": null,
+      "options": [
+        "Kemampuan untuk menghasilkan kembali model yang identik menggunakan kode, versi data, dan parameter acak (seed) yang sama persis",
+        "Model dapat menghapus data training setelah digunakan agar tidak bisa dilacak kembali",
+        "Model dapat berjalan di dua sistem operasi berbeda tanpa menggunakan internet",
+        "Model dapat memprediksi label baru tanpa perlu melatih parameter sama sekali"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Reproducibility berarti siapa pun dalam tim dapat menghasilkan model dan metrik evaluasi yang persis sama dengan menjalankan kembali kode dan data yang tercatat pada sistem pelacakan versi.",
+      "id": 31
+    },
+    {
+      "type": "true_false",
+      "timeLimit": 25,
+      "question": "Dalam pipeline Continuous Delivery yang baik, model baru yang selesai dilatih secara otomatis boleh langsung menggantikan model production tanpa harus melalui pengujian evaluasi baseline.",
+      "code": null,
+      "options": [
+        "True",
+        "False"
       ],
       "correctAnswer": 1,
-      "timeLimit": 20,
-      "explanation": "Logging code, data lineage, and hyperparameters ensures strict reproducibility of models across environments and teams."
+      "explanation": "Salah! Model baru wajib diuji terhadap dataset evaluasi (hold-out test set) dan dibandingkan dengan model production saat ini (baseline/champion). Jika performa model baru lebih buruk, model tersebut tidak boleh dipromosikan ke production.",
+      "id": 32
+    },
+    {
+      "type": "multiple_choice",
+      "timeLimit": 30,
+      "question": "Dalam evaluasi model otomatis, strategi 'Champion vs Challenger' berarti...",
+      "code": null,
+      "options": [
+        "Membandingkan model kandidat baru (Challenger) terhadap model aktif di production (Champion) pada data uji yang sama untuk membuktikan apakah ada peningkatan performa",
+        "Memaksa dua model untuk saling bertukar bobot (weights) hingga salah satu konvergen",
+        "Menghapus model yang memiliki ukuran file paling kecil",
+        "Menjalankan kedua model secara bersamaan pada server yang berbeda benua"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Evaluasi Champion vs Challenger: Model yang sedang melayani traffic disebut Champion, sedangkan model baru yang dilatih adalah Challenger. Challenger hanya dipromosikan jika kinerjanya terbukti mengungguli Champion pada metrik bisnis kunci.",
+      "id": 33
+    },
+    {
+      "type": "fill_in",
+      "timeLimit": 30,
+      "question": "File konfigurasi workflow otomatis GitHub Actions disimpan di dalam direktori repository '.github/workflows/' dengan ekstensi file .____ atau .yml.",
+      "code": "// Lokasi file workflow: .github/workflows/pipeline.____",
+      "correctAnswers": [
+        "yaml",
+        "yml"
+      ],
+      "explanation": "Workflow GitHub Actions dikonfigurasi menggunakan sintaks YAML (ekstensi .yaml atau .yml) yang mendefinisikan event trigger, runner OS, dan jobs yang dieksekusi.",
+      "id": 34
+    },
+    {
+      "type": "multiple_choice",
+      "timeLimit": 30,
+      "question": "Apa yang dimaksud dengan 'Data Leakage' dalam proses rekayasa data dan evaluasi model machine learning?",
+      "code": null,
+      "options": [
+        "Kondisi di mana informasi dari data uji (test set) tidak sengaja bocor dan digunakan dalam proses feature engineering atau pelatihan model",
+        "Kondisi saat hard disk server mengalami kerusakan fisik sehingga data bocor ke lantai",
+        "Proses pengunduhan dataset publik dari situs open-data pemerintah",
+        "Teknik kompresi file data menggunakan algoritma gzip"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Data Leakage terjadi saat informasi dari luar dataset pelatihan (seperti target atau data uji) secara tidak sengaja masuk ke proses training, menghasilkan performa evaluasi yang tampak sangat tinggi secara semu tetapi gagal total di produksi.",
+      "id": 35
+    },
+    {
+      "type": "multiple_choice",
+      "timeLimit": 30,
+      "question": "Apakah perbedaan utama antara skenario 'Batch Inference' (Offline) dan 'Real-Time Inference' (Online Serving)?",
+      "code": null,
+      "options": [
+        "Batch inference memproses data dalam jumlah besar secara terjadwal, sedangkan Real-time inference menghasilkan prediksi instan per request melalui API dengan latensi rendah",
+        "Batch inference hanya bisa digunakan untuk model clustering, sedangkan Real-time hanya untuk regresi",
+        "Batch inference tidak memerlukan model yang sudah dilatih",
+        "Real-time inference membutuhkan waktu pemrosesan minimal 24 jam per transaksi"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Batch Inference dijalankan terjadwal (misal menghitung skor kredit 1 juta nasabah setiap malam). Real-Time Serving menerima request HTTP/gRPC dan harus mengembalikan prediksi dalam hitungan milidetik secara live.",
+      "id": 36
+    },
+    {
+      "type": "multiple_choice",
+      "timeLimit": 30,
+      "question": "Framework web Python modern berbasis asynchronous (ASGI) yang sangat populer digunakan untuk membuat microservice REST API serving model machine learning karena kecepatan dan otomatisasi dokumentasi Swagger-nya adalah...",
+      "code": "from _____ import FastAPI\napp = FastAPI()\n@app.post('/predict')\ndef predict(data: InputSchema): ...",
+      "options": [
+        "FastAPI",
+        "Django",
+        "Pygame",
+        "Tkinter"
+      ],
+      "correctAnswer": 0,
+      "explanation": "FastAPI adalah framework web Python berkecepatan tinggi yang sangat populer di kalangan ML Engineer untuk membuat API serving model berkat integrasi Pydantic untuk validasi tipe data dan dokumentasi OpenAPI otomatis.",
+      "id": 37
+    },
+    {
+      "type": "true_false",
+      "timeLimit": 25,
+      "question": "Kontainerisasi menggunakan Docker sangat krusial dalam MLOps karena membungkus kode, model, dan seluruh dependensi pustaka ke dalam satu image terisolasi, sehingga menghilangkan masalah 'works on my machine'.",
+      "code": "// Prinsip: 'Build once, run anywhere with Docker'",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Benar! Docker mengemas model bersama versi Python, CUDA, dan seluruh library pendukung yang presisi, menjamin aplikasi inferensi berjalan identik di laptop pengembang maupun server cloud production.",
+      "id": 38
+    },
+    {
+      "type": "fill_in",
+      "timeLimit": 30,
+      "question": "File teks instruksi yang berisi resep langkah-demi-langkah (seperti FROM, WORKDIR, COPY, RUN, CMD) untuk membangun sebuah Docker Image serving model dinamakan ____.",
+      "code": "// File resep Docker image: ____ (tanpa ekstensi)",
+      "correctAnswers": [
+        "dockerfile"
+      ],
+      "explanation": "Dockerfile adalah file teks tanpa ekstensi yang berisi serangkaian perintah baris demi baris yang digunakan oleh Docker daemon untuk merakit image aplikasi secara otomatis.",
+      "id": 39
+    },
+    {
+      "type": "multi_select",
+      "timeLimit": 35,
+      "question": "Manakah dari strategi deployment model berikut yang dirancang untuk meminimalkan risiko gangguan operasional saat merilis model baru ke produksi? (Pilih semua yang benar)",
+      "code": null,
+      "options": [
+        "Canary Deployment (Mengalihkan sebagian kecil traffic pengguna ke model baru secara bertahap)",
+        "Shadow / Dark Deployment (Menjalankan model baru secara paralel di belakang layar tanpa mengembalikan prediksinya ke user)",
+        "Blue/Green Deployment (Menyediakan dua lingkungan identik dan mengalihkan router seketika setelah uji coba sukses)",
+        "Direct Overwrite (Menghentikan server dan mengganti file model langsung di production saat jam sibuk tanpa backup)"
+      ],
+      "correctAnswers": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "Canary, Shadow, dan Blue/Green adalah strategi rilis aman (zero-downtime & safe rollback). Direct Overwrite di jam sibuk tanpa pengujian bertahap adalah anti-pattern yang sangat berisiko merusak sistem produksi.",
+      "id": 40
+    },
+    {
+      "type": "multiple_choice",
+      "timeLimit": 30,
+      "question": "Pada strategi 'Canary Deployment' untuk rilis model ML baru, bagaimanakah traffic dialokasikan pada tahap awal?",
+      "code": null,
+      "options": [
+        "Hanya sebagian kecil traffic (misalnya 5% - 10%) yang dialihkan ke model baru, sementara 90% sisanya tetap menggunakan model lama yang stabil",
+        "100% traffic langsung dialihkan ke model baru secara serentak",
+        "Semua traffic dialihkan ke website kompetitor untuk perbandingan",
+        "Traffic pengguna diblokir selama 24 jam hingga model selesai diverifikasi manual"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Canary deployment mengalihkan sebagian kecil traffic (misal 5%) ke model baru. Jika metrik error, latency, dan prediksi terbukti sehat, porsi traffic dinaikkan bertahap (25%, 50%, hingga 100%).",
+      "id": 41
+    },
+    {
+      "type": "true_false",
+      "timeLimit": 25,
+      "question": "Perintah CLI 'mlflow models serve -m <model_uri> -p 5000' memungkinkan kita menjalankan REST API inferensi model secara langsung tanpa harus menulis kode routing web manual.",
+      "code": "$ mlflow models serve -m models:/CreditModel/Production -p 5000",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Benar! Fitur built-in 'mlflow models serve' secara instan membuat endpoint REST API (/invocations) lokal untuk model yang disimpan dalam format MLmodel.",
+      "id": 42
+    },
+    {
+      "type": "fill_in",
+      "timeLimit": 30,
+      "question": "Protokol Remote Procedure Call open-source berkinerja tinggi yang dikembangkan oleh Google dan menggunakan Protocol Buffers sebagai alternatif REST API untuk kebutuhan serving model latensi ultra-rendah dinamakan ____.",
+      "code": "// Protokol RPC berlatensi rendah: ____",
+      "correctAnswers": [
+        "grpc"
+      ],
+      "explanation": "gRPC menggunakan HTTP/2 dan serialisasi biner Protocol Buffers sehingga menawarkan latensi jauh lebih rendah dan throughput lebih tinggi dibandingkan REST API berbasis JSON standar.",
+      "id": 43
+    },
+    {
+      "type": "multiple_choice",
+      "timeLimit": 30,
+      "question": "Fenomena di mana distribusi statistik dari fitur masukan berubah P(X) seiring berjalannya waktu, namun hubungan pemetaan antara fitur dan target P(Y|X) tetap sama, dinamakan...",
+      "code": "// Perubahan: P(X_produksi) != P(X_training), P(Y|X) tetap konstan",
+      "options": [
+        "Data Drift (Covariate Shift)",
+        "Concept Drift",
+        "Overfitting",
+        "Hardware Drift"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Data Drift (sering disebut Covariate Shift) terjadi ketika profil input data pengguna berubah (misal rata-rata usia pengguna baru bergeser dari 25 tahun menjadi 45 tahun), namun relasi penentuan label terhadap fitur tetap sama.",
+      "id": 44
+    },
+    {
+      "type": "multiple_choice",
+      "timeLimit": 30,
+      "question": "Fenomena di mana hubungan mendasar antara variabel input dan target prediksi P(Y|X) mengalami perubahan signifikan (misalnya pola transaksi penipuan/fraud berubah drastis atau perilaku konsumen berubah setelah pandemi) dinamakan...",
+      "code": "// Perubahan: P(Y|X) berubah",
+      "options": [
+        "Concept Drift",
+        "Data Drift",
+        "Underfitting",
+        "Database Fragmentation"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Concept Drift terjadi saat makna atau relasi dari data itu sendiri berubah. Model yang dilatih dengan data sebelum pandemi mungkin tidak lagi akurat memprediksi permintaan barang setelah pandemi karena konsep perilaku konsumen telah bergeser.",
+      "id": 45
+    },
+    {
+      "type": "true_false",
+      "timeLimit": 25,
+      "question": "Di lingkungan produksi nyata, metrik akurasi atau F1-score model sering kali tidak bisa dihitung secara real-time seketika karena ground-truth label aktual dari user mengalami keterlambatan (delayed feedback loop).",
+      "code": "// Contoh: Prediksi gagal bayar pinjaman baru terbukti setelah nasabah menunggak 90 hari",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Benar! Inilah tantangan terbesar monitoring ML: label aktual (ground truth) sering kali baru diketahui beberapa hari, minggu, atau bulan kemudian (misal kredit macet, klaim asuransi). Oleh karena itu, monitoring Data Drift dijadikan proxy awal degradasi performa.",
+      "id": 46
+    },
+    {
+      "type": "multiple_choice",
+      "timeLimit": 30,
+      "question": "Pustaka open-source Python populer yang sering diajarkan untuk mengevaluasi, menguji, dan memantau terjadinya Data Drift dan Data Quality pada model ML produksi dengan visualisasi laporan interaktif adalah...",
+      "code": "from _____ import Report\nfrom _____.metric_preset import DataDriftPreset",
+      "options": [
+        "Evidently AI",
+        "Seaborn",
+        "OpenCV",
+        "BeautifulSoup"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Evidently AI adalah pustaka open-source terkemuka yang dirancang khusus untuk memonitor model machine learning, menghitung uji statistik drift (seperti Kolmogorov-Smirnov atau Wasserstein distance), dan membuat dashboard laporan interaktif.",
+      "id": 47
+    },
+    {
+      "type": "multi_select",
+      "timeLimit": 35,
+      "question": "Selain memantau metrik data dan akurasi model, metrik operasional infrastruktur apa saja yang wajib dipantau pada sistem serving model di produksi? (Pilih semua yang benar)",
+      "code": null,
+      "options": [
+        "Inference Latency (Waktu respon model dalam memproses prediksi)",
+        "Throughput / Request per Second (Jumlah permintaan prediksi per detik)",
+        "Error Rate / HTTP 5xx Status (Tingkat kegagalan server saat melayani prediksi)",
+        "Suhu udara di dalam ruangan kantor programmer"
+      ],
+      "correctAnswers": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "Metrik infrastruktur (latency, throughput, error rate, pemakaian CPU/GPU/RAM) sangat krusial untuk memastikan API model serving tidak mengalami bottleneck atau crash saat menerima lonjakan traffic pengguna.",
+      "id": 48
+    },
+    {
+      "type": "true_false",
+      "timeLimit": 25,
+      "question": "Kombinasi alat open-source Prometheus (sebagai database time-series metrik) dan Grafana (sebagai dashboard visualisasi metrik dan alerting) sering digunakan dalam arsitektur monitoring MLOps.",
+      "code": "// Arsitektur: Service -> Exporter -> Prometheus -> Grafana Dashboard & Alert",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Benar! Prometheus mengumpulkan metrik operasional secara periodik, sementara Grafana memvisualisasikannya dalam dashboard real-time dan mengelola aturan alarm alert jika batas ambang terlampaui.",
+      "id": 49
+    },
+    {
+      "type": "fill_in",
+      "timeLimit": 30,
+      "question": "Mekanisme pengiriman notifikasi otomatis secara instan ke tim teknis (melalui Slack webhook, Discord, atau Email) ketika terdeteksi degradasi performa atau lonjakan error pada model disebut sistem ____.",
+      "code": "// Istilah: Monitoring & ____ (Notifikasi alarm)",
+      "correctAnswers": [
+        "alerting",
+        "alert"
+      ],
+      "explanation": "Alerting adalah komponen krusial pada sistem monitoring MLOps yang bertugas mengirimkan peringatan otomatis ke channel komunikasi tim (seperti Slack atau PagerDuty) agar insiden dapat segera ditangani sebelum merugikan bisnis.",
+      "id": 50
     }
   ]
 }

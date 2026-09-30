@@ -16,7 +16,7 @@
         "char"
       ],
       "correctAnswer": 2,
-      "timeLimit": 30,
+      "timeLimit": 9,
       "explanation": "In Java, double is the standard 64-bit floating-point primitive type used for representing numbers with fractional decimal points, making it ideal for financial balances and currency values."
     },
     {
@@ -29,7 +29,7 @@
         "False"
       ],
       "correctAnswer": 1,
-      "timeLimit": 30,
+      "timeLimit": 9,
       "explanation": "Java uses lowerCamelCase for variable and method identifiers (e.g., quarterlySales). Identifiers starting with an uppercase letter are conventionally reserved for class names."
     },
     {
@@ -44,7 +44,7 @@
         "A compilation error occurs"
       ],
       "correctAnswer": 1,
-      "timeLimit": 45,
+      "timeLimit": 14,
       "explanation": "In Java, integer division (int / int) automatically truncates the decimal fraction rather than rounding. Therefore, 45 / 10 evaluates strictly to 4."
     },
     {
@@ -55,7 +55,7 @@
       "correctAnswers": [
         "in"
       ],
-      "timeLimit": 30,
+      "timeLimit": 9,
       "explanation": "System.in represents the standard input stream (keyboard input from the console)."
     },
     {
@@ -70,7 +70,7 @@
         "70.0"
       ],
       "correctAnswer": 1,
-      "timeLimit": 45,
+      "timeLimit": 14,
       "explanation": "Multiplication and division take precedence over addition and subtraction: 50.0 * 2.0 = 100.0, 20.0 / 4.0 = 5.0, then 100.0 + 100.0 - 5.0 = 195.0."
     },
     {
@@ -85,7 +85,7 @@
         "Compilation error"
       ],
       "correctAnswer": 1,
-      "timeLimit": 30,
+      "timeLimit": 9,
       "explanation": "The + operator evaluates left-to-right. Once a String is encountered, subsequent + operations perform string concatenation: \"Points: \" + 250 gives \"Points: 250\", then + 50 gives \"Points: 25050\"."
     },
     {
@@ -98,7 +98,7 @@
         "False"
       ],
       "correctAnswer": 1,
-      "timeLimit": 45,
+      "timeLimit": 14,
       "explanation": "Java does not allow assigning a double to an int without an explicit cast (int), because it causes loss of decimal precision."
     },
     {
@@ -109,7 +109,7 @@
       "correctAnswers": [
         "%"
       ],
-      "timeLimit": 45,
+      "timeLimit": 14,
       "explanation": "The modulus operator (%) calculates the integer remainder of division: 38 % 6 is 2."
     },
     {
@@ -124,7 +124,7 @@
         "Current: 160.0, Base: 200.0"
       ],
       "correctAnswer": 1,
-      "timeLimit": 60,
+      "timeLimit": 18,
       "explanation": "currentPrice is calculated once as 200.0 * 0.80 = 160.0. Updating basePrice to 250.0 later does not change currentPrice."
     },
     {
@@ -139,7 +139,7 @@
         "scanner.nextWord();"
       ],
       "correctAnswer": 1,
-      "timeLimit": 60,
+      "timeLimit": 18,
       "explanation": "scanner.nextLine() reads all text up to the newline, whereas scanner.next() stops at the first whitespace delimiter."
     },
     {
@@ -154,7 +154,7 @@
         "equals"
       ],
       "correctAnswer": 1,
-      "timeLimit": 30,
+      "timeLimit": 9,
       "explanation": "In Java, == is the equality comparison operator for primitive values. A single = is assignment."
     },
     {
@@ -167,7 +167,7 @@
         "False"
       ],
       "correctAnswer": 0,
-      "timeLimit": 30,
+      "timeLimit": 9,
       "explanation": "The logical AND operator (&&) requires both left and right expressions to be true."
     },
     {
@@ -182,7 +182,7 @@
         "Discount: 0.0%"
       ],
       "correctAnswer": 1,
-      "timeLimit": 45,
+      "timeLimit": 14,
       "explanation": "250 >= 500 is false, but 250 >= 200 is true, so discountRate is set to 0.10 (10.0%). Subsequent branches are skipped."
     },
     {
@@ -193,7 +193,7 @@
       "correctAnswers": [
         "||"
       ],
-      "timeLimit": 30,
+      "timeLimit": 9,
       "explanation": "The logical OR operator (||) evaluates to true if either operand is true."
     },
     {
@@ -208,7 +208,7 @@
         "Bonus: $0.0"
       ],
       "correctAnswer": 1,
-      "timeLimit": 60,
+      "timeLimit": 18,
       "explanation": "In the else if: 95000 >= 90000 is true, and !(4 < 3) is !(false) which is true. true && true produces true, awarding $1000.0."
     },
     {
@@ -221,7 +221,7 @@
         "False"
       ],
       "correctAnswer": 1,
-      "timeLimit": 45,
+      "timeLimit": 14,
       "explanation": "In Java, == checks memory references. For String content comparison, promoCode.equals(\"SUMMER20\") should always be used."
     },
     {
@@ -236,7 +236,7 @@
         "A compiler syntax error."
       ],
       "correctAnswer": 0,
-      "timeLimit": 45,
+      "timeLimit": 14,
       "explanation": "!isDoorClosed inverts false to true. Since isAlarmArmed is also true, true && true triggers the warning."
     },
     {
@@ -251,7 +251,7 @@
         "Tax: $4500.0"
       ],
       "correctAnswer": 2,
-      "timeLimit": 60,
+      "timeLimit": 18,
       "explanation": "45000.0 > 50000.0 is false. Inside else, hasDependents is true, setting taxRate to 0.15. 45000.0 * 0.15 = 6750.0."
     },
     {
@@ -266,7 +266,7 @@
         "for (int month = 12; month > 1; month--)"
       ],
       "correctAnswer": 0,
-      "timeLimit": 30,
+      "timeLimit": 9,
       "explanation": "Initializing at 1 and running while month <= 12 increments through months 1 to 12 inclusive."
     },
     {
@@ -277,7 +277,7 @@
       "correctAnswers": [
         "+="
       ],
-      "timeLimit": 30,
+      "timeLimit": 9,
       "explanation": "+= adds dailySale to weeklyRevenue and reassigns the result back to weeklyRevenue."
     },
     {
@@ -290,7 +290,7 @@
         "False"
       ],
       "correctAnswer": 0,
-      "timeLimit": 30,
+      "timeLimit": 9,
       "explanation": "A do-while loop evaluates its condition at the bottom after executing the loop body at least once."
     },
     {
@@ -305,7 +305,7 @@
         "3 2 "
       ],
       "correctAnswer": 1,
-      "timeLimit": 45,
+      "timeLimit": 14,
       "explanation": "The loop prints 3, 2, 1. When yearsRemaining reaches 0, the condition 0 > 0 is false, stopping the loop."
     },
     {
@@ -320,7 +320,7 @@
         "Years required: 5"
       ],
       "correctAnswer": 1,
-      "timeLimit": 60,
+      "timeLimit": 18,
       "explanation": "Year 1: 11000.0. Year 2: 12100.0. Year 3: 13310.0 (which is >= 12500.0, ending the loop at 3 years)."
     },
     {
@@ -335,7 +335,7 @@
         "2 4 6 "
       ],
       "correctAnswer": 1,
-      "timeLimit": 45,
+      "timeLimit": 14,
       "explanation": "Starting at 2 and stepping by += 2 produces 2, 4, 6, 8. At 10, the condition <= 8 fails."
     },
     {
@@ -348,7 +348,7 @@
         "False"
       ],
       "correctAnswer": 1,
-      "timeLimit": 45,
+      "timeLimit": 14,
       "explanation": "continue skips the remainder of the current iteration only and moves to the next iteration; it does not terminate the loop."
     },
     {
@@ -363,7 +363,7 @@
         "customerCount > 0 throws an out-of-memory exception."
       ],
       "correctAnswer": 0,
-      "timeLimit": 60,
+      "timeLimit": 18,
       "explanation": "Because customerCount is never decremented, customerCount > 0 remains true infinitely."
     },
     {
@@ -378,7 +378,7 @@
         "Total: 4"
       ],
       "correctAnswer": 1,
-      "timeLimit": 75,
+      "timeLimit": 23,
       "explanation": "The outer loop runs 2 times and the inner loop runs 3 times for each outer step: 2 * 3 = 6."
     },
     {
@@ -393,7 +393,7 @@
         "return"
       ],
       "correctAnswer": 1,
-      "timeLimit": 30,
+      "timeLimit": 9,
       "explanation": "A profit margin ratio is a numerical decimal value, requiring double as the method return type."
     },
     {
@@ -406,7 +406,7 @@
         "False"
       ],
       "correctAnswer": 0,
-      "timeLimit": 30,
+      "timeLimit": 9,
       "explanation": "Static methods belong to the class and can be invoked directly from other static contexts like main."
     },
     {
@@ -417,7 +417,7 @@
       "correctAnswers": [
         "return"
       ],
-      "timeLimit": 30,
+      "timeLimit": 9,
       "explanation": "The return keyword passes the calculated value back to the caller."
     },
     {
@@ -432,7 +432,7 @@
         "calculateShipping(15.5);"
       ],
       "correctAnswer": 1,
-      "timeLimit": 45,
+      "timeLimit": 14,
       "explanation": "The call must supply a double followed by a boolean to match the method parameters."
     },
     {
@@ -445,7 +445,7 @@
         "False"
       ],
       "correctAnswer": 1,
-      "timeLimit": 45,
+      "timeLimit": 14,
       "explanation": "Java is pass-by-value. Modifications to the parameter inside applyDiscount do not affect the original retailPrice in main (which remains 100.0)."
     },
     {
@@ -456,7 +456,7 @@
       "correctAnswers": [
         "boolean"
       ],
-      "timeLimit": 45,
+      "timeLimit": 14,
       "explanation": "daysLate > 30 produces a boolean (true/false) value, so the method return type must be boolean."
     },
     {
@@ -471,7 +471,7 @@
         "Variable Shadowing"
       ],
       "correctAnswer": 1,
-      "timeLimit": 45,
+      "timeLimit": 14,
       "explanation": "Method overloading allows multiple methods to share the same name with different parameter lists."
     },
     {
@@ -486,7 +486,7 @@
         "Final: $110.0"
       ],
       "correctAnswer": 1,
-      "timeLimit": 60,
+      "timeLimit": 18,
       "explanation": "addFee(100.0) returns 115.0. Then applyTax(115.0) computes 115.0 * 1.10 = 126.5."
     },
     {
@@ -499,7 +499,7 @@
         "False"
       ],
       "correctAnswer": 0,
-      "timeLimit": 30,
+      "timeLimit": 9,
       "explanation": "A bare return; statement without an expression is legal in void methods to exit early."
     },
     {
@@ -514,12 +514,12 @@
         "Bonus: $0.0"
       ],
       "correctAnswer": 1,
-      "timeLimit": 75,
+      "timeLimit": 23,
       "explanation": "kpiMet is true. performanceScore is 82 (>= 75 is true), giving bonusPercentage = 0.10. 80000.0 * 0.10 = 8000.0."
     },
     {
       "type": "multiple_choice",
-      "timeLimit": 45,
+      "timeLimit": 14,
       "question": "A customer service ticket routing system inspects incoming email subjects for urgent customer requests. What will be printed to the console?",
       "code": "String subject = \"Urgent: Refund requested for Order #4921\";\nboolean isPriority = subject.toLowerCase().contains(\"urgent\");\nSystem.out.println(\"Priority ticket: \" + isPriority);",
       "options": [
@@ -534,7 +534,7 @@
     },
     {
       "type": "multiple_choice",
-      "timeLimit": 45,
+      "timeLimit": 14,
       "question": "A billing portal cleanses user-entered invoice codes before database storage to eliminate accidental leading and trailing spaces. What value will be printed to the console?",
       "code": "String rawInput = \"   INV-2024-99   \";\nString cleanedCode = rawInput.trim();\nSystem.out.println(cleanedCode.length());",
       "options": [
@@ -549,7 +549,7 @@
     },
     {
       "type": "multiple_choice",
-      "timeLimit": 45,
+      "timeLimit": 14,
       "question": "An operations specialist extracts the 4-digit fiscal year from a standardized purchase order batch code using substring(3, 7). What is printed?",
       "code": "String batchCode = \"PO-2024-BATCH-08\";\nString fiscalYear = batchCode.substring(3, 7);\nSystem.out.println(\"Fiscal Year: \" + fiscalYear);",
       "options": [
@@ -564,7 +564,7 @@
     },
     {
       "type": "multiple_choice",
-      "timeLimit": 30,
+      "timeLimit": 9,
       "question": "A retail point-of-sale system extracts the product SKU number by taking all characters starting from index 4 of the item code. What is printed?",
       "code": "String itemCode = \"SKU-98421\";\nString skuNumber = itemCode.substring(4);\nSystem.out.println(\"SKU: \" + skuNumber);",
       "options": [
@@ -579,7 +579,7 @@
     },
     {
       "type": "multiple_choice",
-      "timeLimit": 30,
+      "timeLimit": 9,
       "question": "An online corporate portal validates whether an employee's newly created password satisfies the minimum length requirement. What will be printed?",
       "code": "String password = \"Corp#2024\";\nif (password.length() >= 8) {\n    System.out.println(\"Password accepted\");\n} else {\n    System.out.println(\"Password too short\");\n}",
       "options": [
@@ -594,7 +594,7 @@
     },
     {
       "type": "multiple_choice",
-      "timeLimit": 45,
+      "timeLimit": 14,
       "question": "An e-commerce discount engine compares a user-entered promo code with the store voucher. What is printed to the console?",
       "code": "String voucher = \"DISCOUNT10\";\nString userInput = new String(\"DISCOUNT10\");\nboolean sameRef = (voucher == userInput);\nboolean sameValue = voucher.equals(userInput);\nSystem.out.println(sameRef + \" \" + sameValue);",
       "options": [
@@ -609,7 +609,7 @@
     },
     {
       "type": "multiple_choice",
-      "timeLimit": 45,
+      "timeLimit": 14,
       "question": "A sales compensation system awards a salesperson either a $500 base commission or 5% of sales, whichever is higher, but capped at a $5,000 ceiling. What is printed?",
       "code": "double baseCommission = 500.0;\ndouble salesVolume = 80000.0;\ndouble earnedRate = salesVolume * 0.05; // 4000.0\n\ndouble actualCommission = Math.max(baseCommission, earnedRate);\ndouble finalPayout = Math.min(actualCommission, 5000.0);\nSystem.out.println(\"Payout: $\" + finalPayout);",
       "options": [
@@ -624,7 +624,7 @@
     },
     {
       "type": "multiple_choice",
-      "timeLimit": 30,
+      "timeLimit": 9,
       "question": "A customer loyalty program calculates reward points and rounds to the nearest whole integer using Math.round(). What is printed?",
       "code": "double unroundedPoints = 124.68;\nlong finalPoints = Math.round(unroundedPoints);\nSystem.out.println(\"Points: \" + finalPoints);",
       "options": [
@@ -639,7 +639,7 @@
     },
     {
       "type": "multiple_choice",
-      "timeLimit": 45,
+      "timeLimit": 14,
       "question": "A finance officer computes the future value of a $1,000 investment growing at 10% annual compound interest over 2 years: FV = P * (1 + r)^t. What will be printed?",
       "code": "double principal = 1000.0;\ndouble rate = 0.10;\nint years = 2;\n\ndouble futureValue = principal * Math.pow(1.0 + rate, years);\nSystem.out.println(\"Future Value: $\" + futureValue);",
       "options": [
@@ -654,7 +654,7 @@
     },
     {
       "type": "multiple_choice",
-      "timeLimit": 30,
+      "timeLimit": 9,
       "question": "An internal auditor calculates the absolute variance between actual operating expenses and budgeted expenses so that variances in either direction are positive. What is printed?",
       "code": "double budget = 25000.0;\ndouble actual = 28400.0;\ndouble variance = Math.abs(budget - actual);\nSystem.out.println(\"Variance: $\" + variance);",
       "options": [
@@ -669,7 +669,7 @@
     },
     {
       "type": "multiple_choice",
-      "timeLimit": 30,
+      "timeLimit": 9,
       "question": "An operations manager evaluates an Economic Order Quantity formula containing double batchSize = Math.sqrt(64.0);. What value does batchSize hold?",
       "code": null,
       "options": [
@@ -684,7 +684,7 @@
     },
     {
       "type": "multiple_choice",
-      "timeLimit": 30,
+      "timeLimit": 9,
       "question": "Which Java statement correctly creates (instantiates) a new object of the Product class and assigns it to a reference variable named item?",
       "code": null,
       "options": [
@@ -699,7 +699,7 @@
     },
     {
       "type": "multiple_choice",
-      "timeLimit": 45,
+      "timeLimit": 14,
       "question": "An accountant inspects two bank account reference variables. What will be printed when acc1.getBalance() is invoked?",
       "code": "BankAccount acc1 = new BankAccount(\"Checking\", 500.0);\nBankAccount acc2 = acc1;\nacc2.deposit(200.0);\nSystem.out.println(\"Balance: $\" + acc1.getBalance());",
       "options": [
@@ -714,7 +714,7 @@
     },
     {
       "type": "multiple_choice",
-      "timeLimit": 30,
+      "timeLimit": 9,
       "question": "In object-oriented programming for business software, which analogy best explains the relationship between a Class and an Object?",
       "code": null,
       "options": [
@@ -729,7 +729,7 @@
     },
     {
       "type": "multiple_choice",
-      "timeLimit": 30,
+      "timeLimit": 9,
       "question": "Which of the following statements is TRUE regarding constructors in Java?",
       "code": null,
       "options": [
@@ -744,7 +744,7 @@
     },
     {
       "type": "multiple_choice",
-      "timeLimit": 45,
+      "timeLimit": 14,
       "question": "Trace the execution of this constructor in an HR payroll application. What is the role of this.salary = salary;?",
       "code": "public class Employee {\n    String name;\n    double salary;\n\n    public Employee(String name, double salary) {\n        this.name = name;\n        this.salary = salary;\n    }\n}\n// In main:\nEmployee emp = new Employee(\"Alice\", 65000.0);\nSystem.out.println(emp.name + \" earns $\" + emp.salary);",
       "options": [
@@ -759,7 +759,7 @@
     },
     {
       "type": "multiple_choice",
-      "timeLimit": 45,
+      "timeLimit": 14,
       "question": "A developer writes a Customer class with a custom parameterized constructor public Customer(String name) { ... }, but writes NO no-argument constructor. What happens if someone writes Customer c = new Customer();?",
       "code": null,
       "options": [
@@ -774,7 +774,7 @@
     },
     {
       "type": "multiple_choice",
-      "timeLimit": 30,
+      "timeLimit": 9,
       "question": "A Product class has a private double unitPrice; field. Which of the following is the standard, correctly implemented getter method for unitPrice?",
       "code": "public class Product {\n    private double unitPrice;\n    \n    // Which getter method follows Java conventions?\n}",
       "options": [
@@ -789,7 +789,7 @@
     },
     {
       "type": "multiple_choice",
-      "timeLimit": 30,
+      "timeLimit": 9,
       "question": "A retail inventory class uses a setter method to prevent invalid stock numbers. Why do professional business applications use setter methods instead of making fields public?",
       "code": "public void setStock(int quantity) {\n    if (quantity >= 0) {\n        this.stock = quantity;\n    } else {\n        System.out.println(\"Invalid stock quantity\");\n    }\n}",
       "options": [
@@ -804,7 +804,7 @@
     },
     {
       "type": "multiple_choice",
-      "timeLimit": 30,
+      "timeLimit": 9,
       "question": "What is the primary definition and goal of Encapsulation in Java business systems?",
       "code": null,
       "options": [
@@ -819,7 +819,7 @@
     },
     {
       "type": "multiple_choice",
-      "timeLimit": 30,
+      "timeLimit": 9,
       "question": "Which access modifier in Java restricts visibility so that a field or method can ONLY be accessed from within the exact same class where it is declared?",
       "code": null,
       "options": [
@@ -834,7 +834,7 @@
     },
     {
       "type": "multiple_choice",
-      "timeLimit": 30,
+      "timeLimit": 9,
       "question": "In Java, what is the visibility level of a variable declared without any access modifier keyword (for example: double balance;)?",
       "code": null,
       "options": [
@@ -849,7 +849,7 @@
     },
     {
       "type": "multiple_choice",
-      "timeLimit": 30,
+      "timeLimit": 9,
       "question": "In the UML Class Diagram below, what do the symbols '+' and '-' in front of the class members represent?",
       "code": "+-----------------------------------+\n|            BankAccount            |\n+-----------------------------------+\n| - accountNumber: String           |\n| - balance: double                 |\n+-----------------------------------+\n| + deposit(amount: double): void   |\n| + getBalance(): double            |\n+-----------------------------------+",
       "options": [

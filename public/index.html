@@ -12,7 +12,10 @@
     
     <!-- Top Bar (Visible when in quiz) -->
     <header id="quiz-header" class="quiz-header" style="display: none;">
-      <span id="player-display-name">Player</span>
+      <div style="display: flex; gap: 8px; align-items: center;">
+        <span id="player-display-name">Player</span>
+        <span id="player-tier-badge" class="tier-badge">🥉 Bronze</span>
+      </div>
       <div style="display: flex; gap: 8px; align-items: center;">
         <button type="button" id="btn-sound-toggle" class="sound-toggle-btn" title="Toggle Sound">🔊</button>
         <span class="score-badge"><span id="player-score">0</span> pts</span>
@@ -43,8 +46,8 @@
             <input type="text" id="input-name" class="input-field" placeholder="e.g. Alex Pratama" required autocomplete="name">
           </div>
           <div class="form-group">
-            <label for="input-nim">Student ID (NIM)</label>
-            <input type="text" id="input-nim" class="input-field" placeholder="e.g. 21010045" required>
+            <label for="input-nim">Student ID / NIM <span style="font-size: 0.85em; opacity: 0.65; font-weight: normal;">(Opsional)</span></label>
+            <input type="text" id="input-nim" class="input-field" placeholder="e.g. 21010045 (Opsional)">
           </div>
           <button type="submit" class="btn-primary" id="btn-join">Join Game</button>
           <div id="join-error" class="error-msg"></div>
@@ -119,6 +122,7 @@
       <div id="result-card" class="result-card correct">
         <div id="result-title" class="result-title">CORRECT!</div>
         <div id="result-points" class="points-gained">+850 pts</div>
+        <div id="result-gamification-badges" style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 8px;"></div>
         <div style="font-size: 14px; color: var(--text-muted);">
           Streak: <span id="result-streak" style="font-weight: 700; color: #ffca28;">🔥 1</span> | Rank: <span id="result-rank" style="font-weight: 700; color: #00e676;">#3</span>
         </div>

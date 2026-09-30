@@ -737,7 +737,63 @@ body, .screen, .question-card, .answers-grid, pre, code, .review-card {
   background: #333854;
   color: #777d9c;
   cursor: not-allowed;
-  box-shadow: none;
+/* 6. Gamification Badges & Tiers */
+.tier-badge {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.tier-bronze { background: linear-gradient(135deg, #cd7f32, #8c4a16); color: #fff; }
+.tier-silver { background: linear-gradient(135deg, #e0e0e0, #9e9e9e); color: #1a1a1a; font-weight: 900; }
+.tier-gold { background: linear-gradient(135deg, #ffd700, #ff8f00); color: #1a1a1a; font-weight: 900; box-shadow: 0 0 10px rgba(255, 215, 0, 0.4); }
+.tier-diamond { background: linear-gradient(135deg, #00e5ff, #2979ff); color: #fff; box-shadow: 0 0 12px rgba(0, 229, 255, 0.5); }
+.tier-master { background: linear-gradient(135deg, #d500f9, #ff1744); color: #fff; box-shadow: 0 0 15px rgba(213, 0, 249, 0.6); }
+
+.gamify-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 800;
+  animation: badgePop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.gamify-combo {
+  background: linear-gradient(135deg, #ff6d00, #ffab00);
+  color: #1a1a1a;
+  box-shadow: 0 4px 15px rgba(255, 109, 0, 0.45);
+}
+
+.gamify-speed {
+  background: linear-gradient(135deg, #00e5ff, #00b0ff);
+  color: #0d1b2a;
+  box-shadow: 0 4px 15px rgba(0, 229, 255, 0.4);
+}
+
+@keyframes badgePop {
+  0% { transform: scale(0.6); opacity: 0; }
+  70% { transform: scale(1.15); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Canvas Confetti */
+.confetti-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 99999;
 }
 
 

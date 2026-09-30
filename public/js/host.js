@@ -104,6 +104,66 @@ try {
   console.log('QRCode initialization skipped or library not loaded:', e);
 }
 
+// Canvas Confetti Celebration
+function launchConfetti(durationMs = 4500) {
+  try {
+    const canvas = document.createElement('canvas');
+    canvas.className = 'confetti-canvas';
+    document.body.appendChild(canvas);
+    const ctx = canvas.getContext('2d');
+    let width = canvas.width = window.innerWidth;
+    let height = canvas.height = window.innerHeight;
+
+    const colors = ['#ffd700', '#ff3d00', '#00e676', '#00b0ff', '#e040fb', '#ffffff'];
+    const pieces = [];
+    const count = Math.min(110, Math.floor(width / 10));
+
+    for (let i = 0; i < count; i++) {
+      pieces.push({
+        x: Math.random() * width,
+        y: Math.random() * height * 0.4,
+        r: Math.random() * 8 + 4,
+        d: Math.random() * count,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        tilt: Math.floor(Math.random() * 10) - 10,
+        tiltAngleInc: (Math.random() * 0.07) + 0.05,
+        tiltAngle: 0,
+        speedY: Math.random() * 3 + 2,
+        speedX: (Math.random() - 0.5) * 3
+      });
+    }
+
+    let animationFrame;
+    const startTime = Date.now();
+
+    function draw() {
+      ctx.clearRect(0, 0, width, height);
+      pieces.forEach(p => {
+        p.tiltAngle += p.tiltAngleInc;
+        p.y += (Math.cos(p.d) + 1 + p.speedY) / 1.5;
+        p.x += p.speedX;
+        p.tilt = Math.sin(p.tiltAngle - (p.d / 3)) * 12;
+
+        ctx.beginPath();
+        ctx.lineWidth = p.r;
+        ctx.strokeStyle = p.color;
+        ctx.moveTo(p.x + p.tilt + p.r, p.y);
+        ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r);
+        ctx.stroke();
+      });
+
+      if (Date.now() - startTime < durationMs) {
+        animationFrame = requestAnimationFrame(draw);
+      } else {
+        cancelAnimationFrame(animationFrame);
+        if (canvas.parentNode) canvas.parentNode.removeChild(canvas);
+      }
+    }
+
+    draw();
+  } catch (e) {}
+}
+
 // Connect as Host
 socket.emit('host_join');
 
@@ -111,6 +171,7 @@ socket.on('host_synced', (data) => {
   hostState.status = data.status;
   hostState.players = data.players || [];
   hostState.totalQuestions = data.totalQuestions || 10;
+  hostState.currentQuestionIndex = data.currentQuestionIndex;
 
   if (data.quizSets && selectHostQuiz) {
     selectHostQuiz.innerHTML = '';
@@ -131,7 +192,35 @@ socket.on('host_synced', (data) => {
     selectHostQuiz.disabled = (hostState.status !== 'LOBBY');
   }
 
-  updateLobbyPlayers();
+  // Restore screen state seamlessly if host refreshed!
+  if (data.status === 'LOBBY') {
+    switchScreen('lobby');
+    sessionStatus.innerText = 'LOBBY';
+    btnHostAction.style.display = 'none';
+    btnHostSkip.style.display = 'none';
+    updateLobbyPlayers();
+  } else if (data.status === 'COUNTDOWN') {
+    switchScreen('countdown');
+    sessionStatus.innerText = 'STARTING';
+    document.getElementById('host-countdown-val').innerText = 'Ready!';
+    btnHostAction.style.display = 'none';
+    btnHostSkip.style.display = 'none';
+  } else if (data.status === 'QUESTION_ACTIVE' && data.currentQuestion) {
+    renderQuestion(data.currentQuestion, data.timeLeft, data.answeredCount, data.totalPlayers);
+  } else if (data.status === 'QUESTION_RESULT' && data.currentQuestion) {
+    renderResult(data);
+  } else if (data.status === 'LEADERBOARD') {
+    latestLeaderboardData = data.leaderboard || [];
+    switchScreen('leaderboard');
+    sessionStatus.innerText = 'LEADERBOARD';
+    btnHostSkip.style.display = 'none';
+    btnHostAction.style.display = 'inline-flex';
+    const isLast = (data.currentQuestionIndex + 1 >= data.totalQuestions);
+    btnHostAction.innerText = isLast ? 'Show Final Results 🏆' : 'Next Question ➔';
+    renderLeaderboardView();
+  } else if (data.status === 'GAME_OVER') {
+    renderGameOver(data);
+  }
 });
 
 socket.on('quiz_info_updated', (data) => {
@@ -160,16 +249,17 @@ function updateLobbyPlayers() {
   hostState.players.forEach(p => {
     const chip = document.createElement('div');
     chip.className = 'player-chip';
+    const nimDisplay = (p.nim && p.nim !== '-') ? `NIM: ${p.nim}` : 'Tanpa NIM';
     chip.innerHTML = `
       <span class="p-name">${p.name}</span>
-      <span class="p-nim">NIM: ${p.nim}</span>
+      <span class="p-nim">${nimDisplay}</span>
       <button type="button" class="btn-kick-player" title="Kick ${p.name}">✖</button>
     `;
 
     const kickBtn = chip.querySelector('.btn-kick-player');
     kickBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      if (confirm(`Remove "${p.name}" (NIM: ${p.nim}) from the quiz lobby?`)) {
+      if (confirm(`Remove "${p.name}" (${nimDisplay}) from the quiz lobby?`)) {
         socket.emit('host_kick_player', { playerId: p.id });
       }
     });
@@ -223,10 +313,11 @@ socket.on('start_countdown', (data) => {
   if (window.soundFX) window.soundFX.playTick();
 });
 
-socket.on('new_question', (q) => {
+function renderQuestion(q, timeLeft, answeredCount, totalCount) {
+  if (!q) return;
   hostState.status = 'QUESTION_ACTIVE';
   hostState.currentQuestion = q;
-  sessionStatus.innerText = `QUESTION ${q.index + 1}/${q.total}`;
+  sessionStatus.innerText = `QUESTION ${q.index + 1}/${q.total || hostState.totalQuestions}`;
 
   switchScreen('question');
 
@@ -234,11 +325,11 @@ socket.on('new_question', (q) => {
   btnHostSkip.style.display = 'inline-flex';
   btnHostSkip.innerText = 'Skip Question / End Timer';
 
-  document.getElementById('host-q-indicator').innerText = `Question ${q.index + 1} of ${q.total}`;
+  document.getElementById('host-q-indicator').innerText = `Question ${q.index + 1} of ${q.total || hostState.totalQuestions}`;
   document.getElementById('host-q-text').innerText = q.question;
-  document.getElementById('host-timer-circle').innerText = q.timeLimit || 25;
-  document.getElementById('host-answered-count').innerText = '0';
-  document.getElementById('host-total-count').innerText = hostState.players.length;
+  document.getElementById('host-timer-circle').innerText = (timeLeft !== undefined && timeLeft !== null) ? timeLeft : (q.timeLimit || 25);
+  document.getElementById('host-answered-count').innerText = (answeredCount !== undefined) ? answeredCount : '0';
+  document.getElementById('host-total-count').innerText = (totalCount !== undefined) ? totalCount : hostState.players.length;
 
   const codePre = document.getElementById('host-code-pre');
   const codeEl = document.getElementById('host-code-snippet');
@@ -255,13 +346,14 @@ socket.on('new_question', (q) => {
 
   const shapes = ['▲', '◆', '●', '■'];
 
-  if (q.type === 'multiple_choice' || q.type === 'true_false') {
-    q.options.forEach((opt, idx) => {
+  if (q.type === 'multiple_choice' || q.type === 'true_false' || q.type === 'multi_select') {
+    (q.options || []).forEach((opt, idx) => {
       const card = document.createElement('div');
       card.className = `host-opt-card opt-${idx % 4}`;
+      const prefix = q.type === 'multi_select' ? '☑ ' : '';
       card.innerHTML = `
         <span style="font-size: 26px;">${shapes[idx % 4]}</span>
-        <span>${opt}</span>
+        <span>${prefix}${opt}</span>
       `;
       optionsGrid.appendChild(card);
     });
@@ -273,6 +365,10 @@ socket.on('new_question', (q) => {
     card.innerHTML = `<span>⌨️ Participants type their answers on their phones</span>`;
     optionsGrid.appendChild(card);
   }
+}
+
+socket.on('new_question', (q) => {
+  renderQuestion(q, q.timeLimit, 0, hostState.players.length);
 });
 
 // Timer tick
@@ -295,8 +391,8 @@ socket.on('answer_count_update', (data) => {
   document.getElementById('host-total-count').innerText = data.totalPlayers;
 });
 
-// Question Result Reveal
-socket.on('question_result', (data) => {
+function renderResult(data) {
+  if (!data || !data.question) return;
   hostState.status = 'QUESTION_RESULT';
   sessionStatus.innerText = 'REVEAL';
 
@@ -308,7 +404,7 @@ socket.on('question_result', (data) => {
 
   const q = data.question;
   document.getElementById('result-q-indicator').innerText = `Results: Question ${q.id}`;
-  document.getElementById('result-total-answered').innerText = `${data.totalAnswered} / ${data.totalPlayers}`;
+  document.getElementById('result-total-answered').innerText = `${data.totalAnswered || data.answeredCount || 0} / ${data.totalPlayers || hostState.players.length}`;
   document.getElementById('result-q-text').innerText = q.question;
   document.getElementById('result-explanation-text').innerText = q.explanation || 'No explanation provided.';
 
@@ -316,11 +412,12 @@ socket.on('question_result', (data) => {
   resultGrid.innerHTML = '';
 
   const shapes = ['▲', '◆', '●', '■'];
+  const dist = data.distribution || {};
 
   if (q.type === 'multiple_choice' || q.type === 'true_false') {
-    q.options.forEach((opt, idx) => {
+    (q.options || []).forEach((opt, idx) => {
       const isCorrect = idx === Number(q.correctAnswer);
-      const count = data.distribution[idx] || 0;
+      const count = dist[idx] || 0;
 
       const card = document.createElement('div');
       card.className = `host-opt-card opt-${idx % 4} ${isCorrect ? 'is-correct' : 'dimmed'}`;
@@ -334,7 +431,7 @@ socket.on('question_result', (data) => {
   } else if (q.type === 'multi_select') {
     (q.options || []).forEach((opt, idx) => {
       const isCorrect = (q.correctAnswers || []).includes(idx);
-      const count = data.distribution[idx] || 0;
+      const count = dist[idx] || 0;
 
       const card = document.createElement('div');
       card.className = `host-opt-card opt-${idx % 4} ${isCorrect ? 'is-correct' : 'dimmed'}`;
@@ -349,20 +446,25 @@ socket.on('question_result', (data) => {
     const cardCorrect = document.createElement('div');
     cardCorrect.className = 'host-opt-card opt-3 is-correct';
     cardCorrect.innerHTML = `
-      <span>Acceptable: <strong>${q.correctAnswers.join(', ')}</strong></span>
-      <span class="opt-stat-badge">${data.distribution.correct || 0} Correct</span>
+      <span>Acceptable: <strong>${(q.correctAnswers || []).join(', ')}</strong></span>
+      <span class="opt-stat-badge">${dist.correct || 0} Correct</span>
     `;
 
     const cardIncorrect = document.createElement('div');
     cardIncorrect.className = 'host-opt-card opt-0 dimmed';
     cardIncorrect.innerHTML = `
       <span>Incorrect / Blank</span>
-      <span class="opt-stat-badge">${data.distribution.incorrect || 0}</span>
+      <span class="opt-stat-badge">${dist.incorrect || 0}</span>
     `;
 
     resultGrid.appendChild(cardCorrect);
     resultGrid.appendChild(cardIncorrect);
   }
+}
+
+// Question Result Reveal
+socket.on('question_result', (data) => {
+  renderResult(data);
 });
 
 // Number roll-up counter animation
@@ -476,7 +578,7 @@ function renderLeaderboardView() {
           <span class="p-fullname">${p.name}</span>
           ${leaveBadgeHtml}
         </div>
-        <span class="leader-nim">NIM: ${p.nim}</span>
+        <span class="leader-nim">${(p.nim && p.nim !== '-') ? `NIM: ${p.nim}` : ''}</span>
         ${streakHtml}
       </div>
       <div class="score-wrapper">
@@ -488,6 +590,39 @@ function renderLeaderboardView() {
 
     animateScoreCount(`score-counter-${p.id}`, prevScore, p.score, 1100 + (Math.min(idx, 5) * 120));
   });
+
+  // Calculate Highest Climber for Gamification Highlight
+  let topClimber = null;
+  let maxGain = 0;
+
+  playersToShow.forEach((p, idx) => {
+    const currentRank = idx + 1;
+    const prev = hostState.previousLeaderboardMap ? hostState.previousLeaderboardMap[p.id] : null;
+    if (prev) {
+      const gain = prev.rank - currentRank;
+      if (gain > maxGain && gain >= 2) {
+        maxGain = gain;
+        topClimber = { name: p.name, gain: gain };
+      }
+    }
+  });
+
+  const climberBanner = document.getElementById('host-highest-climber');
+  if (climberBanner) {
+    if (topClimber && maxGain >= 2) {
+      climberBanner.innerHTML = `
+        <span class="climber-rocket">🚀</span>
+        <div class="climber-text">
+          <strong>HIGHEST CLIMBER OF THE ROUND:</strong>
+          <span style="color: #69f0ae; font-weight: 800;">${topClimber.name}</span>
+          naik <strong style="color: #ffeb3b;">+${topClimber.gain} peringkat!</strong> 🔥
+        </div>
+      `;
+      climberBanner.style.display = 'flex';
+    } else {
+      climberBanner.style.display = 'none';
+    }
+  }
 
   if (lbViewMode !== 'all') {
     hostState.previousLeaderboardMap = currentMap;
@@ -524,10 +659,11 @@ function renderFocusWatchlist() {
     violators.forEach(p => {
       const row = document.createElement('div');
       row.className = 'focus-item-row';
+      const nimText = (p.nim && p.nim !== '-') ? `NIM: ${p.nim}` : 'Tanpa NIM';
       row.innerHTML = `
         <div class="focus-item-info">
           <span class="focus-item-name">${p.name}</span>
-          <span class="focus-item-nim">NIM: ${p.nim}</span>
+          <span class="focus-item-nim">${nimText}</span>
         </div>
         <span class="focus-item-tag">⚠️ ${p.tabSwitches}x Left Screen</span>
       `;
@@ -554,8 +690,8 @@ socket.on('show_leaderboard', (data) => {
   renderLeaderboardView();
 });
 
-// Game Over & Matrix Table
-socket.on('game_over', (data) => {
+function renderGameOver(data) {
+  if (!data) return;
   hostState.status = 'GAME_OVER';
   sessionStatus.innerText = 'GAME OVER';
 
@@ -565,6 +701,7 @@ socket.on('game_over', (data) => {
   btnHostSkip.style.display = 'none';
   btnExportCsv.style.display = 'inline-flex';
   if (window.soundFX) window.soundFX.playFanfare();
+  launchConfetti(5000);
 
   hostState.detailedSummary = data.detailedSummary || [];
 
@@ -574,7 +711,6 @@ socket.on('game_over', (data) => {
 
   const top3 = data.podium || [];
   
-  // Order: 2nd on left, 1st center, 3rd right
   const orderMapping = [
     { rank: 2, player: top3[1], class: 'step-2' },
     { rank: 1, player: top3[0], class: 'step-1' },
@@ -585,10 +721,11 @@ socket.on('game_over', (data) => {
     if (item.player) {
       const step = document.createElement('div');
       step.className = `podium-step ${item.class}`;
+      const nimText = (item.player.nim && item.player.nim !== '-') ? `NIM: ${item.player.nim}` : '';
       step.innerHTML = `
         <div class="podium-player-name">
           ${item.player.name}
-          <div class="podium-player-nim">NIM: ${item.player.nim}</div>
+          ${nimText ? `<div class="podium-player-nim">${nimText}</div>` : ''}
         </div>
         <div class="podium-score">${item.player.score.toLocaleString()} pts</div>
         <div class="step-rank">${item.rank}</div>
@@ -620,14 +757,19 @@ socket.on('game_over', (data) => {
       <div class="insight-card warning">
         <div class="insight-title">⚡ Speed Demon</div>
         <div class="insight-val">${ins.fastestStudent ? `${ins.fastestStudent.name}` : 'N/A'}</div>
-        <div class="insight-desc">${ins.fastestStudent ? `Avg response: ${ins.fastestStudent.avgTime}s (NIM: ${ins.fastestStudent.nim})` : '-'}</div>
+        <div class="insight-desc">${ins.fastestStudent ? `Avg response: ${ins.fastestStudent.avgTime}s ${(ins.fastestStudent.nim && ins.fastestStudent.nim !== '-') ? `(${ins.fastestStudent.nim})` : ''}` : '-'}</div>
       </div>
     `;
     insightsContainer.style.display = 'grid';
   }
 
   // 3. Render Full Matrix Table
-  renderMatrixTable(hostState.detailedSummary, data.totalQuestions);
+  renderMatrixTable(hostState.detailedSummary, data.totalQuestions || hostState.totalQuestions);
+}
+
+// Game Over & Matrix Table
+socket.on('game_over', (data) => {
+  renderGameOver(data);
 });
 
 function renderMatrixTable(players, totalQuestions) {

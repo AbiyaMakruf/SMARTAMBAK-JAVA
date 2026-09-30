@@ -16,7 +16,7 @@
         "synchronized"
       ],
       "correctAnswer": 1,
-      "timeLimit": 25,
+      "timeLimit": 8,
       "explanation": "The 'final' keyword prevents a method from being overridden and a class from being inherited."
     },
     {
@@ -29,7 +29,7 @@
         "False"
       ],
       "correctAnswer": 0,
-      "timeLimit": 20,
+      "timeLimit": 6,
       "explanation": "True! String is immutable. Any modification method (like concat, replace) returns a new String instance."
     },
     {
@@ -40,7 +40,7 @@
       "correctAnswers": [
         "void"
       ],
-      "timeLimit": 25,
+      "timeLimit": 8,
       "explanation": "The main method does not return any value, so its return type must be 'void'."
     },
     {
@@ -55,7 +55,7 @@
         "true"
       ],
       "correctAnswer": 2,
-      "timeLimit": 20,
+      "timeLimit": 6,
       "explanation": "Instance and static boolean variables in Java default to 'false'. Local variables have no default."
     },
     {
@@ -68,7 +68,7 @@
         "False"
       ],
       "correctAnswer": 1,
-      "timeLimit": 20,
+      "timeLimit": 6,
       "explanation": "False! Java does not support multiple class inheritance to avoid the diamond problem. However, a class can implement multiple interfaces."
     },
     {
@@ -79,7 +79,7 @@
       "correctAnswers": [
         "extends"
       ],
-      "timeLimit": 25,
+      "timeLimit": 8,
       "explanation": "The 'extends' keyword is used for class inheritance (or interface extending another interface)."
     },
     {
@@ -94,7 +94,7 @@
         "HashMap"
       ],
       "correctAnswer": 2,
-      "timeLimit": 25,
+      "timeLimit": 8,
       "explanation": "ArrayList is an ordered List implementation that preserves insertion order and allows duplicate elements."
     },
     {
@@ -107,7 +107,7 @@
         "False"
       ],
       "correctAnswer": 0,
-      "timeLimit": 20,
+      "timeLimit": 6,
       "explanation": "True! '==' checks whether both references point to the exact same object in memory, while .equals() checks logical equality."
     },
     {
@@ -118,7 +118,7 @@
       "correctAnswers": [
         "finally"
       ],
-      "timeLimit": 25,
+      "timeLimit": 8,
       "explanation": "The 'finally' block always executes after try/catch, typically used to clean up resources like closing streams or database connections."
     },
     {
@@ -133,7 +133,7 @@
         "public"
       ],
       "correctAnswer": 2,
-      "timeLimit": 25,
+      "timeLimit": 8,
       "explanation": "'protected' grants access to members within the same package and to subclasses even if they reside in different packages."
     }
   ]

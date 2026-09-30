@@ -6,7 +6,7 @@
   "questions": [
     {
       "type": "multiple_choice",
-      "timeLimit": 30,
+      "timeLimit": 9,
       "question": "Berdasarkan laporan industri (seperti Gartner), mengapa disiplin MLOps (Machine Learning Operations) sangat krusial dalam siklus pengembangan AI saat ini?",
       "code": null,
       "options": [
@@ -21,7 +21,7 @@
     },
     {
       "type": "true_false",
-      "timeLimit": 25,
+      "timeLimit": 8,
       "question": "MLOps merupakan penggabungan dari tiga disiplin ilmu utama, yaitu Machine Learning, DevOps, dan Data Engineering.",
       "code": "// Konsep: ML + DevOps + Data Engineering = MLOps",
       "options": [
@@ -34,7 +34,7 @@
     },
     {
       "type": "multiple_choice",
-      "timeLimit": 30,
+      "timeLimit": 9,
       "question": "Apakah perbedaan paling fundamental antara DevOps tradisional dengan MLOps?",
       "code": null,
       "options": [
@@ -49,7 +49,7 @@
     },
     {
       "type": "fill_in",
-      "timeLimit": 30,
+      "timeLimit": 9,
       "question": "Karakteristik unik hutang teknis pada sistem ML di mana perubahan pada satu fitur input dapat secara tak terduga memengaruhi seluruh prediksi sistem dikenal dengan prinsip CACE: 'Changing Anything Changes _____'.",
       "code": "// Akronim: CACE (Changing Anything Changes _____)",
       "correctAnswers": [
@@ -60,7 +60,7 @@
     },
     {
       "type": "multi_select",
-      "timeLimit": 35,
+      "timeLimit": 11,
       "question": "Manakah dari prinsip-prinsip berikut yang merupakan pilar utama dalam implementasi MLOps di lingkungan produksi? (Pilih semua yang benar)",
       "code": null,
       "options": [
@@ -79,7 +79,7 @@
     },
     {
       "type": "multiple_choice",
-      "timeLimit": 30,
+      "timeLimit": 9,
       "question": "Pada kerangka kerja MLOps Maturity Level menurut Google, karakteristik utama dari MLOps Level 0 adalah...",
       "code": null,
       "options": [
@@ -94,7 +94,7 @@
     },
     {
       "type": "true_false",
-      "timeLimit": 25,
+      "timeLimit": 8,
       "question": "Pada MLOps Maturity Level 1, sistem telah memiliki otomatisasi pada Continuous Training (CT) sehingga pipeline pelatihan model dapat berjalan secara otomatis ketika data baru tersedia.",
       "code": "// Maturity Level: Level 0 (Manual) -> Level 1 (Continuous Training) -> Level 2 (CI/CD Automated)",
       "options": [
@@ -107,7 +107,7 @@
     },
     {
       "type": "multiple_choice",
-      "timeLimit": 30,
+      "timeLimit": 9,
       "question": "Apa pencapaian utama yang membedakan MLOps Maturity Level 2 dari Level 1?",
       "code": null,
       "options": [
@@ -122,7 +122,7 @@
     },
     {
       "type": "fill_in",
-      "timeLimit": 30,
+      "timeLimit": 9,
       "question": "Berdasarkan paper legendaris Google mengenai 'Hidden Technical Debt in Machine Learning', mayoritas infrastruktur sistem produksi sebenarnya didominasi oleh sistem penunjang (data validation, serving, monitoring), sementara kode algoritma inti hanya mencakup sebagian kecil kotak berlabel ____ code.",
       "code": "// Google Paper: 'Hidden Technical Debt in Machine Learning Systems'\n// Istilah: ____ Code (kode algoritma model)",
       "correctAnswers": [
@@ -134,7 +134,7 @@
     },
     {
       "type": "multiple_choice",
-      "timeLimit": 30,
+      "timeLimit": 9,
       "question": "Di dalam struktur tim teknologi modern, apa tanggung jawab utama seorang MLOps Engineer?",
       "code": null,
       "options": [
@@ -149,7 +149,7 @@
     },
     {
       "type": "multiple_choice",
-      "timeLimit": 30,
+      "timeLimit": 9,
       "question": "Mengapa sistem version control standar seperti Git tidak direkomendasikan untuk menyimpan file dataset berukuran gigabyte atau file model biner (.pkl, .h5, .pt)?",
       "code": null,
       "options": [
@@ -164,7 +164,7 @@
     },
     {
       "type": "multiple_choice",
-      "timeLimit": 30,
+      "timeLimit": 9,
       "question": "Tool open-source apa yang bekerja berdampingan dengan Git untuk melacak versi dataset dan model biner besar dengan memanfaatkan file pointer metadata berekstensi .dvc?",
       "code": null,
       "options": [
@@ -179,7 +179,7 @@
     },
     {
       "type": "fill_in",
-      "timeLimit": 30,
+      "timeLimit": 9,
       "question": "Perintah DVC untuk mulai melacak file dataset bernama 'customers.csv' sehingga tercipta file metadata 'customers.csv.dvc' adalah 'dvc ____ customers.csv'.",
       "code": "// Perintah: dvc ____ customers.csv",
       "correctAnswers": [
@@ -190,7 +190,7 @@
     },
     {
       "type": "true_false",
-      "timeLimit": 25,
+      "timeLimit": 8,
       "question": "File berekstensi .dvc yang dibuat oleh DVC berukuran sangat kecil (hanya berisi hash MD5 dan ukuran file) sehingga aman dan dianjurkan untuk di-commit ke Git repository biasa.",
       "code": "// File: data.csv.dvc (berisi: md5: 9a8b7c6d...)\n// Apakah aman di-commit ke Git?",
       "options": [
@@ -203,7 +203,7 @@
     },
     {
       "type": "multiple_choice",
-      "timeLimit": 30,
+      "timeLimit": 9,
       "question": "Setelah melakukan 'dvc add' dan mengonfigurasi remote storage, perintah DVC apa yang digunakan untuk mengunggah file data fisik sebenarnya ke remote storage (misal Google Drive, AWS S3, atau MinIO)?",
       "code": null,
       "options": [
@@ -218,7 +218,7 @@
     },
     {
       "type": "multiple_choice",
-      "timeLimit": 30,
+      "timeLimit": 9,
       "question": "Platform open-source yang dipelajari pada kelas Dicoding untuk melacak eksperimen, memaketkan model, dan mengelola model registry secara terpusat adalah...",
       "code": null,
       "options": [
@@ -233,7 +233,7 @@
     },
     {
       "type": "multi_select",
-      "timeLimit": 35,
+      "timeLimit": 11,
       "question": "Manakah dari elemen berikut yang merupakan 3 entitas metadata utama yang dicatat pada setiap run di MLflow Tracking? (Pilih semua yang benar)",
       "code": null,
       "options": [
@@ -252,7 +252,7 @@
     },
     {
       "type": "multiple_choice",
-      "timeLimit": 30,
+      "timeLimit": 9,
       "question": "Fungsi dari pustaka MLflow yang tepat untuk mencatat nilai hiperparameter seperti n_estimators atau learning_rate adalah...",
       "code": "import mlflow\nmlflow.____('n_estimators', 100)",
       "options": [
@@ -267,7 +267,7 @@
     },
     {
       "type": "multiple_choice",
-      "timeLimit": 30,
+      "timeLimit": 9,
       "question": "Fungsi MLflow apa yang digunakan untuk mencatat metrik evaluasi numerik seperti accuracy, f1_score, atau loss sepanjang iterasi training?",
       "code": "import mlflow\nmlflow.____('accuracy', 0.945)",
       "options": [
@@ -282,7 +282,7 @@
     },
     {
       "type": "true_false",
-      "timeLimit": 25,
+      "timeLimit": 8,
       "question": "Fitur mlflow.autolog() memungkinkan pencatatan parameter, metrik evaluasi, dan model artifact secara otomatis tanpa perlu memanggil log_param atau log_metric satu per satu.",
       "code": "import mlflow\nmlflow.autolog()\n# Melatih model scikit-learn / tensorflow...",
       "options": [
@@ -295,7 +295,7 @@
     },
     {
       "type": "fill_in",
-      "timeLimit": 30,
+      "timeLimit": 9,
       "question": "File biner model (.pkl), visualisasi matriks korelasi, dan kurva ROC yang disimpan pada sistem penyimpanan MLflow digolongkan ke dalam kategori file ____.",
       "code": "// Kategori output file pada MLflow: ____",
       "correctAnswers": [
@@ -307,7 +307,7 @@
     },
     {
       "type": "multiple_choice",
-      "timeLimit": 35,
+      "timeLimit": 11,
       "question": "Dalam arsitektur server MLflow mandiri (production), apa perbedaan antara Backend Store dan Artifact Store?",
       "code": null,
       "options": [
@@ -322,7 +322,7 @@
     },
     {
       "type": "multi_select",
-      "timeLimit": 35,
+      "timeLimit": 11,
       "question": "Pada komponen MLflow Model Registry, manakah status/tahapan (Stages) resmi yang disediakan untuk mengelola siklus hidup model? (Pilih semua yang benar)",
       "code": null,
       "options": [
@@ -341,7 +341,7 @@
     },
     {
       "type": "true_false",
-      "timeLimit": 25,
+      "timeLimit": 8,
       "question": "Model yang terdaftar pada MLflow Model Registry memiliki nomor versi inkremental (Version 1, Version 2, dst.) sehingga memudahkan tim untuk melakukan rollback ke versi sebelumnya jika terjadi masalah.",
       "code": null,
       "options": [
@@ -354,7 +354,7 @@
     },
     {
       "type": "fill_in",
-      "timeLimit": 30,
+      "timeLimit": 9,
       "question": "Format file konfigurasi YAML standar yang dibuat oleh MLflow di dalam direktori model untuk mendeskripsikan model flavors dan dependensi software adalah file bernama ____.",
       "code": "// Nama file metadata model MLflow: ____",
       "correctAnswers": [
@@ -365,7 +365,7 @@
     },
     {
       "type": "multiple_choice",
-      "timeLimit": 30,
+      "timeLimit": 9,
       "question": "Mengapa tahap Data Validation (Validasi Data) wajib diletakkan sebelum proses pelatihan model pada pipeline MLOps?",
       "code": null,
       "options": [
@@ -380,7 +380,7 @@
     },
     {
       "type": "true_false",
-      "timeLimit": 25,
+      "timeLimit": 8,
       "question": "Library open-source seperti Great Expectations atau TensorFlow Data Validation (TFDV) digunakan untuk menyusun aturan ekspektasi (assertions) terhadap dataset secara otomatis dalam pipeline MLOps.",
       "code": "// Contoh: expect_column_values_to_not_be_null('user_id')",
       "options": [
@@ -393,7 +393,7 @@
     },
     {
       "type": "multiple_choice",
-      "timeLimit": 30,
+      "timeLimit": 9,
       "question": "Dalam platform GitHub, fitur bawaan apa yang digunakan untuk mengotomatisasi pengujian kode (unit test), linter, dan eksekusi pipeline CI/CD saat ada commit atau Pull Request baru?",
       "code": null,
       "options": [
@@ -408,7 +408,7 @@
     },
     {
       "type": "fill_in",
-      "timeLimit": 30,
+      "timeLimit": 9,
       "question": "Framework pengujian unit (unit testing) standar di ekosistem Python yang dijalankan pada workflow CI GitHub Actions untuk memvalidasi fungsi pra-pemrosesan data adalah ____.",
       "code": "// Command di workflow CI: ____ tests/",
       "correctAnswers": [
@@ -419,7 +419,7 @@
     },
     {
       "type": "multi_select",
-      "timeLimit": 35,
+      "timeLimit": 11,
       "question": "Manakah kondisi berikut yang merupakan pemicu (trigger) yang valid untuk memulai proses Automated Re-training pada sistem MLOps? (Pilih semua yang benar)",
       "code": null,
       "options": [
@@ -438,7 +438,7 @@
     },
     {
       "type": "multiple_choice",
-      "timeLimit": 30,
+      "timeLimit": 9,
       "question": "Apakah arti dari prinsip 'Reproducibility' (Keterulangan) dalam pengembangan model machine learning?",
       "code": null,
       "options": [
@@ -453,7 +453,7 @@
     },
     {
       "type": "true_false",
-      "timeLimit": 25,
+      "timeLimit": 8,
       "question": "Dalam pipeline Continuous Delivery yang baik, model baru yang selesai dilatih secara otomatis boleh langsung menggantikan model production tanpa harus melalui pengujian evaluasi baseline.",
       "code": null,
       "options": [
@@ -466,7 +466,7 @@
     },
     {
       "type": "multiple_choice",
-      "timeLimit": 30,
+      "timeLimit": 9,
       "question": "Dalam evaluasi model otomatis, strategi 'Champion vs Challenger' berarti...",
       "code": null,
       "options": [
@@ -481,7 +481,7 @@
     },
     {
       "type": "fill_in",
-      "timeLimit": 30,
+      "timeLimit": 9,
       "question": "File konfigurasi workflow otomatis GitHub Actions disimpan di dalam direktori repository '.github/workflows/' dengan ekstensi file .____ atau .yml.",
       "code": "// Lokasi file workflow: .github/workflows/pipeline.____",
       "correctAnswers": [
@@ -493,7 +493,7 @@
     },
     {
       "type": "multiple_choice",
-      "timeLimit": 30,
+      "timeLimit": 9,
       "question": "Apa yang dimaksud dengan 'Data Leakage' dalam proses rekayasa data dan evaluasi model machine learning?",
       "code": null,
       "options": [
@@ -508,7 +508,7 @@
     },
     {
       "type": "multiple_choice",
-      "timeLimit": 30,
+      "timeLimit": 9,
       "question": "Apakah perbedaan utama antara skenario 'Batch Inference' (Offline) dan 'Real-Time Inference' (Online Serving)?",
       "code": null,
       "options": [
@@ -523,7 +523,7 @@
     },
     {
       "type": "multiple_choice",
-      "timeLimit": 30,
+      "timeLimit": 9,
       "question": "Framework web Python modern berbasis asynchronous (ASGI) yang sangat populer digunakan untuk membuat microservice REST API serving model machine learning karena kecepatan dan otomatisasi dokumentasi Swagger-nya adalah...",
       "code": "from _____ import FastAPI\napp = FastAPI()\n@app.post('/predict')\ndef predict(data: InputSchema): ...",
       "options": [
@@ -538,7 +538,7 @@
     },
     {
       "type": "true_false",
-      "timeLimit": 25,
+      "timeLimit": 8,
       "question": "Kontainerisasi menggunakan Docker sangat krusial dalam MLOps karena membungkus kode, model, dan seluruh dependensi pustaka ke dalam satu image terisolasi, sehingga menghilangkan masalah 'works on my machine'.",
       "code": "// Prinsip: 'Build once, run anywhere with Docker'",
       "options": [
@@ -551,7 +551,7 @@
     },
     {
       "type": "fill_in",
-      "timeLimit": 30,
+      "timeLimit": 9,
       "question": "File teks instruksi yang berisi resep langkah-demi-langkah (seperti FROM, WORKDIR, COPY, RUN, CMD) untuk membangun sebuah Docker Image serving model dinamakan ____.",
       "code": "// File resep Docker image: ____ (tanpa ekstensi)",
       "correctAnswers": [
@@ -562,7 +562,7 @@
     },
     {
       "type": "multi_select",
-      "timeLimit": 35,
+      "timeLimit": 11,
       "question": "Manakah dari strategi deployment model berikut yang dirancang untuk meminimalkan risiko gangguan operasional saat merilis model baru ke produksi? (Pilih semua yang benar)",
       "code": null,
       "options": [
@@ -581,7 +581,7 @@
     },
     {
       "type": "multiple_choice",
-      "timeLimit": 30,
+      "timeLimit": 9,
       "question": "Pada strategi 'Canary Deployment' untuk rilis model ML baru, bagaimanakah traffic dialokasikan pada tahap awal?",
       "code": null,
       "options": [
@@ -596,7 +596,7 @@
     },
     {
       "type": "true_false",
-      "timeLimit": 25,
+      "timeLimit": 8,
       "question": "Perintah CLI 'mlflow models serve -m <model_uri> -p 5000' memungkinkan kita menjalankan REST API inferensi model secara langsung tanpa harus menulis kode routing web manual.",
       "code": "$ mlflow models serve -m models:/CreditModel/Production -p 5000",
       "options": [
@@ -609,7 +609,7 @@
     },
     {
       "type": "fill_in",
-      "timeLimit": 30,
+      "timeLimit": 9,
       "question": "Protokol Remote Procedure Call open-source berkinerja tinggi yang dikembangkan oleh Google dan menggunakan Protocol Buffers sebagai alternatif REST API untuk kebutuhan serving model latensi ultra-rendah dinamakan ____.",
       "code": "// Protokol RPC berlatensi rendah: ____",
       "correctAnswers": [
@@ -620,7 +620,7 @@
     },
     {
       "type": "multiple_choice",
-      "timeLimit": 30,
+      "timeLimit": 9,
       "question": "Fenomena di mana distribusi statistik dari fitur masukan berubah P(X) seiring berjalannya waktu, namun hubungan pemetaan antara fitur dan target P(Y|X) tetap sama, dinamakan...",
       "code": "// Perubahan: P(X_produksi) != P(X_training), P(Y|X) tetap konstan",
       "options": [
@@ -635,7 +635,7 @@
     },
     {
       "type": "multiple_choice",
-      "timeLimit": 30,
+      "timeLimit": 9,
       "question": "Fenomena di mana hubungan mendasar antara variabel input dan target prediksi P(Y|X) mengalami perubahan signifikan (misalnya pola transaksi penipuan/fraud berubah drastis atau perilaku konsumen berubah setelah pandemi) dinamakan...",
       "code": "// Perubahan: P(Y|X) berubah",
       "options": [
@@ -650,7 +650,7 @@
     },
     {
       "type": "true_false",
-      "timeLimit": 25,
+      "timeLimit": 8,
       "question": "Di lingkungan produksi nyata, metrik akurasi atau F1-score model sering kali tidak bisa dihitung secara real-time seketika karena ground-truth label aktual dari user mengalami keterlambatan (delayed feedback loop).",
       "code": "// Contoh: Prediksi gagal bayar pinjaman baru terbukti setelah nasabah menunggak 90 hari",
       "options": [
@@ -663,7 +663,7 @@
     },
     {
       "type": "multiple_choice",
-      "timeLimit": 30,
+      "timeLimit": 9,
       "question": "Pustaka open-source Python populer yang sering diajarkan untuk mengevaluasi, menguji, dan memantau terjadinya Data Drift dan Data Quality pada model ML produksi dengan visualisasi laporan interaktif adalah...",
       "code": "from _____ import Report\nfrom _____.metric_preset import DataDriftPreset",
       "options": [
@@ -678,7 +678,7 @@
     },
     {
       "type": "multi_select",
-      "timeLimit": 35,
+      "timeLimit": 11,
       "question": "Selain memantau metrik data dan akurasi model, metrik operasional infrastruktur apa saja yang wajib dipantau pada sistem serving model di produksi? (Pilih semua yang benar)",
       "code": null,
       "options": [
@@ -697,7 +697,7 @@
     },
     {
       "type": "true_false",
-      "timeLimit": 25,
+      "timeLimit": 8,
       "question": "Kombinasi alat open-source Prometheus (sebagai database time-series metrik) dan Grafana (sebagai dashboard visualisasi metrik dan alerting) sering digunakan dalam arsitektur monitoring MLOps.",
       "code": "// Arsitektur: Service -> Exporter -> Prometheus -> Grafana Dashboard & Alert",
       "options": [
@@ -710,7 +710,7 @@
     },
     {
       "type": "fill_in",
-      "timeLimit": 30,
+      "timeLimit": 9,
       "question": "Mekanisme pengiriman notifikasi otomatis secara instan ke tim teknis (melalui Slack webhook, Discord, atau Email) ketika terdeteksi degradasi performa atau lonjakan error pada model disebut sistem ____.",
       "code": "// Istilah: Monitoring & ____ (Notifikasi alarm)",
       "correctAnswers": [

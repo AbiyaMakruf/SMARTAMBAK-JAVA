@@ -59,11 +59,12 @@ async function runSimulation() {
   const joinedPromises = [];
 
   for (let i = 1; i <= NUM_PLAYERS; i++) {
-    const nim = `210100${i < 10 ? '0' + i : i}`;
+    // Student 40 joins without a NIM to test optional student ID!
+    const nim = (i === NUM_PLAYERS) ? '' : `210100${i < 10 ? '0' + i : i}`;
     const name = `Student ${i}`;
 
     const pSocket = io(SERVER_URL);
-    const pObj = { id: i, socket: pSocket, nim, name, sessionToken: null };
+    const pObj = { id: i, socket: pSocket, nim: nim || '-', name, sessionToken: null };
     players.push(pObj);
 
     const pPromise = new Promise((resolve, reject) => {
@@ -230,6 +231,28 @@ async function runSimulation() {
     });
   });
 
+  // 6c. Test Host accidental refresh during live session
+  console.log('🔄 Simulating Host accidental browser refresh during live session...');
+  hostSocket.disconnect();
+
+  const refreshedHostSocket = io(SERVER_URL);
+  await new Promise((resolve, reject) => {
+    refreshedHostSocket.on('connect', () => {
+      refreshedHostSocket.emit('host_join');
+    });
+
+    refreshedHostSocket.on('host_synced', (syncData) => {
+      if (syncData.status !== 'QUESTION_RESULT') {
+        return reject(new Error(`Host refresh recovery failed! Expected QUESTION_RESULT, got ${syncData.status}`));
+      }
+      if (!syncData.currentQuestion) {
+        return reject(new Error('Host refresh recovery failed! currentQuestion missing in host_synced payload'));
+      }
+      console.log(`✅ Host Refresh Recovery Verified: Resumed status "${syncData.status}" on Question ${syncData.currentQuestion.id} without returning to lobby!`);
+      resolve();
+    });
+  });
+
   // 7. Test Host next question / skip to end & check Classroom Insights
   console.log('⏩ Host ending quiz to test game_over and classroom insights...');
   let receivedInsights = null;
@@ -244,16 +267,16 @@ async function runSimulation() {
       });
     });
 
-    hostSocket.on('game_over', (data) => {
+    refreshedHostSocket.on('game_over', (data) => {
       receivedInsights = data.insights;
       console.log(`✅ Host received game_over with podium top 3:`, data.podium.map(p => `${p.name} (#${p.score} pts)`));
       resolve();
     });
   });
 
-  // Advance to end
+  // Advance to end using refreshed host socket
   setTimeout(() => {
-    hostSocket.emit('host_end_quiz');
+    refreshedHostSocket.emit('host_end_quiz');
   }, 200);
 
   await gameOverPromise;

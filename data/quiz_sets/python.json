@@ -16,7 +16,7 @@
         "Error"
       ],
       "correctAnswer": 0,
-      "timeLimit": 20,
+      "timeLimit": 6,
       "explanation": "append() adds the entire [4, 5] list as a single element at index 3, making len(nums) == 4. To unpack elements, extend() should be used."
     },
     {
@@ -29,7 +29,7 @@
         "False"
       ],
       "correctAnswer": 0,
-      "timeLimit": 20,
+      "timeLimit": 6,
       "explanation": "True! Tuples in Python are immutable sequences."
     },
     {
@@ -40,7 +40,7 @@
       "correctAnswers": [
         "yield"
       ],
-      "timeLimit": 25,
+      "timeLimit": 8,
       "explanation": "The 'yield' keyword suspends function execution and returns a value to the caller, making it a generator."
     },
     {
@@ -55,7 +55,7 @@
         "[2, 4, 6]"
       ],
       "correctAnswer": 1,
-      "timeLimit": 25,
+      "timeLimit": 8,
       "explanation": "range(5) gives 0,1,2,3,4. Odd numbers are 1 and 3. Multiplying each by 2 results in [2, 6]."
     },
     {
@@ -68,7 +68,7 @@
         "False"
       ],
       "correctAnswer": 0,
-      "timeLimit": 25,
+      "timeLimit": 8,
       "explanation": "True! Default arguments are evaluated once at definition time. Mutable default arguments (like lists or dicts) retain changes across calls."
     },
     {
@@ -79,7 +79,7 @@
       "correctAnswers": [
         "@"
       ],
-      "timeLimit": 20,
+      "timeLimit": 6,
       "explanation": "The '@' (pie syntax) symbol denotes a decorator in Python."
     },
     {
@@ -94,7 +94,7 @@
         "concat"
       ],
       "correctAnswer": 2,
-      "timeLimit": 20,
+      "timeLimit": 6,
       "explanation": "zip() combines multiple iterables element-by-element into tuples: ('Alice', 85), ('Bob', 92)."
     },
     {
@@ -107,7 +107,7 @@
         "False"
       ],
       "correctAnswer": 1,
-      "timeLimit": 20,
+      "timeLimit": 6,
       "explanation": "False! It is the opposite: '==' checks value equality, while 'is' checks object identity (same memory address)."
     },
     {
@@ -118,7 +118,7 @@
       "correctAnswers": [
         "__init__"
       ],
-      "timeLimit": 25,
+      "timeLimit": 8,
       "explanation": "The '__init__' dunder method serves as the constructor/initializer in Python classes."
     },
     {
@@ -133,7 +133,7 @@
         "TypeError"
       ],
       "correctAnswer": 1,
-      "timeLimit": 20,
+      "timeLimit": 6,
       "explanation": "Empty collections (lists [], dicts {}, sets, strings) evaluate to False in boolean context. False or False equals False."
     }
   ]

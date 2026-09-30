@@ -141,16 +141,27 @@ The game flows sequentially controlled by the Host:
 6. **Session Persistence & Auto-Reconnect:**
    `localStorage` caches `name`, `nim`, and `sessionToken`. If a participant reloads, their device locks, or their connection drops:
    - They resume instantly without having to re-insert Name or NIM.
+   - Student ID (NIM) is completely optional. If left blank, falls back to `'-'`.
    - Server preserves their full score, answers, and streak seamlessly via `player_reconnect` or duplicate NIM `player_join`.
-7. **Mid-Game Joining (Late Joiners) & 0 Pts Bug Fix:**
+7. **Host Accidental Refresh Recovery:**
+   If the host accidentally reloads their browser (`host.html`) mid-session, `host_synced` reconstructs the active state (`QUESTION_ACTIVE`, `QUESTION_RESULT`, `LEADERBOARD`, or `GAME_OVER`), active question, countdown timer, distribution chart, and controls without returning to the lobby or resetting the quiz!
+8. **Gamification & Engagement:**
+   - **Streak Combos & Bonus Points:** +50, +100, +150, +250 bonus pts for maintaining answer streaks with animated badge (`🔥 3x COMBO ON FIRE!`).
+   - **Refleks Kilat (Speed Demon):** +50 bonus pts for answering within the first 35% of the time limit.
+   - **Rocket Climber (Pembalap Terhebat):** Highest rank leap of the round is highlighted in a glowing banner (`🚀 HIGHEST CLIMBER OF THE ROUND`) on the presenter screen.
+   - **Tier Progression Badges:** Dynamic ranks on student header (🥉 Bronze, 🥈 Silver, 🥇 Gold, 💎 Diamond, 👑 Master).
+   - **Canvas Confetti Celebration:** Celebratory confetti showers on correct answers and on the host podium reveal.
+9. **Rapid-Fire Pace (70% Faster Question Time Limits):**
+   Question time limits across all quiz sets (`java.json`, `python.json`, `mlops.json`, `java_business.json`) are reduced by 70% (duration cut to 30% of original time, e.g. 30s -> 9s, 25s -> 8s, 20s -> 6s, 45s -> 14s) for high-octane rapid-fire gameplay.
+10. **Mid-Game Joining (Late Joiners) & 0 Pts Bug Fix:**
    - Students who join mid-quiz are allowed in; all previously finished questions are initialized as missed (`0 pts`).
    - Late joiners actively receive the current and subsequent questions and their points accumulate properly (fixing the prior bug where late joiners ended with 0 pts overall).
    - Host receives a live banner notification (`host_late_joiner_alert`) indicating the student name, NIM, and number of missed questions.
-8. **Interactive Modes (MCQ, True/False, Fill-in-Blank, Multi-Select):**
+11. **Interactive Modes (MCQ, True/False, Fill-in-Blank, Multi-Select):**
    - Supports `multi_select` where participants can check multiple boxes and submit together. Server grades with full/partial evaluation and host screen shows detailed multi-option distributions.
-9. **Crash Protection via Atomic File Writing:**
+12. **Crash Protection via Atomic File Writing:**
    Session state is dumped atomically to `data/session_backup.json.tmp` and renamed to `session_backup.json` to prevent Windows file-lock race conditions.
-10. **Pure Web Audio API:**
+13. **Pure Web Audio API:**
    No external audio files to download. Synthesizes ticks, chimes, buzzers, and fanfare using Web Audio oscillators and gain envelopes.
 
 ---
@@ -167,15 +178,16 @@ npm test
 The test checks:
 1. Host connection
 2. Troll player kick from lobby
-3. 40 concurrent players joining with unique NIM
+3. 40 concurrent players joining with unique NIM (including optional NIM participant)
 4. Emoji reaction broadcast
 5. Disconnect and session recovery (mobile disconnect & auto-reconnect)
 6. Mid-game joiner handling, host alert, and score accumulation (0 pts bug check)
-7. Question 1 full answer round with score calculation
-8. Game over transition and Classroom Insights calculation
-9. Visual question editor API (`/api/questions`)
-10. Multi-quiz sets API (`/api/quiz-sets`)
-11. CSV export formatting (`/api/export-csv`)
+7. Host accidental browser refresh recovery without session loss
+8. Question 1 full answer round with score calculation, streak & speed bonus
+9. Game over transition and Classroom Insights calculation
+10. Visual question editor API (`/api/questions`)
+11. Multi-quiz sets API (`/api/quiz-sets`)
+12. CSV export formatting (`/api/export-csv`)
 
 ---
 

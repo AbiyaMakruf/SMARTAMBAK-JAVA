@@ -543,6 +543,9 @@ function broadcastQuestionResult() {
     io.to(socketId).emit('player_question_result', {
       isCorrect: ans ? ans.isCorrect : false,
       pointsEarned: ans ? ans.pointsEarned : 0,
+      baseScore: ans ? ans.baseScore || 0 : 0,
+      streakBonus: ans ? ans.streakBonus || 0 : 0,
+      speedBonus: ans ? ans.speedBonus || 0 : 0,
       totalScore: player.score,
       streak: player.streak,
       rank: rank,
@@ -595,15 +598,8 @@ function startQuestion(index) {
   }, 1000);
 }
 
-function endGame() {
-  stopTimer();
-  gameState.status = 'GAME_OVER';
-
-  const fullLeaderboard = getLeaderboard();
-  const rawPlayersList = Object.values(gameState.players);
-
-  // Compile detailed matrix for host
-  const detailedSummary = fullLeaderboard.map((p, idx) => {
+function compileDetailedSummary(fullLeaderboard) {
+  return fullLeaderboard.map((p, idx) => {
     const rawPlayer = gameState.players[p.id];
     let correctCount = 0;
     const answerBreakdown = questions.map(q => {
@@ -628,8 +624,15 @@ function endGame() {
       answers: answerBreakdown
     };
   });
+}
 
-  // Calculate Insights
+function endGame() {
+  stopTimer();
+  gameState.status = 'GAME_OVER';
+
+  const fullLeaderboard = getLeaderboard();
+  const rawPlayersList = Object.values(gameState.players);
+  const detailedSummary = compileDetailedSummary(fullLeaderboard);
   const insights = calculateClassroomInsights(rawPlayersList);
 
   io.emit('game_over', {
@@ -702,9 +705,15 @@ io.on('connection', (socket) => {
     quizLanguage: currentQuizLanguage
   });
 
-  // Host registers
+  // Host registers / reconnects after page refresh
   socket.on('host_join', () => {
     gameState.hostSocketId = socket.id;
+
+    const currentQ = questions[gameState.currentQuestionIndex];
+    const distribution = currentQ ? getAnswerDistribution(currentQ) : null;
+    const fullLeaderboard = getLeaderboard();
+    const rawPlayersList = Object.values(gameState.players);
+
     socket.emit('host_synced', {
       status: gameState.status,
       players: Object.values(gameState.players).map(p => sanitizePlayer(p)),
@@ -714,7 +723,28 @@ io.on('connection', (socket) => {
       quizId: currentQuizId,
       quizTitle: currentQuizTitle,
       quizLanguage: currentQuizLanguage,
-      quizSets: getQuizSets()
+      quizSets: getQuizSets(),
+      currentQuestion: currentQ ? {
+        index: gameState.currentQuestionIndex,
+        total: questions.length,
+        id: currentQ.id,
+        type: currentQ.type,
+        question: currentQ.question,
+        code: currentQ.code || null,
+        options: currentQ.options || null,
+        correctAnswer: currentQ.correctAnswer,
+        correctAnswers: currentQ.correctAnswers,
+        timeLimit: currentQ.timeLimit,
+        explanation: currentQ.explanation
+      } : null,
+      timeLeft: gameState.timeLeft,
+      answeredCount: Object.keys(gameState.currentQuestionAnswers).length,
+      totalPlayers: Object.keys(gameState.players).length,
+      distribution: distribution,
+      leaderboard: fullLeaderboard,
+      podium: fullLeaderboard.slice(0, 3),
+      detailedSummary: gameState.status === 'GAME_OVER' ? compileDetailedSummary(fullLeaderboard) : null,
+      insights: gameState.status === 'GAME_OVER' ? calculateClassroomInsights(rawPlayersList) : null
     });
   });
 
@@ -786,19 +816,21 @@ io.on('connection', (socket) => {
   // Player session reconnect
   socket.on('player_reconnect', (data) => {
     const { nim, sessionToken } = data || {};
-    if (!nim) {
-      return socket.emit('reconnect_failed', { message: 'NIM is required' });
+    if (!sessionToken && !nim) {
+      return socket.emit('reconnect_failed', { message: 'Session token or NIM is required' });
     }
 
-    let existingSocketId = Object.keys(gameState.players).find(sid => {
-      const p = gameState.players[sid];
-      return p.nim.toLowerCase() === nim.toLowerCase() && sessionToken && p.sessionToken === sessionToken;
-    });
+    let existingSocketId = null;
+    if (sessionToken) {
+      existingSocketId = Object.keys(gameState.players).find(sid => {
+        return gameState.players[sid].sessionToken === sessionToken;
+      });
+    }
 
-    if (!existingSocketId) {
+    if (!existingSocketId && nim && nim !== '-') {
       existingSocketId = Object.keys(gameState.players).find(sid => {
         const p = gameState.players[sid];
-        return p.nim.toLowerCase() === nim.toLowerCase();
+        return p.nim && p.nim !== '-' && p.nim.toLowerCase() === nim.toLowerCase();
       });
     }
 
@@ -851,17 +883,26 @@ io.on('connection', (socket) => {
   // Player joins lobby or mid-game session
   socket.on('player_join', (data) => {
     const name = (data.name || '').trim();
-    const nim = (data.nim || '').trim();
+    const nim = (data.nim || '').trim() || '-';
+    const sessionTokenInput = data.sessionToken;
 
-    if (!name || !nim) {
-      return socket.emit('join_error', { message: 'Name and NIM are required!' });
+    if (!name) {
+      return socket.emit('join_error', { message: 'Nama lengkap wajib diisi!' });
     }
 
     // Check if this student is already registered (re-joining / reconnecting via form)
-    const existingSocketId = Object.keys(gameState.players).find(sid => {
-      const p = gameState.players[sid];
-      return p.nim.toLowerCase() === nim.toLowerCase();
-    });
+    let existingSocketId = null;
+    if (sessionTokenInput) {
+      existingSocketId = Object.keys(gameState.players).find(sid => {
+        return gameState.players[sid].sessionToken === sessionTokenInput;
+      });
+    }
+    if (!existingSocketId && nim !== '-') {
+      existingSocketId = Object.keys(gameState.players).find(sid => {
+        const p = gameState.players[sid];
+        return p.nim && p.nim !== '-' && p.nim.toLowerCase() === nim.toLowerCase();
+      });
+    }
 
     if (existingSocketId) {
       // Seamlessly reconnect existing student! Keep their score, streak, answers!
@@ -1045,19 +1086,39 @@ io.on('connection', (socket) => {
 
     const timeSpent = Math.max(0.5, (Date.now() - gameState.questionStartTime) / 1000);
     const isCorrect = checkAnswerCorrectness(currentQ, data.answer);
-    const pointsEarned = isCorrect ? calculateScore(timeSpent, currentQ.timeLimit || 25) : 0;
+    
+    let baseScore = 0;
+    let streakBonus = 0;
+    let speedBonus = 0;
 
     if (isCorrect) {
-      player.score += pointsEarned;
-      player.streak += 1;
+      player.streak = (player.streak || 0) + 1;
+      baseScore = calculateScore(timeSpent, currentQ.timeLimit || 25);
+
+      // 1. Streak Combo Bonus:
+      if (player.streak === 2) streakBonus = 50;
+      else if (player.streak === 3) streakBonus = 100;
+      else if (player.streak === 4) streakBonus = 150;
+      else if (player.streak >= 5) streakBonus = 250;
+
+      // 2. Speed Demon / Quick Reflex Bonus: answered in first 35% of time limit
+      if (timeSpent <= (currentQ.timeLimit || 25) * 0.35) {
+        speedBonus = 50;
+      }
     } else {
       player.streak = 0;
     }
+
+    const pointsEarned = isCorrect ? (baseScore + streakBonus + speedBonus) : 0;
+    player.score += pointsEarned;
 
     player.answers[currentQ.id] = {
       submittedAnswer: data.answer,
       isCorrect: isCorrect,
       pointsEarned: pointsEarned,
+      baseScore: baseScore,
+      streakBonus: streakBonus,
+      speedBonus: speedBonus,
       timeSpent: Number(timeSpent.toFixed(2))
     };
 
@@ -1065,6 +1126,9 @@ io.on('connection', (socket) => {
       submittedAnswer: data.answer,
       isCorrect: isCorrect,
       pointsEarned: pointsEarned,
+      baseScore: baseScore,
+      streakBonus: streakBonus,
+      speedBonus: speedBonus,
       timeSpent: timeSpent
     };
 

@@ -285,15 +285,97 @@ document.querySelectorAll('.reaction-btn').forEach(btn => {
   });
 });
 
+// Tier Badges Helper
+function updatePlayerTier(score) {
+  const badge = document.getElementById('player-tier-badge');
+  if (!badge) return;
+  if (score >= 8000) {
+    badge.className = 'tier-badge tier-master';
+    badge.innerText = '👑 Master';
+  } else if (score >= 5000) {
+    badge.className = 'tier-badge tier-diamond';
+    badge.innerText = '💎 Berlian';
+  } else if (score >= 2500) {
+    badge.className = 'tier-badge tier-gold';
+    badge.innerText = '🥇 Emas';
+  } else if (score >= 1000) {
+    badge.className = 'tier-badge tier-silver';
+    badge.innerText = '🥈 Perak';
+  } else {
+    badge.className = 'tier-badge tier-bronze';
+    badge.innerText = '🥉 Perunggu';
+  }
+}
+
+// Canvas Confetti Celebration
+function launchConfetti(durationMs = 2500) {
+  try {
+    const canvas = document.createElement('canvas');
+    canvas.className = 'confetti-canvas';
+    document.body.appendChild(canvas);
+    const ctx = canvas.getContext('2d');
+    let width = canvas.width = window.innerWidth;
+    let height = canvas.height = window.innerHeight;
+
+    const colors = ['#ffd700', '#ff3d00', '#00e676', '#00b0ff', '#e040fb', '#ffffff'];
+    const pieces = [];
+    const count = Math.min(80, Math.floor(width / 12));
+
+    for (let i = 0; i < count; i++) {
+      pieces.push({
+        x: Math.random() * width,
+        y: Math.random() * height * 0.4,
+        r: Math.random() * 6 + 3,
+        d: Math.random() * count,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        tilt: Math.floor(Math.random() * 10) - 10,
+        tiltAngleInc: (Math.random() * 0.07) + 0.05,
+        tiltAngle: 0,
+        speedY: Math.random() * 3 + 2,
+        speedX: (Math.random() - 0.5) * 3
+      });
+    }
+
+    let animationFrame;
+    const startTime = Date.now();
+
+    function draw() {
+      ctx.clearRect(0, 0, width, height);
+      pieces.forEach(p => {
+        p.tiltAngle += p.tiltAngleInc;
+        p.y += (Math.cos(p.d) + 1 + p.speedY) / 1.5;
+        p.x += p.speedX;
+        p.tilt = Math.sin(p.tiltAngle - (p.d / 3)) * 12;
+
+        ctx.beginPath();
+        ctx.lineWidth = p.r;
+        ctx.strokeStyle = p.color;
+        ctx.moveTo(p.x + p.tilt + p.r, p.y);
+        ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r);
+        ctx.stroke();
+      });
+
+      if (Date.now() - startTime < durationMs) {
+        animationFrame = requestAnimationFrame(draw);
+      } else {
+        cancelAnimationFrame(animationFrame);
+        if (canvas.parentNode) canvas.parentNode.removeChild(canvas);
+      }
+    }
+
+    draw();
+  } catch (e) {}
+}
+
 // 1. Check for stored session on startup (Auto Reconnect)
 socket.on('connect', () => {
   const savedSession = localStorage.getItem(STORAGE_KEY);
   if (savedSession) {
     try {
       const parsed = JSON.parse(savedSession);
-      if (parsed.nim && parsed.sessionToken) {
+      if (parsed.sessionToken || parsed.nim) {
         socket.emit('player_reconnect', {
-          nim: parsed.nim,
+          nim: parsed.nim || '',
           sessionToken: parsed.sessionToken
         });
       }
@@ -431,15 +513,15 @@ joinForm.addEventListener('submit', (e) => {
   const name = inputName.value.trim();
   const nim = inputNim.value.trim();
 
-  if (!name || !nim) {
-    joinError.innerText = 'Please enter both Name and NIM.';
+  if (!name) {
+    joinError.innerText = 'Mohon masukkan nama lengkap Anda.';
     joinError.style.display = 'block';
     return;
   }
 
   if (window.soundFX) window.soundFX.init();
 
-  socket.emit('player_join', { name, nim });
+  socket.emit('player_join', { name, nim: nim || '-' });
 });
 
 // Socket Events
@@ -453,6 +535,7 @@ socket.on('join_success', (data) => {
   myPlayer.nim = data.nim;
   myPlayer.sessionToken = data.sessionToken;
   myPlayer.score = data.score || 0;
+  updatePlayerTier(myPlayer.score);
 
   localStorage.setItem(STORAGE_KEY, JSON.stringify({
     name: data.name,
@@ -682,6 +765,7 @@ document.getElementById('fill-in-input').addEventListener('keydown', (e) => {
 socket.on('player_question_result', (data) => {
   myPlayer.score = data.totalScore;
   playerScore.innerText = myPlayer.score.toLocaleString();
+  updatePlayerTier(myPlayer.score);
 
   if (currentQuestion) {
     answersStatusMap[currentQuestion.index] = data.isCorrect;
@@ -696,11 +780,32 @@ socket.on('player_question_result', (data) => {
   const resultCorrectAns = document.getElementById('result-correct-answer');
   const resultExplanation = document.getElementById('result-explanation');
 
+  const badgesContainer = document.getElementById('result-gamification-badges');
+  if (badgesContainer) {
+    badgesContainer.innerHTML = '';
+    if (data.isCorrect) {
+      if (data.streak >= 2) {
+        const comboBadge = document.createElement('span');
+        comboBadge.className = 'gamify-badge gamify-combo';
+        const label = data.streak >= 5 ? '🌟 UNSTOPPABLE' : (data.streak >= 3 ? '⚡ ON FIRE' : '🔥 COMBO');
+        comboBadge.innerText = `${label} (${data.streak}x)! +${data.streakBonus || 0} pts`;
+        badgesContainer.appendChild(comboBadge);
+      }
+      if (data.speedBonus > 0) {
+        const speedBadge = document.createElement('span');
+        speedBadge.className = 'gamify-badge gamify-speed';
+        speedBadge.innerText = `⚡ Refleks Kilat! +${data.speedBonus} pts`;
+        badgesContainer.appendChild(speedBadge);
+      }
+    }
+  }
+
   if (data.isCorrect) {
     resultCard.className = 'result-card correct';
     resultTitle.innerText = 'CORRECT! 🎉';
     resultPoints.innerText = `+${data.pointsEarned.toLocaleString()} pts`;
     if (window.soundFX) window.soundFX.playCorrect();
+    launchConfetti(2200);
   } else {
     resultCard.className = 'result-card incorrect';
     resultTitle.innerText = 'INCORRECT! ❌';
@@ -719,6 +824,7 @@ socket.on('player_question_result', (data) => {
 // Show leaderboard
 socket.on('show_leaderboard', () => {
   document.getElementById('lb-player-score').innerText = myPlayer.score.toLocaleString();
+  updatePlayerTier(myPlayer.score);
   switchScreen('leaderboard');
 });
 
@@ -732,7 +838,10 @@ socket.on('game_over', (data) => {
   document.getElementById('final-rank-text').innerText = `Rank #${rank} of ${data.leaderboard.length}`;
   document.getElementById('final-score-text').innerText = `Final Score: ${finalScore.toLocaleString()} pts`;
 
+  updatePlayerTier(finalScore);
+
   if (window.soundFX) window.soundFX.playFanfare();
+  launchConfetti(4500);
 
   switchScreen('gameover');
 });

@@ -9,7 +9,10 @@ let hostState = {
   players: [],
   previousLeaderboardMap: {},
   currentQuestion: null,
-  detailedSummary: []
+  detailedSummary: [],
+  autoAdvanceEnabled: true,
+  autoAdvancePhase: null,
+  autoAdvanceCountdown: 0
 };
 
 // DOM Screens
@@ -32,6 +35,10 @@ const btnHostReset = document.getElementById('btn-host-reset');
 const btnLobbyStart = document.getElementById('btn-lobby-start');
 const btnHostSound = document.getElementById('btn-host-sound');
 const checkShuffle = document.getElementById('check-shuffle-options');
+const checkAutoAdvance = document.getElementById('check-auto-advance');
+const hostAutoAdvanceBadge = document.getElementById('host-auto-advance-badge');
+const resultAutoBadge = document.getElementById('result-auto-badge');
+const lbAutoBadge = document.getElementById('lb-auto-badge');
 const selectHostQuiz = document.getElementById('select-host-quiz');
 const hostQuizBadge = document.getElementById('host-quiz-badge');
 
@@ -40,6 +47,64 @@ if (checkShuffle) {
     socket.emit('host_toggle_shuffle', { enabled: checkShuffle.checked });
   });
 }
+
+if (checkAutoAdvance) {
+  checkAutoAdvance.addEventListener('change', () => {
+    socket.emit('host_toggle_auto_advance', { enabled: checkAutoAdvance.checked });
+  });
+}
+
+socket.on('auto_advance_status', (data) => {
+  if (data && checkAutoAdvance) {
+    checkAutoAdvance.checked = !!data.enabled;
+    hostState.autoAdvanceEnabled = !!data.enabled;
+  }
+});
+
+socket.on('auto_advance_tick', (data) => {
+  if (!data || !data.phase || data.countdown <= 0) {
+    hostState.autoAdvancePhase = null;
+    hostState.autoAdvanceCountdown = 0;
+    if (hostAutoAdvanceBadge) hostAutoAdvanceBadge.style.display = 'none';
+    if (resultAutoBadge) resultAutoBadge.style.display = 'none';
+    if (lbAutoBadge) lbAutoBadge.style.display = 'none';
+
+    if (hostState.status === 'QUESTION_RESULT') {
+      btnHostAction.innerText = 'Show Leaderboard ➔';
+    } else if (hostState.status === 'LEADERBOARD') {
+      const isLast = (hostState.currentQuestionIndex + 1 >= hostState.totalQuestions);
+      btnHostAction.innerText = isLast ? 'Show Final Results 🏆' : 'Next Question ➔';
+    }
+    return;
+  }
+
+  hostState.autoAdvancePhase = data.phase;
+  hostState.autoAdvanceCountdown = data.countdown;
+
+  if (data.phase === 'TO_LEADERBOARD' && hostState.status === 'QUESTION_RESULT') {
+    btnHostAction.innerText = `Show Leaderboard ➔ (${data.countdown}s)`;
+    if (hostAutoAdvanceBadge) {
+      hostAutoAdvanceBadge.innerHTML = `⏱️ Leaderboard in <strong>${data.countdown}s</strong>`;
+      hostAutoAdvanceBadge.style.display = 'inline-flex';
+    }
+    if (resultAutoBadge) {
+      resultAutoBadge.innerHTML = `⏱️ Auto Leaderboard dalam <strong>${data.countdown}s</strong>...`;
+      resultAutoBadge.style.display = 'inline-flex';
+    }
+  } else if (data.phase === 'TO_NEXT_QUESTION' && hostState.status === 'LEADERBOARD') {
+    const isLast = data.isLastQuestion;
+    btnHostAction.innerText = isLast ? `Show Final Results 🏆 (${data.countdown}s)` : `Next Question ➔ (${data.countdown}s)`;
+    const targetText = isLast ? 'Hasil Akhir' : 'Soal Berikutnya';
+    if (hostAutoAdvanceBadge) {
+      hostAutoAdvanceBadge.innerHTML = `⏱️ ${targetText} in <strong>${data.countdown}s</strong>`;
+      hostAutoAdvanceBadge.style.display = 'inline-flex';
+    }
+    if (lbAutoBadge) {
+      lbAutoBadge.innerHTML = `⏱️ Auto ${targetText} dalam <strong>${data.countdown}s</strong>...`;
+      lbAutoBadge.style.display = 'inline-flex';
+    }
+  }
+});
 
 if (selectHostQuiz) {
   selectHostQuiz.addEventListener('change', () => {
@@ -192,12 +257,18 @@ socket.on('host_synced', (data) => {
     selectHostQuiz.disabled = (hostState.status !== 'LOBBY');
   }
 
+  if (data.autoAdvanceEnabled !== undefined && checkAutoAdvance) {
+    checkAutoAdvance.checked = !!data.autoAdvanceEnabled;
+    hostState.autoAdvanceEnabled = !!data.autoAdvanceEnabled;
+  }
+
   // Restore screen state seamlessly if host refreshed!
   if (data.status === 'LOBBY') {
     switchScreen('lobby');
     sessionStatus.innerText = 'LOBBY';
     btnHostAction.style.display = 'none';
     btnHostSkip.style.display = 'none';
+    if (hostAutoAdvanceBadge) hostAutoAdvanceBadge.style.display = 'none';
     updateLobbyPlayers();
   } else if (data.status === 'COUNTDOWN') {
     switchScreen('countdown');
@@ -205,10 +276,22 @@ socket.on('host_synced', (data) => {
     document.getElementById('host-countdown-val').innerText = 'Ready!';
     btnHostAction.style.display = 'none';
     btnHostSkip.style.display = 'none';
+    if (hostAutoAdvanceBadge) hostAutoAdvanceBadge.style.display = 'none';
   } else if (data.status === 'QUESTION_ACTIVE' && data.currentQuestion) {
     renderQuestion(data.currentQuestion, data.timeLeft, data.answeredCount, data.totalPlayers);
   } else if (data.status === 'QUESTION_RESULT' && data.currentQuestion) {
     renderResult(data);
+    if (data.autoAdvanceCountdown > 0 && data.autoAdvancePhase === 'TO_LEADERBOARD') {
+      btnHostAction.innerText = `Show Leaderboard ➔ (${data.autoAdvanceCountdown}s)`;
+      if (hostAutoAdvanceBadge) {
+        hostAutoAdvanceBadge.innerHTML = `⏱️ Leaderboard in <strong>${data.autoAdvanceCountdown}s</strong>`;
+        hostAutoAdvanceBadge.style.display = 'inline-flex';
+      }
+      if (resultAutoBadge) {
+        resultAutoBadge.innerHTML = `⏱️ Auto Leaderboard dalam <strong>${data.autoAdvanceCountdown}s</strong>...`;
+        resultAutoBadge.style.display = 'inline-flex';
+      }
+    }
   } else if (data.status === 'LEADERBOARD') {
     latestLeaderboardData = data.leaderboard || [];
     switchScreen('leaderboard');
@@ -217,6 +300,18 @@ socket.on('host_synced', (data) => {
     btnHostAction.style.display = 'inline-flex';
     const isLast = (data.currentQuestionIndex + 1 >= data.totalQuestions);
     btnHostAction.innerText = isLast ? 'Show Final Results 🏆' : 'Next Question ➔';
+    if (data.autoAdvanceCountdown > 0 && data.autoAdvancePhase === 'TO_NEXT_QUESTION') {
+      btnHostAction.innerText = isLast ? `Show Final Results 🏆 (${data.autoAdvanceCountdown}s)` : `Next Question ➔ (${data.autoAdvanceCountdown}s)`;
+      const targetText = isLast ? 'Hasil Akhir' : 'Soal Berikutnya';
+      if (hostAutoAdvanceBadge) {
+        hostAutoAdvanceBadge.innerHTML = `⏱️ ${targetText} in <strong>${data.autoAdvanceCountdown}s</strong>`;
+        hostAutoAdvanceBadge.style.display = 'inline-flex';
+      }
+      if (lbAutoBadge) {
+        lbAutoBadge.innerHTML = `⏱️ Auto ${targetText} dalam <strong>${data.autoAdvanceCountdown}s</strong>...`;
+        lbAutoBadge.style.display = 'inline-flex';
+      }
+    }
     renderLeaderboardView();
   } else if (data.status === 'GAME_OVER') {
     renderGameOver(data);
@@ -318,6 +413,10 @@ function renderQuestion(q, timeLeft, answeredCount, totalCount) {
   hostState.status = 'QUESTION_ACTIVE';
   hostState.currentQuestion = q;
   sessionStatus.innerText = `QUESTION ${q.index + 1}/${q.total || hostState.totalQuestions}`;
+
+  if (hostAutoAdvanceBadge) hostAutoAdvanceBadge.style.display = 'none';
+  if (resultAutoBadge) resultAutoBadge.style.display = 'none';
+  if (lbAutoBadge) lbAutoBadge.style.display = 'none';
 
   switchScreen('question');
 
@@ -695,6 +794,10 @@ function renderGameOver(data) {
   hostState.status = 'GAME_OVER';
   sessionStatus.innerText = 'GAME OVER';
 
+  if (hostAutoAdvanceBadge) hostAutoAdvanceBadge.style.display = 'none';
+  if (resultAutoBadge) resultAutoBadge.style.display = 'none';
+  if (lbAutoBadge) lbAutoBadge.style.display = 'none';
+
   switchScreen('gameover');
 
   btnHostAction.style.display = 'none';
@@ -929,6 +1032,9 @@ socket.on('quiz_reset', () => {
   btnHostAction.style.display = 'none';
   btnHostSkip.style.display = 'none';
   btnExportCsv.style.display = 'none';
+  if (hostAutoAdvanceBadge) hostAutoAdvanceBadge.style.display = 'none';
+  if (resultAutoBadge) resultAutoBadge.style.display = 'none';
+  if (lbAutoBadge) lbAutoBadge.style.display = 'none';
 
   updateLobbyPlayers();
   switchScreen('lobby');

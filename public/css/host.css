@@ -1052,3 +1052,43 @@ body {
   z-index: 99999;
 }
 
+/* Auto-Advance Badges & Countdown Indicators */
+.auto-advance-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(96, 165, 250, 0.15);
+  border: 1px solid rgba(96, 165, 250, 0.4);
+  color: #93c5fd;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 700;
+  animation: pulseGlow 1.5s infinite alternate ease-in-out;
+}
+
+.auto-advance-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 202, 40, 0.15);
+  border: 1px solid rgba(255, 202, 40, 0.4);
+  color: #ffca28;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  animation: pulseGlowYellow 1.5s infinite alternate ease-in-out;
+}
+
+@keyframes pulseGlow {
+  0% { box-shadow: 0 0 2px rgba(96, 165, 250, 0.2); }
+  100% { box-shadow: 0 0 12px rgba(96, 165, 250, 0.5); }
+}
+
+@keyframes pulseGlowYellow {
+  0% { box-shadow: 0 0 2px rgba(255, 202, 40, 0.2); }
+  100% { box-shadow: 0 0 12px rgba(255, 202, 40, 0.5); }
+}
+

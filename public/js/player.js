@@ -249,6 +249,12 @@ function switchScreen(screenKey) {
 
   // Remove blur when changing screen cleanly
   deactivatePrivacyShield();
+
+  // Reset auto-advance countdown banners
+  const resultAutoEl = document.getElementById('player-auto-advance');
+  const lbAutoEl = document.getElementById('player-lb-auto-advance');
+  if (resultAutoEl && screenKey !== 'result') resultAutoEl.style.display = 'none';
+  if (lbAutoEl && screenKey !== 'leaderboard') lbAutoEl.style.display = 'none';
 }
 
 // Sound toggle
@@ -826,6 +832,36 @@ socket.on('show_leaderboard', () => {
   document.getElementById('lb-player-score').innerText = myPlayer.score.toLocaleString();
   updatePlayerTier(myPlayer.score);
   switchScreen('leaderboard');
+});
+
+// Auto-Advance countdown tick
+socket.on('auto_advance_tick', (data) => {
+  const resultAutoEl = document.getElementById('player-auto-advance');
+  const resultAutoTime = document.getElementById('player-auto-time');
+  const lbAutoEl = document.getElementById('player-lb-auto-advance');
+  const lbAutoTime = document.getElementById('player-lb-auto-time');
+  const lbAutoLabel = document.getElementById('player-lb-auto-label');
+
+  if (!data || !data.phase || data.countdown <= 0) {
+    if (resultAutoEl) resultAutoEl.style.display = 'none';
+    if (lbAutoEl) lbAutoEl.style.display = 'none';
+    return;
+  }
+
+  if (data.phase === 'TO_LEADERBOARD' && currentScreenKey === 'result') {
+    if (resultAutoEl && resultAutoTime) {
+      resultAutoTime.innerText = data.countdown;
+      resultAutoEl.style.display = 'block';
+    }
+  } else if (data.phase === 'TO_NEXT_QUESTION' && currentScreenKey === 'leaderboard') {
+    if (lbAutoEl && lbAutoTime) {
+      lbAutoTime.innerText = data.countdown;
+      if (lbAutoLabel) {
+        lbAutoLabel.innerText = data.isLastQuestion ? 'Hasil akhir' : 'Soal berikutnya';
+      }
+      lbAutoEl.style.display = 'block';
+    }
+  }
 });
 
 // Final Game Over

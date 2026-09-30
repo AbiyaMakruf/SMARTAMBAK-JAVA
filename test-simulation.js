@@ -248,7 +248,10 @@ async function runSimulation() {
       if (!syncData.currentQuestion) {
         return reject(new Error('Host refresh recovery failed! currentQuestion missing in host_synced payload'));
       }
-      console.log(`✅ Host Refresh Recovery Verified: Resumed status "${syncData.status}" on Question ${syncData.currentQuestion.id} without returning to lobby!`);
+      if (syncData.autoAdvanceEnabled !== true) {
+        return reject(new Error('Expected autoAdvanceEnabled to be true'));
+      }
+      console.log(`✅ Host Refresh Recovery & Auto-Advance Verified: Resumed status "${syncData.status}" on Question ${syncData.currentQuestion.id} with Auto-Advance=${syncData.autoAdvanceEnabled} without returning to lobby!`);
       resolve();
     });
   });

@@ -31,10 +31,15 @@
         <input type="checkbox" id="check-shuffle-options" checked>
         <span>🔀 Anti-Cheating</span>
       </label>
+      <label style="display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-muted); cursor: pointer; margin-left: 8px;" title="Otomatis berpindah ke Leaderboard & Soal berikutnya (10 detik)">
+        <input type="checkbox" id="check-auto-advance" checked>
+        <span>⏱️ Auto 10s</span>
+      </label>
     </div>
 
     <div class="nav-actions">
       <!-- Dynamic contextual controls -->
+      <span id="host-auto-advance-badge" class="auto-advance-badge" style="display: none;">⏱️ Auto in 10s</span>
       <a href="/manage" target="_blank" class="btn-host btn-secondary" title="Manage Questions">⚙️ Questions</a>
       <button id="btn-host-sound" class="btn-host btn-secondary" title="Toggle Sound">🔊 Sound</button>
       <button id="btn-host-action" class="btn-host btn-accent" style="display: none;">Start Quiz</button>
@@ -115,6 +120,7 @@
     <section id="host-result" class="host-screen">
       <div class="question-top-bar">
         <div id="result-q-indicator" class="q-indicator">Results: Question 1</div>
+        <div id="result-auto-badge" class="auto-advance-pill" style="display: none;">⏱️ Auto Leaderboard dalam 10s</div>
         <div class="answer-counter">
           Total Answers: <span id="result-total-answered" style="color: #00e676;">0</span>
         </div>
@@ -140,7 +146,10 @@
     <section id="host-leaderboard" class="host-screen">
       <div class="leaderboard-header-bar">
         <div>
-          <h2 style="font-size: 28px; margin: 0;">🏆 Session Leaderboard</h2>
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <h2 style="font-size: 28px; margin: 0;">🏆 Session Leaderboard</h2>
+            <div id="lb-auto-badge" class="auto-advance-pill" style="display: none;">⏱️ Auto Soal Berikutnya dalam 10s</div>
+          </div>
           <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">
             Current standings & live student focus status
           </p>

@@ -334,7 +334,11 @@ const gameState = {
   hostSocketId: null,
   shuffleOptions: true, // Anti-cheating feature
   players: {}, // socketId -> { id, sessionToken, name, nim, score, streak, answers: {} }
-  currentQuestionAnswers: {} // socketId -> { submittedAnswer, isCorrect, pointsEarned, timeSpent }
+  currentQuestionAnswers: {}, // socketId -> { submittedAnswer, isCorrect, pointsEarned, timeSpent }
+  autoAdvanceEnabled: true,
+  autoAdvanceTimer: null,
+  autoAdvanceCountdown: 0,
+  autoAdvancePhase: null // 'TO_LEADERBOARD' | 'TO_NEXT_QUESTION' | null
 };
 
 function saveSessionBackup() {
@@ -508,8 +512,87 @@ function stopTimer() {
   }
 }
 
+function stopAutoAdvance() {
+  if (gameState.autoAdvanceTimer) {
+    clearInterval(gameState.autoAdvanceTimer);
+    gameState.autoAdvanceTimer = null;
+  }
+  gameState.autoAdvancePhase = null;
+  gameState.autoAdvanceCountdown = 0;
+}
+
+function startAutoAdvance(phase, seconds, callback) {
+  stopAutoAdvance();
+  if (!gameState.autoAdvanceEnabled) return;
+
+  gameState.autoAdvancePhase = phase;
+  gameState.autoAdvanceCountdown = seconds;
+
+  const isLast = (gameState.currentQuestionIndex + 1 >= questions.length);
+
+  io.emit('auto_advance_tick', {
+    phase: gameState.autoAdvancePhase,
+    countdown: gameState.autoAdvanceCountdown,
+    isLastQuestion: isLast
+  });
+
+  gameState.autoAdvanceTimer = setInterval(() => {
+    if (!gameState.autoAdvanceEnabled) {
+      stopAutoAdvance();
+      io.emit('auto_advance_tick', {
+        phase: null,
+        countdown: 0,
+        isLastQuestion: isLast
+      });
+      return;
+    }
+
+    gameState.autoAdvanceCountdown--;
+
+    io.emit('auto_advance_tick', {
+      phase: gameState.autoAdvancePhase,
+      countdown: Math.max(0, gameState.autoAdvanceCountdown),
+      isLastQuestion: isLast
+    });
+
+    if (gameState.autoAdvanceCountdown <= 0) {
+      stopAutoAdvance();
+      if (typeof callback === 'function') {
+        callback();
+      }
+    }
+  }, 1000);
+}
+
+function showLeaderboard() {
+  stopAutoAdvance();
+  gameState.status = 'LEADERBOARD';
+
+  io.emit('show_leaderboard', {
+    leaderboard: getLeaderboard()
+  });
+
+  saveSessionBackup();
+
+  const isLast = (gameState.currentQuestionIndex + 1 >= questions.length);
+  startAutoAdvance('TO_NEXT_QUESTION', 10, () => {
+    advanceFromLeaderboard();
+  });
+}
+
+function advanceFromLeaderboard() {
+  stopAutoAdvance();
+  const nextIdx = gameState.currentQuestionIndex + 1;
+  if (nextIdx < questions.length) {
+    startQuestion(nextIdx);
+  } else {
+    endGame();
+  }
+}
+
 function broadcastQuestionResult() {
   stopTimer();
+  stopAutoAdvance();
   gameState.status = 'QUESTION_RESULT';
 
   const currentQ = questions[gameState.currentQuestionIndex];
@@ -555,6 +638,11 @@ function broadcastQuestionResult() {
   });
 
   saveSessionBackup();
+
+  // Automatically advance to leaderboard after 10 seconds
+  startAutoAdvance('TO_LEADERBOARD', 10, () => {
+    showLeaderboard();
+  });
 }
 
 function startQuestion(index) {
@@ -564,6 +652,7 @@ function startQuestion(index) {
   }
 
   stopTimer();
+  stopAutoAdvance();
   gameState.status = 'QUESTION_ACTIVE';
   gameState.currentQuestionIndex = index;
   gameState.currentQuestionAnswers = {};
@@ -628,6 +717,7 @@ function compileDetailedSummary(fullLeaderboard) {
 
 function endGame() {
   stopTimer();
+  stopAutoAdvance();
   gameState.status = 'GAME_OVER';
 
   const fullLeaderboard = getLeaderboard();
@@ -743,6 +833,9 @@ io.on('connection', (socket) => {
       distribution: distribution,
       leaderboard: fullLeaderboard,
       podium: fullLeaderboard.slice(0, 3),
+      autoAdvanceEnabled: gameState.autoAdvanceEnabled,
+      autoAdvancePhase: gameState.autoAdvancePhase,
+      autoAdvanceCountdown: gameState.autoAdvanceCountdown,
       detailedSummary: gameState.status === 'GAME_OVER' ? compileDetailedSummary(fullLeaderboard) : null,
       insights: gameState.status === 'GAME_OVER' ? calculateClassroomInsights(rawPlayersList) : null
     });
@@ -1150,12 +1243,7 @@ io.on('connection', (socket) => {
 
   // Host manual actions
   socket.on('host_next_question', () => {
-    const nextIdx = gameState.currentQuestionIndex + 1;
-    if (nextIdx < questions.length) {
-      startQuestion(nextIdx);
-    } else {
-      endGame();
-    }
+    advanceFromLeaderboard();
   });
 
   socket.on('host_end_quiz', () => {
@@ -1169,14 +1257,27 @@ io.on('connection', (socket) => {
   });
 
   socket.on('host_show_leaderboard', () => {
-    gameState.status = 'LEADERBOARD';
-    io.emit('show_leaderboard', {
-      leaderboard: getLeaderboard()
-    });
+    showLeaderboard();
+  });
+
+  socket.on('host_toggle_auto_advance', (data) => {
+    gameState.autoAdvanceEnabled = (data && data.enabled !== undefined) ? !!data.enabled : !gameState.autoAdvanceEnabled;
+    if (!gameState.autoAdvanceEnabled) {
+      stopAutoAdvance();
+      io.emit('auto_advance_tick', { phase: null, countdown: 0 });
+    } else {
+      if (gameState.status === 'QUESTION_RESULT') {
+        startAutoAdvance('TO_LEADERBOARD', 10, () => showLeaderboard());
+      } else if (gameState.status === 'LEADERBOARD') {
+        startAutoAdvance('TO_NEXT_QUESTION', 10, () => advanceFromLeaderboard());
+      }
+    }
+    io.emit('auto_advance_status', { enabled: gameState.autoAdvanceEnabled });
   });
 
   socket.on('host_reset_quiz', () => {
     stopTimer();
+    stopAutoAdvance();
     gameState.status = 'LOBBY';
     gameState.currentQuestionIndex = -1;
     gameState.players = {};

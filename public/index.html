@@ -134,6 +134,10 @@
         <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;">Explanation:</div>
         <div id="result-explanation" style="font-size: 13px; line-height: 1.4;">...</div>
       </div>
+
+      <div id="player-auto-advance" class="player-auto-advance-bar" style="display: none;">
+        <span>⏱️ Menampilkan leaderboard dalam <strong><span id="player-auto-time">10</span>s</strong>...</span>
+      </div>
     </section>
 
     <!-- SCREEN 7: Intermediary Leaderboard Wait -->
@@ -144,6 +148,9 @@
         <p class="subtitle" style="margin-top: 8px;">Check out the host screen to see the top ranks!</p>
         <div class="player-tag" style="margin-top: 20px;">
           Your Score: <span id="lb-player-score" style="color: #ffca28;">0</span>
+        </div>
+        <div id="player-lb-auto-advance" class="player-auto-advance-bar" style="display: none; margin-top: 18px;">
+          <span>⏱️ <span id="player-lb-auto-label">Soal berikutnya</span> dalam <strong><span id="player-lb-auto-time">10</span>s</strong>...</span>
         </div>
       </div>
     </section>

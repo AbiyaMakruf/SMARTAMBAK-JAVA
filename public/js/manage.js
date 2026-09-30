@@ -52,6 +52,8 @@ const btnModalCancel = document.getElementById('btn-modal-cancel');
 const sectionMcq = document.getElementById('section-mcq');
 const sectionTf = document.getElementById('section-tf');
 const sectionFib = document.getElementById('section-fib');
+const mcqLabel = document.getElementById('mcq-label');
+const mcqHint = document.getElementById('mcq-hint');
 
 // 1. Load all quiz sets & active quiz info
 async function loadQuizSets(targetQuizId) {
@@ -269,14 +271,19 @@ function renderQuestions() {
   container.innerHTML = '';
 
   const lang = currentQuizData.language || 'java';
+  const shapes = ['▲', '◆', '●', '■'];
+  const shapeColors = ['#e21b3c', '#1368ce', '#d89e00', '#26890c'];
 
   questionsList.forEach((q, idx) => {
     const card = document.createElement('div');
     card.className = 'q-card-item';
 
     let badgeClass = 'badge-mcq';
-    let typeName = 'Multiple Choice';
-    if (q.type === 'true_false') {
+    let typeName = 'Pilihan Ganda';
+    if (q.type === 'multi_select') {
+      badgeClass = 'badge-multi';
+      typeName = 'Multiple Choice';
+    } else if (q.type === 'true_false') {
       badgeClass = 'badge-tf';
       typeName = 'True / False';
     } else if (q.type === 'fill_in') {
@@ -289,13 +296,43 @@ function renderQuestions() {
       optionsHtml = `<div class="opt-list">`;
       (q.options || []).forEach((opt, oIdx) => {
         const isCorrect = oIdx === Number(q.correctAnswer);
-        optionsHtml += `<div class="opt-item ${isCorrect ? 'correct' : ''}">${isCorrect ? '✓ ' : ''}${escapeHtml(opt)}</div>`;
+        const shape = shapes[oIdx % 4];
+        const color = shapeColors[oIdx % 4];
+        optionsHtml += `
+          <div class="opt-item ${isCorrect ? 'correct' : ''}">
+            <span style="color: ${color}; font-weight: bold; margin-right: 6px;">${shape}</span>
+            <span style="flex: 1;">${escapeHtml(opt)}</span>
+            ${isCorrect ? '<span style="color: #00e676; font-weight: bold; margin-left: 8px;">✓</span>' : ''}
+          </div>`;
+      });
+      optionsHtml += `</div>`;
+    } else if (q.type === 'multi_select') {
+      optionsHtml = `<div class="opt-list">`;
+      const correctArr = Array.isArray(q.correctAnswers)
+        ? q.correctAnswers
+        : (q.correctAnswer !== undefined ? [Number(q.correctAnswer)] : []);
+      (q.options || []).forEach((opt, oIdx) => {
+        const isCorrect = correctArr.includes(oIdx);
+        const shape = shapes[oIdx % 4];
+        const color = shapeColors[oIdx % 4];
+        optionsHtml += `
+          <div class="opt-item ${isCorrect ? 'correct' : ''}">
+            <span style="color: ${color}; font-weight: bold; margin-right: 6px;">${shape}</span>
+            <span style="flex: 1;">${escapeHtml(opt)}</span>
+            ${isCorrect ? '<span style="color: #c084fc; font-weight: bold; margin-left: 8px;">☑ [Key]</span>' : ''}
+          </div>`;
       });
       optionsHtml += `</div>`;
     } else if (q.type === 'true_false') {
       optionsHtml = `<div class="opt-list">
-        <div class="opt-item ${Number(q.correctAnswer) === 0 ? 'correct' : ''}">True ${Number(q.correctAnswer) === 0 ? '✓' : ''}</div>
-        <div class="opt-item ${Number(q.correctAnswer) === 1 ? 'correct' : ''}">False ${Number(q.correctAnswer) === 1 ? '✓' : ''}</div>
+        <div class="opt-item ${Number(q.correctAnswer) === 0 ? 'correct' : ''}">
+          <span style="flex: 1;">True</span>
+          ${Number(q.correctAnswer) === 0 ? '<span style="color: #00e676; font-weight: bold;">✓</span>' : ''}
+        </div>
+        <div class="opt-item ${Number(q.correctAnswer) === 1 ? 'correct' : ''}">
+          <span style="flex: 1;">False</span>
+          ${Number(q.correctAnswer) === 1 ? '<span style="color: #00e676; font-weight: bold;">✓</span>' : ''}
+        </div>
       </div>`;
     } else if (q.type === 'fill_in') {
       optionsHtml = `<div style="margin-top: 10px; font-size: 13px; color: #00e676;">
@@ -347,20 +384,48 @@ function escapeHtml(text) {
     .replace(/'/g, '&#039;');
 }
 
-// Question Modal handling
-formType.addEventListener('change', () => {
+// Question Modal UI updater
+function updateQuestionTypeUI() {
   const type = formType.value;
-  sectionMcq.style.display = type === 'multiple_choice' ? 'block' : 'none';
+  const isMcqOrMulti = (type === 'multiple_choice' || type === 'multi_select');
+  sectionMcq.style.display = isMcqOrMulti ? 'block' : 'none';
   sectionTf.style.display = type === 'true_false' ? 'block' : 'none';
   sectionFib.style.display = type === 'fill_in' ? 'block' : 'none';
-});
+
+  const radios = document.querySelectorAll('.opt-radio');
+  const checkboxes = document.querySelectorAll('.opt-checkbox');
+  const opt0 = document.getElementById('opt-0');
+  const opt1 = document.getElementById('opt-1');
+
+  if (isMcqOrMulti) {
+    if (opt0) opt0.required = true;
+    if (opt1) opt1.required = true;
+
+    if (type === 'multi_select') {
+      if (mcqLabel) mcqLabel.innerText = 'Options & Multiple Correct Answers';
+      if (mcqHint) mcqHint.innerText = 'Centang semua jawaban yang benar (Checkbox - bisa >1)';
+      radios.forEach(r => r.style.display = 'none');
+      checkboxes.forEach(c => c.style.display = 'inline-block');
+    } else {
+      if (mcqLabel) mcqLabel.innerText = 'Options & Single Correct Answer';
+      if (mcqHint) mcqHint.innerText = 'Pilih 1 kunci jawaban yang benar (Radio button)';
+      radios.forEach(r => r.style.display = 'inline-block');
+      checkboxes.forEach(c => c.style.display = 'none');
+    }
+  } else {
+    if (opt0) opt0.required = false;
+    if (opt1) opt1.required = false;
+  }
+}
+
+formType.addEventListener('change', updateQuestionTypeUI);
 
 function openAddModal() {
   editIndexInput.value = '-1';
   modalTitle.innerText = `Add New Question to ${currentQuizData.title}`;
   qForm.reset();
   formType.value = 'multiple_choice';
-  formType.dispatchEvent(new Event('change'));
+  updateQuestionTypeUI();
   modal.style.display = 'flex';
 }
 
@@ -371,12 +436,22 @@ function openEditModal(idx) {
   editIndexInput.value = idx;
   modalTitle.innerText = `Edit Question #${idx + 1}`;
 
-  formType.value = q.type;
-  formType.dispatchEvent(new Event('change'));
+  const validTypes = ['multiple_choice', 'multi_select', 'true_false', 'fill_in'];
+  formType.value = validTypes.includes(q.type) ? q.type : 'multiple_choice';
+  updateQuestionTypeUI();
+
   formTime.value = q.timeLimit || 25;
   formQuestion.value = q.question || '';
   formCode.value = q.code || '';
   formExplanation.value = q.explanation || '';
+
+  // Clear options and checkboxes first
+  for (let i = 0; i < 4; i++) {
+    const input = document.getElementById(`opt-${i}`);
+    if (input) input.value = '';
+    const chk = document.querySelector(`input[name="correct-multi-opt"][value="${i}"]`);
+    if (chk) chk.checked = false;
+  }
 
   if (q.type === 'multiple_choice') {
     (q.options || []).forEach((opt, i) => {
@@ -385,6 +460,18 @@ function openEditModal(idx) {
     });
     const rad = document.querySelector(`input[name="correct-opt"][value="${q.correctAnswer}"]`);
     if (rad) rad.checked = true;
+  } else if (q.type === 'multi_select') {
+    (q.options || []).forEach((opt, i) => {
+      const input = document.getElementById(`opt-${i}`);
+      if (input) input.value = opt;
+    });
+    const correctArr = Array.isArray(q.correctAnswers)
+      ? q.correctAnswers
+      : (q.correctAnswer !== undefined ? [Number(q.correctAnswer)] : [0]);
+    [0, 1, 2, 3].forEach(i => {
+      const chk = document.querySelector(`input[name="correct-multi-opt"][value="${i}"]`);
+      if (chk) chk.checked = correctArr.includes(i);
+    });
   } else if (q.type === 'true_false') {
     const rad = document.querySelector(`input[name="correct-tf"][value="${q.correctAnswer}"]`);
     if (rad) rad.checked = true;
@@ -427,6 +514,18 @@ qForm.addEventListener('submit', (e) => {
     ];
     const checked = document.querySelector('input[name="correct-opt"]:checked');
     newQ.correctAnswer = checked ? Number(checked.value) : 0;
+  } else if (type === 'multi_select') {
+    newQ.options = [
+      document.getElementById('opt-0').value.trim(),
+      document.getElementById('opt-1').value.trim(),
+      document.getElementById('opt-2').value.trim() || 'Option 3',
+      document.getElementById('opt-3').value.trim() || 'Option 4'
+    ];
+    const checkedBoxes = document.querySelectorAll('input[name="correct-multi-opt"]:checked');
+    newQ.correctAnswers = Array.from(checkedBoxes).map(cb => Number(cb.value));
+    if (newQ.correctAnswers.length === 0) {
+      newQ.correctAnswers = [0]; // default at least 1
+    }
   } else if (type === 'true_false') {
     newQ.options = ['True', 'False'];
     const checked = document.querySelector('input[name="correct-tf"]:checked');

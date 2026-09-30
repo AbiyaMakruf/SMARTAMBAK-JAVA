@@ -47,6 +47,7 @@
       text-transform: uppercase;
     }
     .badge-mcq { background: rgba(19, 104, 206, 0.2); color: #60a5fa; }
+    .badge-multi { background: rgba(168, 85, 247, 0.2); color: #c084fc; }
     .badge-tf { background: rgba(216, 158, 0, 0.2); color: #fbbf24; }
     .badge-fib { background: rgba(0, 230, 118, 0.2); color: #00e676; }
     .q-controls {
@@ -67,21 +68,90 @@
     .opt-list {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 8px;
+      gap: 10px;
       margin-top: 12px;
     }
+    @media (max-width: 768px) {
+      .opt-list {
+        grid-template-columns: 1fr;
+      }
+    }
     .opt-item {
-      padding: 8px 12px;
+      padding: 10px 14px;
       border-radius: 8px;
       background: #141525;
       font-size: 13px;
+      line-height: 1.4;
       border: 1px solid #252840;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      word-break: break-word;
     }
     .opt-item.correct {
       border-color: #00e676;
       background: rgba(0, 230, 118, 0.1);
       color: #00e676;
       font-weight: 700;
+    }
+    .opt-edit-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .opt-edit-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      background: #141525;
+      padding: 10px 14px;
+      border-radius: 12px;
+      border: 1.5px solid #2e3250;
+      transition: border-color 0.2s;
+    }
+    .opt-edit-row:focus-within {
+      border-color: #7c4dff;
+    }
+    .opt-border-red { border-left: 5px solid #e21b3c; }
+    .opt-border-blue { border-left: 5px solid #1368ce; }
+    .opt-border-yellow { border-left: 5px solid #d89e00; }
+    .opt-border-green { border-left: 5px solid #26890c; }
+    .opt-selector-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding-top: 4px;
+      flex-shrink: 0;
+    }
+    .opt-radio, .opt-checkbox {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+      accent-color: #7c4dff;
+    }
+    .opt-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px;
+      height: 26px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 700;
+      color: white;
+      user-select: none;
+      flex-shrink: 0;
+    }
+    .opt-bg-red { background: #e21b3c; }
+    .opt-bg-blue { background: #1368ce; }
+    .opt-bg-yellow { background: #d89e00; }
+    .opt-bg-green { background: #26890c; }
+    .opt-textarea {
+      font-family: inherit;
+      min-height: 48px;
+      resize: vertical;
+      line-height: 1.4;
+      font-size: 13.5px;
     }
     /* Modal */
     .modal-overlay {
@@ -225,48 +295,75 @@
 
         <div class="form-row" style="display: grid; grid-template-columns: 2fr 1fr; gap: 14px;">
           <div>
-            <label>Question Type</label>
+            <label>Question Type / Tipe Soal</label>
             <select id="form-type" class="form-control">
-              <option value="multiple_choice">Multiple Choice (4 options)</option>
+              <option value="multiple_choice">Pilihan Ganda (Single Choice - 1 Kunci)</option>
+              <option value="multi_select">Multiple Choice (Multi-Select - Multiple Kunci)</option>
               <option value="true_false">True / False</option>
-              <option value="fill_in">Fill in the Blank</option>
+              <option value="fill_in">Fill in the Blank (Isian Singkat)</option>
             </select>
           </div>
           <div>
             <label>Time Limit (Seconds)</label>
-            <input type="number" id="form-timelimit" class="form-control" value="25" min="10" max="120">
+            <input type="number" id="form-timelimit" class="form-control" value="25" min="5" max="180">
           </div>
         </div>
 
         <div class="form-row">
-          <label>Question Prompt (English)</label>
-          <input type="text" id="form-question" class="form-control" placeholder="e.g. Which keyword prevents method overriding?" required>
+          <label>Question Prompt / Pertanyaan Soal</label>
+          <textarea id="form-question" class="form-control" rows="3" placeholder="Tuliskan pertanyaan soal secara lengkap..." required style="min-height: 70px; resize: vertical;"></textarea>
         </div>
 
         <div class="form-row">
-          <label>Java Code Snippet (Optional)</label>
-          <textarea id="form-code" class="form-control" placeholder="public class Demo { ... }"></textarea>
+          <label>Code Snippet (Optional)</label>
+          <textarea id="form-code" class="form-control" placeholder="Optional code snippet / context..."></textarea>
         </div>
 
-        <!-- Options for MCQ -->
+        <!-- Options for MCQ & Multi-Select -->
         <div id="section-mcq" class="form-row">
-          <label>Options & Correct Answer</label>
-          <div style="display: flex; flex-direction: column; gap: 8px;">
-            <div style="display: flex; gap: 10px; align-items: center;">
-              <input type="radio" name="correct-opt" value="0" checked>
-              <input type="text" id="opt-0" class="form-control" placeholder="Option 1 (Red ▲)" required>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <label id="mcq-label" style="margin-bottom: 0;">Pilihan Opsi & Kunci Jawaban</label>
+            <span id="mcq-hint" style="font-size: 12px; color: #a5b4fc; font-weight: 600;">Pilih 1 jawaban yang benar (Radio)</span>
+          </div>
+          <div class="opt-edit-list">
+            <!-- Option 0: Red -->
+            <div class="opt-edit-row opt-border-red">
+              <div class="opt-selector-wrap">
+                <input type="radio" name="correct-opt" value="0" class="opt-radio" checked title="Pilih sebagai kunci jawaban">
+                <input type="checkbox" name="correct-multi-opt" value="0" class="opt-checkbox" style="display: none;" title="Centang sebagai kunci jawaban">
+                <span class="opt-badge opt-bg-red">▲</span>
+              </div>
+              <textarea id="opt-0" class="form-control opt-textarea" rows="2" placeholder="Opsi 1 (Merah ▲)" required></textarea>
             </div>
-            <div style="display: flex; gap: 10px; align-items: center;">
-              <input type="radio" name="correct-opt" value="1">
-              <input type="text" id="opt-1" class="form-control" placeholder="Option 2 (Blue ◆)" required>
+
+            <!-- Option 1: Blue -->
+            <div class="opt-edit-row opt-border-blue">
+              <div class="opt-selector-wrap">
+                <input type="radio" name="correct-opt" value="1" class="opt-radio" title="Pilih sebagai kunci jawaban">
+                <input type="checkbox" name="correct-multi-opt" value="1" class="opt-checkbox" style="display: none;" title="Centang sebagai kunci jawaban">
+                <span class="opt-badge opt-bg-blue">◆</span>
+              </div>
+              <textarea id="opt-1" class="form-control opt-textarea" rows="2" placeholder="Opsi 2 (Biru ◆)" required></textarea>
             </div>
-            <div style="display: flex; gap: 10px; align-items: center;">
-              <input type="radio" name="correct-opt" value="2">
-              <input type="text" id="opt-2" class="form-control" placeholder="Option 3 (Yellow ●)">
+
+            <!-- Option 2: Yellow -->
+            <div class="opt-edit-row opt-border-yellow">
+              <div class="opt-selector-wrap">
+                <input type="radio" name="correct-opt" value="2" class="opt-radio" title="Pilih sebagai kunci jawaban">
+                <input type="checkbox" name="correct-multi-opt" value="2" class="opt-checkbox" style="display: none;" title="Centang sebagai kunci jawaban">
+                <span class="opt-badge opt-bg-yellow">●</span>
+              </div>
+              <textarea id="opt-2" class="form-control opt-textarea" rows="2" placeholder="Opsi 3 (Kuning ●)"></textarea>
             </div>
-            <div style="display: flex; gap: 10px; align-items: center;">
-              <input type="radio" name="correct-opt" value="3">
-              <input type="text" id="opt-3" class="form-control" placeholder="Option 4 (Green ■)">
+
+            <!-- Option 3: Green -->
+            <div class="opt-edit-row opt-border-green">
+              <div class="opt-selector-wrap">
+                <input type="radio" name="correct-opt" value="3" class="opt-radio" title="Pilih sebagai kunci jawaban">
+                <input type="checkbox" name="correct-multi-opt" value="3" class="opt-checkbox" style="display: none;" title="Centang sebagai kunci jawaban">
+                <span class="opt-badge opt-bg-green">■</span>
+              </div>
+              <textarea id="opt-3" class="form-control opt-textarea" rows="2" placeholder="Opsi 4 (Hijau ■)"></textarea>
             </div>
           </div>
         </div>

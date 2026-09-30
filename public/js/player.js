@@ -92,6 +92,14 @@ const appContainer = document.querySelector('.app-container');
 
 let tabSwitchCount = 0;
 let currentScreenKey = 'join';
+let isWatermarkEnabled = false;
+
+function updateWatermarkVisibility() {
+  if (!studentWatermarkOverlay) return;
+  const showWatermarkScreens = ['question', 'submitted', 'result', 'leaderboard'];
+  const shouldShow = isWatermarkEnabled && showWatermarkScreens.includes(currentScreenKey);
+  studentWatermarkOverlay.style.display = shouldShow ? 'grid' : 'none';
+}
 
 function setupStudentWatermark(name, nim) {
   if (!studentWatermarkOverlay) return;
@@ -103,6 +111,7 @@ function setupStudentWatermark(name, nim) {
     item.innerText = text;
     studentWatermarkOverlay.appendChild(item);
   }
+  updateWatermarkVisibility();
 }
 
 function showTabSwitchWarning() {
@@ -242,10 +251,7 @@ function switchScreen(screenKey) {
   }
 
   // Watermark visibility
-  if (studentWatermarkOverlay) {
-    const showWatermarkScreens = ['question', 'submitted', 'result', 'leaderboard'];
-    studentWatermarkOverlay.style.display = showWatermarkScreens.includes(screenKey) ? 'grid' : 'none';
-  }
+  updateWatermarkVisibility();
 
   // Remove blur when changing screen cleanly
   deactivatePrivacyShield();
@@ -410,6 +416,17 @@ socket.on('init_state', (data) => {
     if (data.quizTitle) {
       updateQuizTitle(data.quizTitle);
     }
+    if (data.watermarkEnabled !== undefined) {
+      isWatermarkEnabled = !!data.watermarkEnabled;
+      updateWatermarkVisibility();
+    }
+  }
+});
+
+socket.on('watermark_status', (data) => {
+  if (data && data.enabled !== undefined) {
+    isWatermarkEnabled = !!data.enabled;
+    updateWatermarkVisibility();
   }
 });
 
@@ -432,6 +449,10 @@ socket.on('reconnect_success', (data) => {
   myPlayer.name = data.name;
   myPlayer.nim = data.nim;
   myPlayer.score = data.score || 0;
+
+  if (data.watermarkEnabled !== undefined) {
+    isWatermarkEnabled = !!data.watermarkEnabled;
+  }
 
   playerDisplayName.innerText = myPlayer.name;
   playerScore.innerText = myPlayer.score.toLocaleString();
@@ -553,6 +574,10 @@ socket.on('join_success', (data) => {
   playerScore.innerText = myPlayer.score.toLocaleString();
   document.getElementById('lobby-player-name').innerText = myPlayer.name;
   document.getElementById('lobby-player-nim').innerText = myPlayer.nim;
+
+  if (data.watermarkEnabled !== undefined) {
+    isWatermarkEnabled = !!data.watermarkEnabled;
+  }
 
   setupStudentWatermark(myPlayer.name, myPlayer.nim);
   quizHeader.style.display = 'flex';

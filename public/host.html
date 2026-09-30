@@ -19,35 +19,111 @@
         <span>Session:</span>
         <strong id="session-status" style="color: #00e676;">LOBBY</strong>
       </div>
-      <div id="host-quiz-selector-container" style="display: inline-flex; align-items: center; gap: 6px; margin-left: 8px;">
-        <span style="font-size: 13px; color: var(--text-muted);">Quiz:</span>
-        <select id="select-host-quiz" style="background: #1e2238; color: #fff; border: 1px solid #4a5280; border-radius: 8px; padding: 4px 10px; font-size: 13px; outline: none; cursor: pointer; font-weight: 600;">
-          <option value="java">☕ Java Fundamentals</option>
-          <option value="python">🐍 Python Essentials</option>
-          <option value="mlops">🚀 MLOps & ML Systems</option>
-        </select>
-      </div>
-      <label style="display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-muted); cursor: pointer; margin-left: 8px;">
-        <input type="checkbox" id="check-shuffle-options" checked>
-        <span>🔀 Anti-Cheating</span>
-      </label>
-      <label style="display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-muted); cursor: pointer; margin-left: 8px;" title="Otomatis berpindah ke Leaderboard & Soal berikutnya (10 detik)">
-        <input type="checkbox" id="check-auto-advance" checked>
-        <span>⏱️ Auto 10s</span>
-      </label>
     </div>
 
     <div class="nav-actions">
       <!-- Dynamic contextual controls -->
       <span id="host-auto-advance-badge" class="auto-advance-badge" style="display: none;">⏱️ Auto in 10s</span>
-      <a href="/manage" target="_blank" class="btn-host btn-secondary" title="Manage Questions">⚙️ Questions</a>
-      <button id="btn-host-sound" class="btn-host btn-secondary" title="Toggle Sound">🔊 Sound</button>
       <button id="btn-host-action" class="btn-host btn-accent" style="display: none;">Start Quiz</button>
       <button id="btn-host-skip" class="btn-host btn-secondary" style="display: none;">Skip Timer</button>
       <button id="btn-export-csv" class="btn-host btn-secondary" style="display: none;">📥 Download CSV</button>
-      <button id="btn-host-reset" class="btn-host btn-danger" style="margin-left: 10px;">Reset</button>
+      <button id="btn-open-settings" class="btn-host btn-secondary" title="Pengaturan Kuis">⚙️ Settings</button>
     </div>
   </nav>
+
+  <!-- Host Settings Modal -->
+  <div id="host-settings-modal" class="host-modal-overlay" style="display: none;">
+    <div class="host-modal-card">
+      <div class="host-modal-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 20px;">⚙️</span>
+          <h3 style="margin: 0; font-size: 18px; font-weight: 700;">Pengaturan Sesi Kuis</h3>
+        </div>
+        <button type="button" id="btn-close-settings" class="btn-modal-close" title="Tutup">&times;</button>
+      </div>
+
+      <div class="host-modal-body">
+        <!-- 1. Topik Kuis -->
+        <div class="setting-item">
+          <div class="setting-info">
+            <span class="setting-label">📚 Topik Kuis Aktif</span>
+            <span class="setting-desc">Pilih paket soal kuis (hanya dapat diganti saat sesi di Lobby)</span>
+          </div>
+          <select id="select-host-quiz" class="setting-select">
+            <option value="java">☕ Java Fundamentals</option>
+            <option value="python">🐍 Python Essentials</option>
+            <option value="mlops">🚀 MLOps & ML Systems</option>
+          </select>
+        </div>
+
+        <!-- 2. Watermark Layar Siswa (Nama & NIM) -->
+        <div class="setting-item">
+          <div class="setting-info">
+            <span class="setting-label">🛡️ Watermark Layar Siswa (Nama & NIM)</span>
+            <span class="setting-desc">Tampilkan overlay teks Nama & NIM berulang di layar HP mahasiswa (anti-screenshot AI). Nonaktif secara default.</span>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="check-watermark-overlay">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <!-- 3. Auto-Advance Otomatis -->
+        <div class="setting-item">
+          <div class="setting-info">
+            <span class="setting-label">⏱️ Auto-Advance Otomatis</span>
+            <span class="setting-desc">Otomatis pindah ke Leaderboard (10s) dan ke Soal berikutnya (5s) tanpa harus klik manual</span>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="check-auto-advance" checked>
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <!-- 4. Anti-Cheating -->
+        <div class="setting-item">
+          <div class="setting-info">
+            <span class="setting-label">🔀 Anti-Cheating (Acak Posisi Opsi)</span>
+            <span class="setting-desc">Acak posisi tombol opsi A/B/C/D di layar masing-masing mahasiswa</span>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="check-shuffle-options" checked>
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <!-- 5. Sound FX -->
+        <div class="setting-item">
+          <div class="setting-info">
+            <span class="setting-label">🔊 Efek Suara (Sound FX)</span>
+            <span class="setting-desc">Aktifkan efek audio countdown, jawaban, dan fanfare</span>
+          </div>
+          <button type="button" id="btn-host-sound" class="btn-host btn-secondary" style="padding: 6px 14px; font-size: 13px;">🔊 Sound On</button>
+        </div>
+
+        <!-- 6. Pintasan Manajemen Soal & Ekspor Nilai -->
+        <div class="setting-item" style="border-bottom: none; padding-bottom: 0;">
+          <div class="setting-info">
+            <span class="setting-label">🛠️ Pintasan & Ekspor Nilai</span>
+            <span class="setting-desc">Akses visual question manager atau unduh hasil nilai CSV</span>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <a href="/manage" target="_blank" class="btn-host btn-secondary" style="font-size: 13px; padding: 6px 14px;">⚙️ Kelola Soal</a>
+            <button type="button" id="btn-modal-export-csv" class="btn-host btn-secondary" style="font-size: 13px; padding: 6px 14px;">📥 Unduh CSV</button>
+          </div>
+        </div>
+
+        <!-- 7. Reset Sesi -->
+        <div class="setting-item danger-zone" style="margin-top: 14px; border-top: 1px dashed rgba(226, 27, 60, 0.4); padding-top: 14px;">
+          <div class="setting-info">
+            <span class="setting-label" style="color: #ff5252;">⚠️ Reset Sesi Kuis</span>
+            <span class="setting-desc">Mereset semua nilai peserta dan mengembalikan kuis ke Lobby</span>
+          </div>
+          <button type="button" id="btn-host-reset" class="btn-host btn-danger" style="font-size: 13px; padding: 6px 14px;">🔄 Reset Kuis</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <div class="host-container">
 
@@ -148,7 +224,7 @@
         <div>
           <div style="display: flex; align-items: center; gap: 12px;">
             <h2 style="font-size: 28px; margin: 0;">🏆 Session Leaderboard</h2>
-            <div id="lb-auto-badge" class="auto-advance-pill" style="display: none;">⏱️ Auto Soal Berikutnya dalam 10s</div>
+            <div id="lb-auto-badge" class="auto-advance-pill" style="display: none;">⏱️ Auto Soal Berikutnya dalam 5s</div>
           </div>
           <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">
             Current standings & live student focus status

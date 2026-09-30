@@ -41,6 +41,47 @@ const resultAutoBadge = document.getElementById('result-auto-badge');
 const lbAutoBadge = document.getElementById('lb-auto-badge');
 const selectHostQuiz = document.getElementById('select-host-quiz');
 const hostQuizBadge = document.getElementById('host-quiz-badge');
+const btnOpenSettings = document.getElementById('btn-open-settings');
+const btnCloseSettings = document.getElementById('btn-close-settings');
+const hostSettingsModal = document.getElementById('host-settings-modal');
+const btnModalExportCsv = document.getElementById('btn-modal-export-csv');
+const checkWatermarkOverlay = document.getElementById('check-watermark-overlay');
+
+if (btnOpenSettings && hostSettingsModal) {
+  btnOpenSettings.addEventListener('click', () => {
+    hostSettingsModal.style.display = 'flex';
+  });
+}
+
+if (btnCloseSettings && hostSettingsModal) {
+  btnCloseSettings.addEventListener('click', () => {
+    hostSettingsModal.style.display = 'none';
+  });
+}
+
+if (hostSettingsModal) {
+  hostSettingsModal.addEventListener('click', (e) => {
+    if (e.target === hostSettingsModal) {
+      hostSettingsModal.style.display = 'none';
+    }
+  });
+}
+
+if (btnModalExportCsv) {
+  btnModalExportCsv.addEventListener('click', triggerCsvDownload);
+}
+
+if (checkWatermarkOverlay) {
+  checkWatermarkOverlay.addEventListener('change', () => {
+    socket.emit('host_toggle_watermark', { enabled: checkWatermarkOverlay.checked });
+  });
+}
+
+socket.on('watermark_status', (data) => {
+  if (data && checkWatermarkOverlay) {
+    checkWatermarkOverlay.checked = !!data.enabled;
+  }
+});
 
 if (checkShuffle) {
   checkShuffle.addEventListener('change', () => {
@@ -260,6 +301,10 @@ socket.on('host_synced', (data) => {
   if (data.autoAdvanceEnabled !== undefined && checkAutoAdvance) {
     checkAutoAdvance.checked = !!data.autoAdvanceEnabled;
     hostState.autoAdvanceEnabled = !!data.autoAdvanceEnabled;
+  }
+
+  if (data.watermarkEnabled !== undefined && checkWatermarkOverlay) {
+    checkWatermarkOverlay.checked = !!data.watermarkEnabled;
   }
 
   // Restore screen state seamlessly if host refreshed!

@@ -67,15 +67,43 @@ async function testAutoAdvance() {
   });
 
   const nextQ = await nextQPromise;
-  console.log(`✅ AUTO-ADVANCE SUCCESS: Automatically transitioned to Question ${nextQ.index + 1} (${nextQ.question.substring(0, 40)}...) after 10s countdown!`);
-  console.log(`   Captured ticks: ${toNextQuestionTicks.slice(0, 5).join(', ')}...`);
+  console.log(`✅ AUTO-ADVANCE SUCCESS: Automatically transitioned to Question ${nextQ.index + 1} (${nextQ.question.substring(0, 40)}...) after 5s countdown!`);
+  console.log(`   Captured ticks: ${toNextQuestionTicks.join(', ')}...`);
+
+  // Verify that countdown started at 5 seconds
+  if (toNextQuestionTicks.length > 0 && toNextQuestionTicks[0] > 5) {
+    throw new Error(`Expected leaderboard auto-advance countdown to start at 5, but got ${toNextQuestionTicks[0]}`);
+  }
+
+  // Verify Watermark Toggle
+  console.log('🧪 Verifying Host Watermark Toggle...');
+  let watermarkReceived = null;
+  p1Socket.on('watermark_status', (data) => {
+    watermarkReceived = data.enabled;
+  });
+
+  hostSocket.emit('host_toggle_watermark', { enabled: true });
+  await new Promise(r => setTimeout(r, 200));
+
+  if (watermarkReceived !== true) {
+    throw new Error(`Expected watermark_status enabled to be true, got ${watermarkReceived}`);
+  }
+  console.log('✅ Watermark enabled broadcast received successfully!');
+
+  hostSocket.emit('host_toggle_watermark', { enabled: false });
+  await new Promise(r => setTimeout(r, 200));
+
+  if (watermarkReceived !== false) {
+    throw new Error(`Expected watermark_status enabled to be false, got ${watermarkReceived}`);
+  }
+  console.log('✅ Watermark disabled broadcast received successfully!');
 
   // Clean up
   hostSocket.emit('host_reset_quiz');
   hostSocket.disconnect();
   p1Socket.disconnect();
 
-  console.log('\n🎉 ALL AUTO-ADVANCE VERIFICATIONS PASSED 100%!');
+  console.log('\n🎉 ALL AUTO-ADVANCE & WATERMARK VERIFICATIONS PASSED 100%!');
   process.exit(0);
 }
 

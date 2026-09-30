@@ -338,7 +338,8 @@ const gameState = {
   autoAdvanceEnabled: true,
   autoAdvanceTimer: null,
   autoAdvanceCountdown: 0,
-  autoAdvancePhase: null // 'TO_LEADERBOARD' | 'TO_NEXT_QUESTION' | null
+  autoAdvancePhase: null, // 'TO_LEADERBOARD' | 'TO_NEXT_QUESTION' | null
+  watermarkEnabled: false // Default false: tidak mengganggu mahasiswa, bisa diaktifkan lewat settings host
 };
 
 function saveSessionBackup() {
@@ -348,6 +349,8 @@ function saveSessionBackup() {
       status: gameState.status,
       currentQuestionIndex: gameState.currentQuestionIndex,
       shuffleOptions: gameState.shuffleOptions,
+      autoAdvanceEnabled: gameState.autoAdvanceEnabled,
+      watermarkEnabled: gameState.watermarkEnabled,
       players: gameState.players
     };
     const tempPath = backupPath + '.tmp';
@@ -575,7 +578,8 @@ function showLeaderboard() {
   saveSessionBackup();
 
   const isLast = (gameState.currentQuestionIndex + 1 >= questions.length);
-  startAutoAdvance('TO_NEXT_QUESTION', 10, () => {
+  // Transition to next question after 5 seconds
+  startAutoAdvance('TO_NEXT_QUESTION', 5, () => {
     advanceFromLeaderboard();
   });
 }
@@ -790,6 +794,7 @@ io.on('connection', (socket) => {
     currentQuestionIndex: gameState.currentQuestionIndex,
     totalQuestions: questions.length,
     shuffleOptions: gameState.shuffleOptions,
+    watermarkEnabled: gameState.watermarkEnabled,
     quizId: currentQuizId,
     quizTitle: currentQuizTitle,
     quizLanguage: currentQuizLanguage
@@ -810,6 +815,7 @@ io.on('connection', (socket) => {
       currentQuestionIndex: gameState.currentQuestionIndex,
       totalQuestions: questions.length,
       shuffleOptions: gameState.shuffleOptions,
+      watermarkEnabled: gameState.watermarkEnabled,
       quizId: currentQuizId,
       quizTitle: currentQuizTitle,
       quizLanguage: currentQuizLanguage,
@@ -967,7 +973,8 @@ io.on('connection', (socket) => {
         shuffle: gameState.shuffleOptions
       } : null,
       timeLeft: gameState.timeLeft,
-      hasAnswered: hasAnswered
+      hasAnswered: hasAnswered,
+      watermarkEnabled: gameState.watermarkEnabled
     });
 
     saveSessionBackup();
@@ -1039,7 +1046,8 @@ io.on('connection', (socket) => {
         } : null,
         timeLeft: gameState.timeLeft,
         hasAnswered: hasAnswered,
-        isRejoin: true
+        isRejoin: true,
+        watermarkEnabled: gameState.watermarkEnabled
       });
       return;
     }
@@ -1105,7 +1113,8 @@ io.on('connection', (socket) => {
       timeLeft: gameState.timeLeft,
       hasAnswered: false,
       isLateJoiner: isLate,
-      missedCount: Math.max(0, gameState.currentQuestionIndex)
+      missedCount: Math.max(0, gameState.currentQuestionIndex),
+      watermarkEnabled: gameState.watermarkEnabled
     });
 
     // Notify Host if student joined mid-session!
@@ -1269,10 +1278,16 @@ io.on('connection', (socket) => {
       if (gameState.status === 'QUESTION_RESULT') {
         startAutoAdvance('TO_LEADERBOARD', 10, () => showLeaderboard());
       } else if (gameState.status === 'LEADERBOARD') {
-        startAutoAdvance('TO_NEXT_QUESTION', 10, () => advanceFromLeaderboard());
+        startAutoAdvance('TO_NEXT_QUESTION', 5, () => advanceFromLeaderboard());
       }
     }
     io.emit('auto_advance_status', { enabled: gameState.autoAdvanceEnabled });
+  });
+
+  socket.on('host_toggle_watermark', (data) => {
+    gameState.watermarkEnabled = (data && data.enabled !== undefined) ? !!data.enabled : !gameState.watermarkEnabled;
+    io.emit('watermark_status', { enabled: gameState.watermarkEnabled });
+    saveSessionBackup();
   });
 
   socket.on('host_reset_quiz', () => {

@@ -6,6 +6,9 @@ let hostState = {
   status: 'LOBBY',
   currentQuestionIndex: -1,
   totalQuestions: 10,
+  availableQuestions: 10,
+  questionLimit: 0,
+  randomizeQuestions: false,
   players: [],
   previousLeaderboardMap: {},
   currentQuestion: null,
@@ -46,6 +49,124 @@ const btnCloseSettings = document.getElementById('btn-close-settings');
 const hostSettingsModal = document.getElementById('host-settings-modal');
 const btnModalExportCsv = document.getElementById('btn-modal-export-csv');
 const checkWatermarkOverlay = document.getElementById('check-watermark-overlay');
+const selectQuestionLimit = document.getElementById('select-question-limit');
+const customQuestionLimitWrap = document.getElementById('custom-question-limit-wrap');
+const inputCustomQuestionLimit = document.getElementById('input-custom-question-limit');
+const btnApplyCustomLimit = document.getElementById('btn-apply-custom-limit');
+const checkRandomizeQuestions = document.getElementById('check-randomize-questions');
+const settingQuestionLimitDesc = document.getElementById('setting-question-limit-desc');
+const lobbyQCountBanner = document.getElementById('lobby-q-count-banner');
+const lobbyActiveQCount = document.getElementById('lobby-active-q-count');
+const lobbyTotalQLabel = document.getElementById('lobby-total-q-label');
+
+function renderQuestionLimitOptions(availableCount, currentLimit) {
+  if (!selectQuestionLimit) return;
+  selectQuestionLimit.innerHTML = '';
+
+  const total = Number(availableCount) || 50;
+
+  // Option: Semua Soal
+  const optAll = document.createElement('option');
+  optAll.value = '0';
+  optAll.textContent = `Semua Soal (${total} Soal)`;
+  selectQuestionLimit.appendChild(optAll);
+
+  // Standard presets
+  const presets = [5, 10, 15, 20, 25, 30, 40];
+
+  presets.forEach(num => {
+    if (num < total) {
+      const opt = document.createElement('option');
+      opt.value = String(num);
+      opt.textContent = `${num} Soal`;
+      selectQuestionLimit.appendChild(opt);
+    }
+  });
+
+  // Custom option
+  const optCustom = document.createElement('option');
+  optCustom.value = 'custom';
+  optCustom.textContent = 'Kustom...';
+  selectQuestionLimit.appendChild(optCustom);
+
+  // Set selected value
+  const numLimit = Number(currentLimit) || 0;
+  if (numLimit > 0 && numLimit < total) {
+    if (presets.includes(numLimit)) {
+      selectQuestionLimit.value = String(numLimit);
+      if (customQuestionLimitWrap) customQuestionLimitWrap.style.display = 'none';
+    } else {
+      selectQuestionLimit.value = 'custom';
+      if (customQuestionLimitWrap) customQuestionLimitWrap.style.display = 'inline-flex';
+      if (inputCustomQuestionLimit) inputCustomQuestionLimit.value = numLimit;
+    }
+  } else {
+    selectQuestionLimit.value = '0';
+    if (customQuestionLimitWrap) customQuestionLimitWrap.style.display = 'none';
+  }
+
+  if (settingQuestionLimitDesc) {
+    settingQuestionLimitDesc.innerText = `Tentukan berapa banyak soal yang dimainkan (Tersedia: ${total} soal)`;
+  }
+}
+
+if (lobbyQCountBanner && hostSettingsModal) {
+  lobbyQCountBanner.addEventListener('click', () => {
+    hostSettingsModal.style.display = 'flex';
+  });
+}
+
+if (selectQuestionLimit) {
+  selectQuestionLimit.addEventListener('change', () => {
+    const val = selectQuestionLimit.value;
+    if (val === 'custom') {
+      if (customQuestionLimitWrap) customQuestionLimitWrap.style.display = 'inline-flex';
+      if (inputCustomQuestionLimit) {
+        inputCustomQuestionLimit.focus();
+        if (!inputCustomQuestionLimit.value) inputCustomQuestionLimit.value = hostState.totalQuestions || 25;
+      }
+    } else {
+      if (customQuestionLimitWrap) customQuestionLimitWrap.style.display = 'none';
+      const count = Number(val);
+      socket.emit('host_set_question_limit', {
+        count: count,
+        randomize: checkRandomizeQuestions ? checkRandomizeQuestions.checked : false
+      });
+    }
+  });
+}
+
+function applyCustomLimit() {
+  if (!inputCustomQuestionLimit) return;
+  const count = parseInt(inputCustomQuestionLimit.value, 10);
+  if (isNaN(count) || count < 1) {
+    alert('Mohon masukkan jumlah soal minimal 1.');
+    return;
+  }
+  socket.emit('host_set_question_limit', {
+    count: count,
+    randomize: checkRandomizeQuestions ? checkRandomizeQuestions.checked : false
+  });
+}
+
+if (btnApplyCustomLimit) {
+  btnApplyCustomLimit.addEventListener('click', applyCustomLimit);
+}
+
+if (inputCustomQuestionLimit) {
+  inputCustomQuestionLimit.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      applyCustomLimit();
+    }
+  });
+}
+
+if (checkRandomizeQuestions) {
+  checkRandomizeQuestions.addEventListener('change', () => {
+    socket.emit('host_toggle_randomize_questions', { enabled: checkRandomizeQuestions.checked });
+  });
+}
 
 if (btnOpenSettings && hostSettingsModal) {
   btnOpenSettings.addEventListener('click', () => {
@@ -191,6 +312,13 @@ function switchScreen(screenKey) {
       screens[key].classList.toggle('active', key === screenKey);
     }
   });
+
+  const isLobby = (screenKey === 'lobby');
+  if (selectHostQuiz) selectHostQuiz.disabled = !isLobby;
+  if (selectQuestionLimit) selectQuestionLimit.disabled = !isLobby;
+  if (checkRandomizeQuestions) checkRandomizeQuestions.disabled = !isLobby;
+  if (inputCustomQuestionLimit) inputCustomQuestionLimit.disabled = !isLobby;
+  if (btnApplyCustomLimit) btnApplyCustomLimit.disabled = !isLobby;
 }
 
 // Generate QR Code and show Join URL
@@ -307,6 +435,21 @@ socket.on('host_synced', (data) => {
     checkWatermarkOverlay.checked = !!data.watermarkEnabled;
   }
 
+  if (data.availableQuestions) hostState.availableQuestions = data.availableQuestions;
+  if (data.questionLimit !== undefined) hostState.questionLimit = data.questionLimit;
+  if (data.randomizeQuestions !== undefined) {
+    hostState.randomizeQuestions = !!data.randomizeQuestions;
+    if (checkRandomizeQuestions) checkRandomizeQuestions.checked = !!data.randomizeQuestions;
+  }
+  if (lobbyActiveQCount) {
+    lobbyActiveQCount.innerText = data.totalQuestions || 10;
+  }
+  if (lobbyTotalQLabel) {
+    const avail = data.availableQuestions || data.totalQuestions || 10;
+    lobbyTotalQLabel.innerText = data.questionLimit > 0 ? `Soal Aktif (dari ${avail})` : `Soal Aktif (Semua)`;
+  }
+  renderQuestionLimitOptions(data.availableQuestions || data.totalQuestions, data.questionLimit);
+
   // Restore screen state seamlessly if host refreshed!
   if (data.status === 'LOBBY') {
     switchScreen('lobby');
@@ -373,6 +516,24 @@ socket.on('quiz_info_updated', (data) => {
   if (data.totalQuestions) {
     hostState.totalQuestions = data.totalQuestions;
   }
+  if (data.availableQuestions) {
+    hostState.availableQuestions = data.availableQuestions;
+  }
+  if (data.questionLimit !== undefined) {
+    hostState.questionLimit = data.questionLimit;
+  }
+  if (data.randomizeQuestions !== undefined && checkRandomizeQuestions) {
+    hostState.randomizeQuestions = !!data.randomizeQuestions;
+    checkRandomizeQuestions.checked = !!data.randomizeQuestions;
+  }
+  if (lobbyActiveQCount) {
+    lobbyActiveQCount.innerText = data.totalQuestions || 10;
+  }
+  if (lobbyTotalQLabel) {
+    const avail = data.availableQuestions || data.totalQuestions || 10;
+    lobbyTotalQLabel.innerText = (data.questionLimit && data.questionLimit > 0) ? `Soal Aktif (dari ${avail})` : `Soal Aktif (Semua)`;
+  }
+  renderQuestionLimitOptions(data.availableQuestions || data.totalQuestions, data.questionLimit);
 });
 
 // Update Lobby
@@ -547,7 +708,8 @@ function renderResult(data) {
   btnHostAction.innerText = 'Show Leaderboard ➔';
 
   const q = data.question;
-  document.getElementById('result-q-indicator').innerText = `Results: Question ${q.id}`;
+  const displayQNum = (q.index !== undefined) ? (q.index + 1) : (q.sessionIndex || q.id);
+  document.getElementById('result-q-indicator').innerText = `Results: Question ${displayQNum} of ${q.total || hostState.totalQuestions}`;
   document.getElementById('result-total-answered').innerText = `${data.totalAnswered || data.answeredCount || 0} / ${data.totalPlayers || hostState.players.length}`;
   document.getElementById('result-q-text').innerText = q.question;
   document.getElementById('result-explanation-text').innerText = q.explanation || 'No explanation provided.';

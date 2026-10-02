@@ -166,6 +166,27 @@ body {
   gap: 12px;
 }
 
+.q-count-banner {
+  font-size: 26px;
+  font-weight: 800;
+  background: #232742;
+  border: 1.5px solid #3d436e;
+  padding: 12px 20px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.q-count-banner:hover {
+  background: #2d3257;
+  border-color: #7c4dff;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(124, 77, 255, 0.25);
+}
+
 .player-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));

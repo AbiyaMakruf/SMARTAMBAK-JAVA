@@ -30,6 +30,7 @@ if (!fs.existsSync(quizSetsDir)) {
 let currentQuizId = 'java';
 let currentQuizTitle = 'Java Fundamentals';
 let currentQuizLanguage = 'java';
+let rawQuizQuestions = [];
 let questions = [];
 
 function getQuizSets() {
@@ -73,9 +74,9 @@ function loadActiveQuiz(targetId) {
       currentQuizId = data.id || idToLoad;
       currentQuizTitle = data.title || 'Interactive Quiz';
       currentQuizLanguage = data.language || 'java';
-      questions = Array.isArray(data.questions) ? data.questions : [];
+      rawQuizQuestions = Array.isArray(data.questions) ? data.questions : [];
     } else if (fs.existsSync(questionsPath)) {
-      questions = JSON.parse(fs.readFileSync(questionsPath, 'utf8'));
+      rawQuizQuestions = JSON.parse(fs.readFileSync(questionsPath, 'utf8'));
       currentQuizId = 'custom';
       currentQuizTitle = 'Custom Quiz';
       currentQuizLanguage = 'java';
@@ -83,10 +84,12 @@ function loadActiveQuiz(targetId) {
 
     try {
       fs.writeFileSync(activeQuizPath, JSON.stringify({ activeQuizId: currentQuizId }, null, 2));
-      fs.writeFileSync(questionsPath, JSON.stringify(questions, null, 2));
+      fs.writeFileSync(questionsPath, JSON.stringify(rawQuizQuestions, null, 2));
     } catch (e) {}
 
-    console.log(`✅ Loaded quiz set "${currentQuizTitle}" (${currentQuizId}) with ${questions.length} questions.`);
+    applyQuestionLimit();
+
+    console.log(`✅ Loaded quiz set "${currentQuizTitle}" (${currentQuizId}) with ${rawQuizQuestions.length} questions (Session active: ${questions.length}).`);
   } catch (err) {
     console.error('Error loading active quiz:', err);
   }
@@ -216,7 +219,7 @@ app.delete('/api/quiz-sets/:id', (req, res) => {
 
 // Legacy / Active Question API Endpoints for Visual Editor
 app.get('/api/questions', (req, res) => {
-  res.json(questions);
+  res.json(rawQuizQuestions.length > 0 ? rawQuizQuestions : questions);
 });
 
 app.post('/api/questions', (req, res) => {
@@ -232,7 +235,8 @@ app.post('/api/questions', (req, res) => {
       q.timeLimit = Number(q.timeLimit) || 25;
     });
 
-    questions = updated;
+    rawQuizQuestions = updated;
+    applyQuestionLimit();
 
     // Save to active quiz set file
     const activeFile = path.join(quizSetsDir, `${currentQuizId}.json`);
@@ -240,18 +244,18 @@ app.post('/api/questions', (req, res) => {
       id: currentQuizId,
       title: currentQuizTitle,
       language: currentQuizLanguage,
-      questions: questions
+      questions: rawQuizQuestions
     };
     if (fs.existsSync(activeFile)) {
       try {
         const existing = JSON.parse(fs.readFileSync(activeFile, 'utf8'));
-        quizSetData = { ...existing, questions: questions };
+        quizSetData = { ...existing, questions: rawQuizQuestions };
       } catch (e) {}
     }
     fs.writeFileSync(activeFile, JSON.stringify(quizSetData, null, 2));
-    fs.writeFileSync(questionsPath, JSON.stringify(questions, null, 2));
+    fs.writeFileSync(questionsPath, JSON.stringify(rawQuizQuestions, null, 2));
 
-    console.log(`✅ Updated ${questions.length} questions for quiz '${currentQuizTitle}'.`);
+    console.log(`✅ Updated ${rawQuizQuestions.length} questions for quiz '${currentQuizTitle}' (Session active: ${questions.length}).`);
 
     io.emit('quiz_info_updated', {
       quizId: currentQuizId,
@@ -339,8 +343,35 @@ const gameState = {
   autoAdvanceTimer: null,
   autoAdvanceCountdown: 0,
   autoAdvancePhase: null, // 'TO_LEADERBOARD' | 'TO_NEXT_QUESTION' | null
-  watermarkEnabled: false // Default false: tidak mengganggu mahasiswa, bisa diaktifkan lewat settings host
+  watermarkEnabled: false, // Default false: tidak mengganggu mahasiswa, bisa diaktifkan lewat settings host
+  questionLimit: 0, // 0 = all questions in set, or e.g. 25, 30
+  randomizeQuestions: false // whether to sample/randomize questions
 };
+
+function applyQuestionLimit() {
+  const total = rawQuizQuestions.length;
+  let limit = Number(gameState.questionLimit) || 0;
+
+  let pool = [...rawQuizQuestions];
+  if (gameState.randomizeQuestions) {
+    for (let i = pool.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [pool[i], pool[j]] = [pool[j], pool[i]];
+    }
+  }
+
+  if (limit > 0 && limit < total) {
+    questions = pool.slice(0, limit);
+  } else {
+    gameState.questionLimit = 0; // 0 means all questions
+    questions = pool;
+  }
+
+  questions = questions.map((q, idx) => ({
+    ...q,
+    sessionIndex: idx + 1
+  }));
+}
 
 function saveSessionBackup() {
   try {
@@ -351,6 +382,8 @@ function saveSessionBackup() {
       shuffleOptions: gameState.shuffleOptions,
       autoAdvanceEnabled: gameState.autoAdvanceEnabled,
       watermarkEnabled: gameState.watermarkEnabled,
+      questionLimit: gameState.questionLimit,
+      randomizeQuestions: gameState.randomizeQuestions,
       players: gameState.players
     };
     const tempPath = backupPath + '.tmp';
@@ -793,6 +826,9 @@ io.on('connection', (socket) => {
     status: gameState.status,
     currentQuestionIndex: gameState.currentQuestionIndex,
     totalQuestions: questions.length,
+    availableQuestions: rawQuizQuestions.length,
+    questionLimit: gameState.questionLimit,
+    randomizeQuestions: gameState.randomizeQuestions,
     shuffleOptions: gameState.shuffleOptions,
     watermarkEnabled: gameState.watermarkEnabled,
     quizId: currentQuizId,
@@ -814,6 +850,9 @@ io.on('connection', (socket) => {
       players: Object.values(gameState.players).map(p => sanitizePlayer(p)),
       currentQuestionIndex: gameState.currentQuestionIndex,
       totalQuestions: questions.length,
+      availableQuestions: rawQuizQuestions.length,
+      questionLimit: gameState.questionLimit,
+      randomizeQuestions: gameState.randomizeQuestions,
       shuffleOptions: gameState.shuffleOptions,
       watermarkEnabled: gameState.watermarkEnabled,
       quizId: currentQuizId,
@@ -859,20 +898,78 @@ io.on('connection', (socket) => {
         quizId: currentQuizId,
         quizTitle: currentQuizTitle,
         quizLanguage: currentQuizLanguage,
-        totalQuestions: questions.length
+        totalQuestions: questions.length,
+        availableQuestions: rawQuizQuestions.length,
+        questionLimit: gameState.questionLimit,
+        randomizeQuestions: gameState.randomizeQuestions
       });
       socket.emit('host_synced', {
         status: gameState.status,
         players: Object.values(gameState.players).map(p => sanitizePlayer(p)),
         currentQuestionIndex: gameState.currentQuestionIndex,
         totalQuestions: questions.length,
+        availableQuestions: rawQuizQuestions.length,
+        questionLimit: gameState.questionLimit,
+        randomizeQuestions: gameState.randomizeQuestions,
         shuffleOptions: gameState.shuffleOptions,
+        watermarkEnabled: gameState.watermarkEnabled,
         quizId: currentQuizId,
         quizTitle: currentQuizTitle,
         quizLanguage: currentQuizLanguage,
         quizSets: getQuizSets()
       });
     }
+  });
+
+  // Host sets custom question limit count (e.g. 25 questions out of 50)
+  socket.on('host_set_question_limit', (data) => {
+    if (gameState.status !== 'LOBBY') {
+      return socket.emit('error_notification', { message: 'Jumlah soal hanya dapat diubah saat di Lobby.' });
+    }
+
+    const rawCount = data ? (data.count !== undefined ? data.count : data.limit) : 0;
+    const count = Number(rawCount);
+    const randomize = (data && data.randomize !== undefined) ? !!data.randomize : gameState.randomizeQuestions;
+
+    gameState.randomizeQuestions = randomize;
+    if (count > 0 && count < rawQuizQuestions.length) {
+      gameState.questionLimit = count;
+    } else {
+      gameState.questionLimit = 0; // 0 means all questions
+    }
+
+    applyQuestionLimit();
+    saveSessionBackup();
+
+    io.emit('quiz_info_updated', {
+      quizId: currentQuizId,
+      quizTitle: currentQuizTitle,
+      quizLanguage: currentQuizLanguage,
+      totalQuestions: questions.length,
+      availableQuestions: rawQuizQuestions.length,
+      questionLimit: gameState.questionLimit,
+      randomizeQuestions: gameState.randomizeQuestions
+    });
+  });
+
+  // Host toggles randomize questions
+  socket.on('host_toggle_randomize_questions', (data) => {
+    if (gameState.status !== 'LOBBY') {
+      return socket.emit('error_notification', { message: 'Pengaturan acak soal hanya dapat diubah saat di Lobby.' });
+    }
+    gameState.randomizeQuestions = (data && data.enabled !== undefined) ? !!data.enabled : !gameState.randomizeQuestions;
+    applyQuestionLimit();
+    saveSessionBackup();
+
+    io.emit('quiz_info_updated', {
+      quizId: currentQuizId,
+      quizTitle: currentQuizTitle,
+      quizLanguage: currentQuizLanguage,
+      totalQuestions: questions.length,
+      availableQuestions: rawQuizQuestions.length,
+      questionLimit: gameState.questionLimit,
+      randomizeQuestions: gameState.randomizeQuestions
+    });
   });
 
   // Host toggles anti-cheating shuffle
@@ -1159,6 +1256,9 @@ io.on('connection', (socket) => {
       return socket.emit('action_error', { message: 'Cannot start quiz with 0 participants!' });
     }
 
+    applyQuestionLimit();
+    saveSessionBackup();
+
     gameState.status = 'COUNTDOWN';
     let countdown = 3;
     io.emit('start_countdown', { count: countdown });
@@ -1297,7 +1397,17 @@ io.on('connection', (socket) => {
     gameState.currentQuestionIndex = -1;
     gameState.players = {};
     gameState.currentQuestionAnswers = {};
+    applyQuestionLimit();
     io.emit('quiz_reset');
+    io.emit('quiz_info_updated', {
+      quizId: currentQuizId,
+      quizTitle: currentQuizTitle,
+      quizLanguage: currentQuizLanguage,
+      totalQuestions: questions.length,
+      availableQuestions: rawQuizQuestions.length,
+      questionLimit: gameState.questionLimit,
+      randomizeQuestions: gameState.randomizeQuestions
+    });
     saveSessionBackup();
   });
 

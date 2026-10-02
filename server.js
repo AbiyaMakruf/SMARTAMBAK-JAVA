@@ -33,6 +33,51 @@ let currentQuizLanguage = 'java';
 let rawQuizQuestions = [];
 let questions = [];
 
+// Game state
+const gameState = {
+  status: 'LOBBY', // LOBBY, COUNTDOWN, QUESTION_ACTIVE, QUESTION_RESULT, LEADERBOARD, GAME_OVER
+  currentQuestionIndex: -1,
+  questionStartTime: null,
+  timerInterval: null,
+  timeLeft: 0,
+  hostSocketId: null,
+  shuffleOptions: true, // Anti-cheating feature
+  players: {}, // socketId -> { id, sessionToken, name, nim, score, streak, answers: {} }
+  currentQuestionAnswers: {}, // socketId -> { submittedAnswer, isCorrect, pointsEarned, timeSpent }
+  autoAdvanceEnabled: true,
+  autoAdvanceTimer: null,
+  autoAdvanceCountdown: 0,
+  autoAdvancePhase: null, // 'TO_LEADERBOARD' | 'TO_NEXT_QUESTION' | null
+  watermarkEnabled: false, // Default false: tidak mengganggu mahasiswa, bisa diaktifkan lewat settings host
+  questionLimit: 0, // 0 = all questions in set, or e.g. 25, 30
+  randomizeQuestions: false // whether to sample/randomize questions
+};
+
+function applyQuestionLimit() {
+  const total = rawQuizQuestions.length;
+  let limit = Number(gameState.questionLimit) || 0;
+
+  let pool = [...rawQuizQuestions];
+  if (gameState.randomizeQuestions) {
+    for (let i = pool.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [pool[i], pool[j]] = [pool[j], pool[i]];
+    }
+  }
+
+  if (limit > 0 && limit < total) {
+    questions = pool.slice(0, limit);
+  } else {
+    gameState.questionLimit = 0; // 0 means all questions
+    questions = pool;
+  }
+
+  questions = questions.map((q, idx) => ({
+    ...q,
+    sessionIndex: idx + 1
+  }));
+}
+
 function getQuizSets() {
   try {
     if (!fs.existsSync(quizSetsDir)) return [];
@@ -328,50 +373,6 @@ app.get('/api/export-csv', (req, res) => {
   }
 });
 
-// Game state
-const gameState = {
-  status: 'LOBBY', // LOBBY, COUNTDOWN, QUESTION_ACTIVE, QUESTION_RESULT, LEADERBOARD, GAME_OVER
-  currentQuestionIndex: -1,
-  questionStartTime: null,
-  timerInterval: null,
-  timeLeft: 0,
-  hostSocketId: null,
-  shuffleOptions: true, // Anti-cheating feature
-  players: {}, // socketId -> { id, sessionToken, name, nim, score, streak, answers: {} }
-  currentQuestionAnswers: {}, // socketId -> { submittedAnswer, isCorrect, pointsEarned, timeSpent }
-  autoAdvanceEnabled: true,
-  autoAdvanceTimer: null,
-  autoAdvanceCountdown: 0,
-  autoAdvancePhase: null, // 'TO_LEADERBOARD' | 'TO_NEXT_QUESTION' | null
-  watermarkEnabled: false, // Default false: tidak mengganggu mahasiswa, bisa diaktifkan lewat settings host
-  questionLimit: 0, // 0 = all questions in set, or e.g. 25, 30
-  randomizeQuestions: false // whether to sample/randomize questions
-};
-
-function applyQuestionLimit() {
-  const total = rawQuizQuestions.length;
-  let limit = Number(gameState.questionLimit) || 0;
-
-  let pool = [...rawQuizQuestions];
-  if (gameState.randomizeQuestions) {
-    for (let i = pool.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [pool[i], pool[j]] = [pool[j], pool[i]];
-    }
-  }
-
-  if (limit > 0 && limit < total) {
-    questions = pool.slice(0, limit);
-  } else {
-    gameState.questionLimit = 0; // 0 means all questions
-    questions = pool;
-  }
-
-  questions = questions.map((q, idx) => ({
-    ...q,
-    sessionIndex: idx + 1
-  }));
-}
 
 function saveSessionBackup() {
   try {

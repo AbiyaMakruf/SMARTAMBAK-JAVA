@@ -1246,3 +1246,147 @@ socket.on('quiz_reset', () => {
   updateLobbyPlayers();
   switchScreen('lobby');
 });
+
+// ==========================================
+// HOST SELF-PACED QUIZ MONITORING SYSTEM
+// ==========================================
+const btnOpenSelfQuiz = document.getElementById('btn-open-self-quiz');
+const modalSelfQuiz = document.getElementById('host-self-quiz-modal');
+const btnCloseSelfQuiz = document.getElementById('btn-close-self-quiz');
+const inputSelfQuizLink = document.getElementById('input-self-quiz-link');
+const btnCopySelfLink = document.getElementById('btn-copy-self-link');
+const btnSelfRefresh = document.getElementById('btn-self-refresh');
+const btnSelfClear = document.getElementById('btn-self-clear');
+const tbodySelfRecords = document.getElementById('tbody-self-records');
+const statSelfTotal = document.getElementById('stat-self-total');
+const statSelfAvg = document.getElementById('stat-self-avg');
+const statSelfHighest = document.getElementById('stat-self-highest');
+const countSelfRecords = document.getElementById('count-self-records');
+
+if (inputSelfQuizLink) {
+  inputSelfQuizLink.value = `${window.location.origin}/self`;
+}
+
+if (btnCopySelfLink) {
+  btnCopySelfLink.addEventListener('click', async () => {
+    try {
+      const url = inputSelfQuizLink.value || `${window.location.origin}/self`;
+      await navigator.clipboard.writeText(url);
+      btnCopySelfLink.innerText = '✓ Tersalin!';
+      setTimeout(() => btnCopySelfLink.innerText = '📋 Salin Link', 2000);
+    } catch (e) {
+      inputSelfQuizLink.select();
+      document.execCommand('copy');
+      btnCopySelfLink.innerText = '✓ Tersalin!';
+      setTimeout(() => btnCopySelfLink.innerText = '📋 Salin Link', 2000);
+    }
+  });
+}
+
+if (btnOpenSelfQuiz) {
+  btnOpenSelfQuiz.addEventListener('click', () => {
+    if (modalSelfQuiz) modalSelfQuiz.style.display = 'flex';
+    loadSelfQuizRecords();
+  });
+}
+
+if (btnCloseSelfQuiz) {
+  btnCloseSelfQuiz.addEventListener('click', () => {
+    if (modalSelfQuiz) modalSelfQuiz.style.display = 'none';
+  });
+}
+
+if (btnSelfRefresh) {
+  btnSelfRefresh.addEventListener('click', loadSelfQuizRecords);
+}
+
+if (btnSelfClear) {
+  btnSelfClear.addEventListener('click', async () => {
+    if (!confirm('Apakah Anda yakin ingin mengarsipkan dan membersihkan data kuis mandiri saat ini? Data lama akan otomatis dicadangkan ke file backup.')) {
+      return;
+    }
+    try {
+      const res = await fetch('/api/self-quiz/clear', { method: 'POST' });
+      const data = await res.json();
+      alert(data.message || 'Data berhasil dibersihkan.');
+      loadSelfQuizRecords();
+    } catch (e) {
+      alert('Gagal membersihkan data.');
+    }
+  });
+}
+
+async function loadSelfQuizRecords() {
+  if (!tbodySelfRecords) return;
+  try {
+    tbodySelfRecords.innerHTML = '<tr><td colspan="8" style="padding: 18px; text-align: center; color: var(--text-muted);">Memuat data rekap...</td></tr>';
+    const resp = await fetch('/api/self-quiz/records');
+    const records = await resp.json();
+
+    if (!Array.isArray(records) || records.length === 0) {
+      tbodySelfRecords.innerHTML = '<tr><td colspan="8" style="padding: 24px; text-align: center; color: var(--text-muted);">Belum ada mahasiswa yang mengumpulkan kuis mandiri.</td></tr>';
+      if (statSelfTotal) statSelfTotal.innerText = '0';
+      if (statSelfAvg) statSelfAvg.innerText = '0 pts';
+      if (statSelfHighest) statSelfHighest.innerText = '0 pts';
+      if (countSelfRecords) countSelfRecords.innerText = '0';
+      return;
+    }
+
+    // Urutkan berdasarkan skor tertinggi
+    records.sort((a, b) => b.score - a.score);
+
+    const totalCount = records.length;
+    const totalScore = records.reduce((sum, r) => sum + (r.score || 0), 0);
+    const avgScore = Math.round(totalScore / totalCount);
+    const highestScore = records[0].score || 0;
+
+    if (statSelfTotal) statSelfTotal.innerText = totalCount;
+    if (statSelfAvg) statSelfAvg.innerText = `${avgScore} pts`;
+    if (statSelfHighest) statSelfHighest.innerText = `${highestScore} pts`;
+    if (countSelfRecords) countSelfRecords.innerText = totalCount;
+
+    tbodySelfRecords.innerHTML = '';
+    records.forEach((rec, idx) => {
+      const tr = document.createElement('tr');
+      tr.style.borderBottom = '1px solid rgba(255,255,255,0.06)';
+      const completedFormatted = rec.completedAt ? new Date(rec.completedAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '-';
+      const cheatCount = rec.tabSwitchCount || 0;
+      const cheatBadge = cheatCount > 0 
+        ? `<span style="background: rgba(255,171,0,0.2); color: #ffd740; padding: 2px 8px; border-radius: 12px; font-weight: 700; font-size: 11px;">⚠️ ${cheatCount}x</span>`
+        : `<span style="color: #00e676; font-size: 12px;">✓ 0x</span>`;
+
+      tr.innerHTML = `
+        <td style="padding: 10px 12px; font-weight: 700; color: #ffd54f;">#${idx + 1}</td>
+        <td style="padding: 10px 12px; font-family: monospace; color: #e0e0e0;">${rec.nim || '-'}</td>
+        <td style="padding: 10px 12px; font-weight: 600; color: #fff;">${rec.name || 'Anonymous'}</td>
+        <td style="padding: 10px 12px; color: var(--text-muted); font-size: 12px;">${rec.quizTitle || '-'}</td>
+        <td style="padding: 10px 12px; text-align: right; font-weight: 700; color: #ffd54f;">${rec.score} pts</td>
+        <td style="padding: 10px 12px; text-align: center; color: ${rec.accuracy >= 70 ? '#00e676' : (rec.accuracy >= 50 ? '#ffd54f' : '#ff5252')}; font-weight: 700;">
+          ${rec.accuracy}% (${rec.correctCount}/${rec.totalQuestions})
+        </td>
+        <td style="padding: 10px 12px; text-align: center;">${cheatBadge}</td>
+        <td style="padding: 10px 12px; color: var(--text-muted); font-size: 12px;">${completedFormatted}</td>
+      `;
+      tbodySelfRecords.appendChild(tr);
+    });
+  } catch (err) {
+    console.error('Error loading self quiz records:', err);
+    tbodySelfRecords.innerHTML = '<tr><td colspan="8" style="padding: 18px; text-align: center; color: #ff5252;">Gagal memuat data.</td></tr>';
+  }
+}
+
+// Socket Realtime Listener saat mahasiswa submit kuis mandiri
+socket.on('self_quiz_submission_received', (data) => {
+  if (modalSelfQuiz && modalSelfQuiz.style.display !== 'none') {
+    loadSelfQuizRecords();
+  }
+  // Notifikasi toast halus di host screen
+  const toast = document.createElement('div');
+  toast.className = 'host-focus-alert';
+  toast.style.borderColor = '#00e676';
+  toast.innerHTML = `🎉 <span>Mahasiswa <strong>${data.name}</strong> (${data.nim}) selesai Kuis Mandiri dengan skor <strong>${data.score} pts</strong> (${data.accuracy}%)</span>`;
+  document.body.appendChild(toast);
+  setTimeout(() => {
+    if (toast.parentNode) toast.parentNode.removeChild(toast);
+  }, 6000);
+});

@@ -27,6 +27,7 @@
       <button id="btn-host-action" class="btn-host btn-accent" style="display: none;">Start Quiz</button>
       <button id="btn-host-skip" class="btn-host btn-secondary" style="display: none;">Skip Timer</button>
       <button id="btn-export-csv" class="btn-host btn-secondary" style="display: none;">📥 Download CSV</button>
+      <button id="btn-open-self-quiz" class="btn-host btn-secondary" title="Monitoring Kuis Mandiri">📋 Rekap Kuis Mandiri</button>
       <button id="btn-open-settings" class="btn-host btn-secondary" title="Pengaturan Kuis">⚙️ Settings</button>
     </div>
   </nav>
@@ -159,6 +160,87 @@
           </div>
           <button type="button" id="btn-host-reset" class="btn-host btn-danger" style="font-size: 13px; padding: 6px 14px;">🔄 Reset Kuis</button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Host Self-Paced Quiz Monitoring Modal -->
+  <div id="host-self-quiz-modal" class="host-modal-overlay" style="display: none;">
+    <div class="host-modal-card" style="max-width: 860px; width: 92%;">
+      <div class="host-modal-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 22px;">📋</span>
+          <h3 style="margin: 0; font-size: 18px; font-weight: 700;">Rekap & Monitoring Kuis Mandiri (Self-Quiz)</h3>
+        </div>
+        <button type="button" id="btn-close-self-quiz" class="btn-modal-close" title="Tutup">&times;</button>
+      </div>
+
+      <div class="host-modal-body" style="max-height: 75vh; overflow-y: auto;">
+        <!-- Tautan Kuis Mandiri untuk Siswa -->
+        <div style="background: rgba(124, 77, 255, 0.12); border: 1px solid rgba(124, 77, 255, 0.4); border-radius: 10px; padding: 14px; margin-bottom: 16px;">
+          <div style="font-size: 13px; font-weight: 700; color: #b388ff; margin-bottom: 6px;">🔗 Link Kuis Mandiri untuk Mahasiswa:</div>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <input type="text" id="input-self-quiz-link" readonly class="setting-select" style="flex-grow: 1; font-family: monospace; font-size: 13px; padding: 8px 12px; background: rgba(0,0,0,0.3); border-color: rgba(255,255,255,0.2);" value="http://localhost:4000/self">
+            <button type="button" id="btn-copy-self-link" class="btn-host btn-accent" style="padding: 8px 14px; font-size: 13px; white-space: nowrap;">📋 Salin Link</button>
+          </div>
+          <div style="font-size: 12px; color: var(--text-muted); margin-top: 6px;">
+            Bagikan link di atas ke mahasiswa. Mahasiswa dapat mengerjakan kapan saja selama server Anda aktif, dan nilainya otomatis tersimpan di laptop/server ini.
+          </div>
+        </div>
+
+        <!-- Ringkasan Statistik -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 16px;">
+          <div style="background: rgba(255,255,255,0.05); padding: 12px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);">
+            <div style="font-size: 12px; color: var(--text-muted);">Total Mahasiswa Selesai</div>
+            <div id="stat-self-total" style="font-size: 22px; font-weight: 800; color: #00e676;">0</div>
+          </div>
+          <div style="background: rgba(255,255,255,0.05); padding: 12px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);">
+            <div style="font-size: 12px; color: var(--text-muted);">Rata-rata Skor</div>
+            <div id="stat-self-avg" style="font-size: 22px; font-weight: 800; color: #ffd54f;">0 pts</div>
+          </div>
+          <div style="background: rgba(255,255,255,0.05); padding: 12px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);">
+            <div style="font-size: 12px; color: var(--text-muted);">Skor Tertinggi</div>
+            <div id="stat-self-highest" style="font-size: 22px; font-weight: 800; color: #00e5ff;">0 pts</div>
+          </div>
+        </div>
+
+        <!-- Baris Tombol Aksi -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+          <div style="font-size: 14px; font-weight: 700; color: #fff;">
+            Daftar Nilai Masuk (<span id="count-self-records">0</span>)
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button type="button" id="btn-self-refresh" class="btn-host btn-secondary" style="font-size: 12px; padding: 6px 12px;">🔄 Refresh</button>
+            <a href="/api/self-quiz/export-csv" id="btn-self-download-csv" class="btn-host btn-accent" style="font-size: 12px; padding: 6px 14px; text-decoration: none;">📥 Unduh Excel / CSV</a>
+            <button type="button" id="btn-self-clear" class="btn-host btn-danger" style="font-size: 12px; padding: 6px 12px;">🗑️ Arsipkan Data</button>
+          </div>
+        </div>
+
+        <!-- Tabel Rekapitulasi Mahasiswa -->
+        <div style="border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; overflow-x: auto; background: rgba(0,0,0,0.2);">
+          <table style="width: 100%; border-collapse: collapse; font-size: 13px; text-align: left;">
+            <thead>
+              <tr style="background: rgba(255,255,255,0.06); border-bottom: 1px solid rgba(255,255,255,0.1);">
+                <th style="padding: 10px 12px;">#</th>
+                <th style="padding: 10px 12px;">NIM</th>
+                <th style="padding: 10px 12px;">Nama Mahasiswa</th>
+                <th style="padding: 10px 12px;">Topik Kuis</th>
+                <th style="padding: 10px 12px; text-align: right;">Skor</th>
+                <th style="padding: 10px 12px; text-align: center;">Akurasi</th>
+                <th style="padding: 10px 12px; text-align: center;">Ganti Tab</th>
+                <th style="padding: 10px 12px;">Waktu Selesai</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-self-records">
+              <tr>
+                <td colspan="8" style="padding: 24px; text-align: center; color: var(--text-muted);">
+                  Belum ada mahasiswa yang mengumpulkan kuis mandiri.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
       </div>
     </div>
   </div>

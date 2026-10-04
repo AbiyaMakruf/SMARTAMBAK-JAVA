@@ -23,8 +23,16 @@ const activeQuizPath = path.join(__dirname, 'data', 'active_quiz.json');
 const questionsPath = path.join(__dirname, 'data', 'questions.json');
 const backupPath = path.join(__dirname, 'data', 'session_backup.json');
 
+// Self-Paced Quiz Persistence Directory & File Paths
+const selfQuizResultsDir = path.join(__dirname, 'data', 'self_quiz_results');
+const selfQuizResultsPath = path.join(selfQuizResultsDir, 'results.json');
+const selfQuizCsvPath = path.join(selfQuizResultsDir, 'self_quiz_rekap.csv');
+
 if (!fs.existsSync(quizSetsDir)) {
   fs.mkdirSync(quizSetsDir, { recursive: true });
+}
+if (!fs.existsSync(selfQuizResultsDir)) {
+  fs.mkdirSync(selfQuizResultsDir, { recursive: true });
 }
 
 let currentQuizId = 'java';
@@ -154,6 +162,406 @@ app.get('/host', (req, res) => {
 
 app.get('/manage', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'manage.html'));
+});
+
+app.get('/self', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'self.html'));
+});
+
+// ==========================================
+// SELF-PACED QUIZ (KUIS MANDIRI) SYSTEM
+// ==========================================
+const activeSelfSessions = {}; // token -> session details
+
+function getSelfQuizRecords() {
+  try {
+    if (!fs.existsSync(selfQuizResultsPath)) return [];
+    const content = fs.readFileSync(selfQuizResultsPath, 'utf8');
+    return JSON.parse(content) || [];
+  } catch (err) {
+    console.error('Error reading self quiz records:', err);
+    return [];
+  }
+}
+
+function syncSelfQuizCsv(records) {
+  try {
+    const escapeCsv = (str) => `"${String(str !== undefined && str !== null ? str : '').replace(/"/g, '""')}"`;
+    const headerCols = [
+      'No',
+      'NIM',
+      'Nama Mahasiswa',
+      'Topik Kuis',
+      'Total Skor',
+      'Persentase Nilai (%)',
+      'Jumlah Benar',
+      'Total Soal',
+      'Tab Switches (Cheat Alert)',
+      'Waktu Mulai',
+      'Waktu Selesai',
+      'Durasi Pengerjaan'
+    ];
+
+    const rows = [headerCols.join(',')];
+    records.forEach((rec, idx) => {
+      const durSec = rec.durationSeconds ? Math.round(rec.durationSeconds) : 0;
+      const durText = durSec >= 60 ? `${Math.floor(durSec / 60)}m ${durSec % 60}s` : `${durSec}s`;
+      const row = [
+        idx + 1,
+        escapeCsv(rec.nim || '-'),
+        escapeCsv(rec.name || 'Anonymous'),
+        escapeCsv(rec.quizTitle || 'Quiz'),
+        rec.score || 0,
+        `${rec.accuracy || 0}%`,
+        rec.correctCount || 0,
+        rec.totalQuestions || 0,
+        rec.tabSwitchCount || 0,
+        escapeCsv(rec.startedAt ? new Date(rec.startedAt).toLocaleString('id-ID') : '-'),
+        escapeCsv(rec.completedAt ? new Date(rec.completedAt).toLocaleString('id-ID') : '-'),
+        escapeCsv(durText)
+      ];
+      rows.push(row.join(','));
+    });
+
+    fs.writeFileSync(selfQuizCsvPath, rows.join('\r\n'), 'utf8');
+  } catch (err) {
+    console.error('Error writing self quiz CSV:', err);
+  }
+}
+
+function saveSelfQuizRecord(record) {
+  try {
+    const records = getSelfQuizRecords();
+    const existingIndex = records.findIndex(r => r.id === record.id);
+    if (existingIndex >= 0) {
+      records[existingIndex] = record;
+    } else {
+      records.push(record);
+    }
+    fs.writeFileSync(selfQuizResultsPath, JSON.stringify(records, null, 2), 'utf8');
+    syncSelfQuizCsv(records);
+    return true;
+  } catch (err) {
+    console.error('Error saving self quiz record:', err);
+    return false;
+  }
+}
+
+// Config for Self Quiz Player
+app.get('/api/self-quiz/config', (req, res) => {
+  res.json({
+    activeQuizId: currentQuizId,
+    activeQuizTitle: currentQuizTitle,
+    activeQuizLanguage: currentQuizLanguage,
+    totalQuestions: questions.length,
+    availableQuestions: rawQuizQuestions.length,
+    questionLimit: gameState.questionLimit,
+    randomizeQuestions: gameState.randomizeQuestions,
+    watermarkEnabled: gameState.watermarkEnabled,
+    quizSets: getQuizSets()
+  });
+});
+
+// Start Self Quiz
+app.post('/api/self-quiz/start', (req, res) => {
+  try {
+    const { name, nim, quizId } = req.body || {};
+    if (!name || !name.trim()) {
+      return res.status(400).json({ error: 'Nama lengkap wajib diisi!' });
+    }
+
+    let targetQuestions = [];
+    let chosenQuizTitle = currentQuizTitle;
+    let chosenQuizId = currentQuizId;
+
+    if (quizId && quizId !== currentQuizId) {
+      const setFile = path.join(quizSetsDir, `${quizId}.json`);
+      if (fs.existsSync(setFile)) {
+        const setData = JSON.parse(fs.readFileSync(setFile, 'utf8'));
+        targetQuestions = Array.isArray(setData.questions) ? setData.questions : [];
+        chosenQuizTitle = setData.title || quizId;
+        chosenQuizId = setData.id || quizId;
+      }
+    }
+
+    if (targetQuestions.length === 0) {
+      targetQuestions = rawQuizQuestions.length > 0 ? rawQuizQuestions : questions;
+      chosenQuizTitle = currentQuizTitle;
+      chosenQuizId = currentQuizId;
+    }
+
+    if (targetQuestions.length === 0) {
+      return res.status(400).json({ error: 'Bank soal kuis saat ini kosong.' });
+    }
+
+    // Apply question limit and randomize if configured
+    let sessionPool = [...targetQuestions];
+    if (gameState.randomizeQuestions) {
+      for (let i = sessionPool.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [sessionPool[i], sessionPool[j]] = [sessionPool[j], sessionPool[i]];
+      }
+    }
+    const limit = Number(gameState.questionLimit) || 0;
+    if (limit > 0 && limit < sessionPool.length) {
+      sessionPool = sessionPool.slice(0, limit);
+    }
+
+    const sessionToken = crypto.randomUUID ? crypto.randomUUID() : (Date.now() + '-' + Math.random().toString(36).substring(2));
+    const nowIso = new Date().toISOString();
+
+    activeSelfSessions[sessionToken] = {
+      id: sessionToken,
+      name: name.trim(),
+      nim: (nim || '').trim() || '-',
+      quizId: chosenQuizId,
+      quizTitle: chosenQuizTitle,
+      startedAt: nowIso,
+      questions: sessionPool,
+      answers: {},
+      score: 0,
+      streak: 0,
+      correctCount: 0,
+      tabSwitchCount: 0
+    };
+
+    // Client receives question list without correct answers
+    const clientQuestions = sessionPool.map((q, idx) => ({
+      index: idx,
+      id: q.id,
+      question: q.question,
+      code: q.code || null,
+      type: q.type,
+      options: q.options || null,
+      timeLimit: Number(q.timeLimit) || 25,
+      total: sessionPool.length
+    }));
+
+    res.json({
+      success: true,
+      sessionToken,
+      quizTitle: chosenQuizTitle,
+      quizId: chosenQuizId,
+      totalQuestions: clientQuestions.length,
+      questions: clientQuestions,
+      startedAt: nowIso
+    });
+  } catch (err) {
+    console.error('Error starting self quiz:', err);
+    res.status(500).json({ error: 'Gagal memulai sesi kuis mandiri.' });
+  }
+});
+
+// Submit answer for single question in Self Quiz
+app.post('/api/self-quiz/submit-answer', (req, res) => {
+  try {
+    const { sessionToken, questionIndex, answer, timeSpent, tabSwitches } = req.body || {};
+    const session = activeSelfSessions[sessionToken];
+    if (!session) {
+      return res.status(404).json({ error: 'Sesi kuis tidak ditemukan atau telah kedaluwarsa. Silakan refresh.' });
+    }
+
+    const qIdx = Number(questionIndex);
+    const targetQ = session.questions[qIdx];
+    if (!targetQ) {
+      return res.status(400).json({ error: 'Pertanyaan tidak valid.' });
+    }
+
+    if (tabSwitches !== undefined) {
+      session.tabSwitchCount = Math.max(session.tabSwitchCount, Number(tabSwitches) || 0);
+    }
+
+    const spentSeconds = Math.max(0.5, Number(timeSpent) || 1);
+    const isCorrect = checkAnswerCorrectness(targetQ, answer);
+
+    let baseScore = 0;
+    let streakBonus = 0;
+    let speedBonus = 0;
+
+    if (isCorrect) {
+      session.streak = (session.streak || 0) + 1;
+      session.correctCount = (session.correctCount || 0) + 1;
+      baseScore = calculateScore(spentSeconds, targetQ.timeLimit || 25);
+
+      if (session.streak === 2) streakBonus = 50;
+      else if (session.streak === 3) streakBonus = 100;
+      else if (session.streak === 4) streakBonus = 150;
+      else if (session.streak >= 5) streakBonus = 250;
+
+      if (spentSeconds <= (targetQ.timeLimit || 25) * 0.35) {
+        speedBonus = 50;
+      }
+    } else {
+      session.streak = 0;
+    }
+
+    const pointsEarned = isCorrect ? (baseScore + streakBonus + speedBonus) : 0;
+    session.score += pointsEarned;
+
+    session.answers[qIdx] = {
+      questionId: targetQ.id,
+      questionText: targetQ.question,
+      type: targetQ.type,
+      submittedAnswer: answer,
+      isCorrect,
+      pointsEarned,
+      timeSpent: spentSeconds,
+      correctAnswer: targetQ.correctAnswer,
+      correctAnswers: targetQ.correctAnswers,
+      explanation: targetQ.explanation || ''
+    };
+
+    res.json({
+      success: true,
+      isCorrect,
+      pointsEarned,
+      currentScore: session.score,
+      streak: session.streak,
+      correctAnswer: targetQ.correctAnswer,
+      correctAnswers: targetQ.correctAnswers,
+      explanation: targetQ.explanation || '',
+      options: targetQ.options || null
+    });
+  } catch (err) {
+    console.error('Error submitting self quiz answer:', err);
+    res.status(500).json({ error: 'Gagal mengirim jawaban.' });
+  }
+});
+
+// Finish Self Quiz and persist record to disk
+app.post('/api/self-quiz/finish', (req, res) => {
+  try {
+    const { sessionToken, tabSwitches } = req.body || {};
+    const session = activeSelfSessions[sessionToken];
+    if (!session) {
+      return res.status(404).json({ error: 'Sesi kuis tidak ditemukan atau telah diselesaikan.' });
+    }
+
+    if (tabSwitches !== undefined) {
+      session.tabSwitchCount = Math.max(session.tabSwitchCount, Number(tabSwitches) || 0);
+    }
+
+    const completedAt = new Date().toISOString();
+    const startTime = new Date(session.startedAt).getTime();
+    const durationSeconds = Math.max(1, (new Date(completedAt).getTime() - startTime) / 1000);
+    const totalQuestions = session.questions.length;
+    const accuracy = totalQuestions > 0 ? Math.round((session.correctCount / totalQuestions) * 100) : 0;
+
+    // Compile comprehensive review
+    const review = session.questions.map((q, idx) => {
+      const recorded = session.answers[idx];
+      let submittedDisplay = '-';
+      let correctDisplay = '';
+
+      if (q.type === 'multiple_choice' || q.type === 'true_false') {
+        correctDisplay = q.options ? (q.options[q.correctAnswer] || String(q.correctAnswer)) : String(q.correctAnswer);
+        if (recorded && recorded.submittedAnswer !== null && recorded.submittedAnswer !== undefined) {
+          submittedDisplay = q.options ? (q.options[recorded.submittedAnswer] || recorded.submittedAnswer) : recorded.submittedAnswer;
+        }
+      } else if (q.type === 'multi_select') {
+        correctDisplay = (q.correctAnswers || []).map(i => q.options ? q.options[i] : i).join(', ');
+        if (recorded && Array.isArray(recorded.submittedAnswer)) {
+          submittedDisplay = recorded.submittedAnswer.map(i => q.options ? q.options[i] : i).join(', ');
+        }
+      } else if (q.type === 'fill_in') {
+        correctDisplay = (q.correctAnswers || []).join(' / ');
+        if (recorded && recorded.submittedAnswer) {
+          submittedDisplay = recorded.submittedAnswer;
+        }
+      }
+
+      return {
+        index: idx + 1,
+        id: q.id,
+        question: q.question,
+        code: q.code || null,
+        type: q.type,
+        options: q.options || null,
+        submittedAnswer: recorded ? recorded.submittedAnswer : null,
+        submittedDisplay,
+        correctDisplay,
+        isCorrect: recorded ? recorded.isCorrect : false,
+        pointsEarned: recorded ? recorded.pointsEarned : 0,
+        timeSpent: recorded ? recorded.timeSpent : 0,
+        explanation: q.explanation || ''
+      };
+    });
+
+    const finalRecord = {
+      id: session.id,
+      name: session.name,
+      nim: session.nim,
+      quizId: session.quizId,
+      quizTitle: session.quizTitle,
+      score: session.score,
+      correctCount: session.correctCount,
+      totalQuestions: totalQuestions,
+      accuracy: accuracy,
+      tabSwitchCount: session.tabSwitchCount,
+      startedAt: session.startedAt,
+      completedAt: completedAt,
+      durationSeconds: durationSeconds,
+      review: review
+    };
+
+    saveSelfQuizRecord(finalRecord);
+    delete activeSelfSessions[sessionToken];
+
+    // Realtime notification to host screen if active
+    io.emit('self_quiz_submission_received', {
+      id: finalRecord.id,
+      name: finalRecord.name,
+      nim: finalRecord.nim,
+      quizTitle: finalRecord.quizTitle,
+      score: finalRecord.score,
+      accuracy: finalRecord.accuracy,
+      correctCount: finalRecord.correctCount,
+      totalQuestions: finalRecord.totalQuestions,
+      tabSwitchCount: finalRecord.tabSwitchCount,
+      completedAt: finalRecord.completedAt
+    });
+
+    res.json({
+      success: true,
+      record: finalRecord
+    });
+  } catch (err) {
+    console.error('Error finishing self quiz:', err);
+    res.status(500).json({ error: 'Gagal menyelesaikan kuis.' });
+  }
+});
+
+// Get all self quiz submissions for Host Monitoring
+app.get('/api/self-quiz/records', (req, res) => {
+  res.json(getSelfQuizRecords());
+});
+
+// Download Self Quiz CSV
+app.get('/api/self-quiz/export-csv', (req, res) => {
+  const records = getSelfQuizRecords();
+  syncSelfQuizCsv(records);
+  if (fs.existsSync(selfQuizCsvPath)) {
+    res.download(selfQuizCsvPath, `Rekap_Self_Quiz_${new Date().toISOString().slice(0, 10)}.csv`);
+  } else {
+    res.status(404).send('Belum ada data kuis mandiri yang tersimpan.');
+  }
+});
+
+// Reset or Clear Self Quiz Records
+app.post('/api/self-quiz/clear', (req, res) => {
+  try {
+    const records = getSelfQuizRecords();
+    if (records.length > 0) {
+      const backupFilename = `results_backup_${Date.now()}.json`;
+      fs.writeFileSync(path.join(selfQuizResultsDir, backupFilename), JSON.stringify(records, null, 2), 'utf8');
+    }
+    fs.writeFileSync(selfQuizResultsPath, '[]', 'utf8');
+    syncSelfQuizCsv([]);
+    res.json({ success: true, message: 'Data kuis mandiri berhasil diarsipkan dan dibersihkan.' });
+  } catch (err) {
+    console.error('Error clearing self quiz records:', err);
+    res.status(500).json({ error: 'Gagal membersihkan data kuis mandiri.' });
+  }
 });
 
 // Quiz Sets API Endpoints

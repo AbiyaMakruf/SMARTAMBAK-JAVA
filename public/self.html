@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Kuis Mandiri (Self-Paced Quiz)</title>
+  <link rel="stylesheet" href="/css/self.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+</head>
+<body>
+
+  <!-- Watermark Anti-Screenshot Overlay -->
+  <div id="self-watermark-overlay" class="watermark-overlay" style="display: none;"></div>
+
+  <div class="self-app-container">
+    
+    <!-- Top Header (Aktif saat mengerjakan kuis) -->
+    <header id="self-header" class="self-header" style="display: none;">
+      <div class="self-user-info">
+        <span id="header-user-name" class="self-user-name">Nama Mahasiswa</span>
+        <span id="header-user-nim" class="self-user-nim">NIM: -</span>
+      </div>
+      <div class="self-header-stats">
+        <span class="self-score-badge"><span id="header-score-val">0</span> pts</span>
+      </div>
+    </header>
+
+    <!-- Progress Bar Tracker -->
+    <div id="self-progress-tracker" class="self-progress-bar-wrap" style="display: none;">
+      <div class="self-progress-labels">
+        <span id="progress-question-indicator">Soal 1 dari 10</span>
+        <span id="progress-percent-indicator">10%</span>
+      </div>
+      <div class="self-progress-track">
+        <div id="progress-fill-bar" class="self-progress-fill"></div>
+      </div>
+    </div>
+
+    <!-- Cheat / Tab Switch Warning Banner -->
+    <div id="self-cheat-banner" class="cheat-alert-banner">
+      ⚠️ <span>Peringatan: Terdeteksi keluar dari layar kuis (<strong id="cheat-switch-count">1</strong>x). Tetap fokus pada halaman soal.</span>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- SCREEN 1: REGISTRASI & PERSIAPAN KUIS MANDIRI -->
+    <!-- ============================================== -->
+    <section id="screen-self-register" class="self-screen active">
+      <div class="self-card">
+        <h1 class="self-brand-title">📝 Kuis Mandiri (Self-Quiz)</h1>
+        <p class="self-subtitle">
+          Kerjakan kuis sesuai waktu luang Anda. Seluruh hasil dan nilai Anda akan <strong>secara otomatis tersimpan di server lokal dosen</strong> tanpa perlu melapor atau mengirim screenshot.
+        </p>
+
+        <!-- Banner jika ada sesi pengerjaan tersimpan sebelumnya -->
+        <div id="resume-session-banner" style="display: none; background: rgba(124, 77, 255, 0.2); border: 1px solid #7c4dff; padding: 12px; border-radius: 10px; margin-bottom: 16px;">
+          <div style="font-size: 14px; font-weight: 700; color: #b388ff; margin-bottom: 4px;">🔄 Lanjutkan Kuis Sebelumnya?</div>
+          <div id="resume-session-desc" style="font-size: 12px; color: #d1d5db; margin-bottom: 8px;">Ditemukan sesi pengerjaan yang belum selesai.</div>
+          <div style="display: flex; gap: 8px;">
+            <button type="button" id="btn-resume-quiz" class="self-btn-primary" style="padding: 8px 14px; font-size: 13px;">Lanjutkan ➔</button>
+            <button type="button" id="btn-discard-quiz" class="self-btn-secondary" style="padding: 8px 14px; font-size: 13px;">Mulai Baru</button>
+          </div>
+        </div>
+
+        <form id="form-self-start">
+          <div class="self-form-group">
+            <label for="input-self-name">Nama Lengkap <span style="color: #ff5252;">*</span></label>
+            <input type="text" id="input-self-name" class="self-input" placeholder="contoh: Budi Pratama" required autocomplete="name">
+          </div>
+
+          <div class="self-form-group">
+            <label for="input-self-nim">NIM / Student ID <span style="font-size: 11px; opacity: 0.7;">(Opsional / Dianjurkan)</span></label>
+            <input type="text" id="input-self-nim" class="self-input" placeholder="contoh: 21010045">
+          </div>
+
+          <div class="self-form-group">
+            <label for="select-self-quiz-set">Pilih Paket Soal Kuis</label>
+            <select id="select-self-quiz-set" class="self-select">
+              <option value="">Memuat paket kuis...</option>
+            </select>
+          </div>
+
+          <div style="background: rgba(255, 255, 255, 0.04); border-radius: 8px; padding: 12px; margin-bottom: 18px; font-size: 13px; color: #b0bec5; line-height: 1.5;">
+            ℹ️ <strong>Ketentuan Kuis Mandiri:</strong>
+            <ul style="margin-left: 18px; margin-top: 6px;">
+              <li>Setiap soal memiliki batas waktu countdown mandiri.</li>
+              <li>Poin dihitung berdasarkan ketepatan dan kecepatan menjawab.</li>
+              <li>Di akhir kuis Anda dapat melihat pembahasan seluruh soal.</li>
+            </ul>
+          </div>
+
+          <button type="submit" id="btn-start-self-quiz" class="self-btn-primary">
+            <span>🚀 Mulai Kuis Sekarang</span>
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- SCREEN 2: PENGERJAAN SOAL (QUESTION VIEW)      -->
+    <!-- ============================================== -->
+    <section id="screen-self-question" class="self-screen">
+      <div class="self-card">
+        
+        <!-- Header Bar Soal -->
+        <div class="question-header-row">
+          <span id="q-type-badge" class="question-type-badge">MULTIPLE CHOICE</span>
+          <div id="q-timer-badge" class="question-timer-pill">
+            <span>⏱️</span>
+            <span id="q-timer-val">25</span>s
+          </div>
+        </div>
+
+        <!-- Teks Soal -->
+        <div id="q-text" class="question-text">Memuat pertanyaan...</div>
+
+        <!-- Cuplikan Kode Program (Jika Ada) -->
+        <div id="q-code-wrap" class="question-code-box" style="display: none;">
+          <pre><code id="q-code-snippet" class="language-java"></code></pre>
+        </div>
+
+        <!-- Opsi Pilihan Ganda / True-False / Multi-Select -->
+        <div id="q-options-container" class="self-options-grid"></div>
+
+        <!-- Input Isian Singkat (Fill in the Blank) -->
+        <div id="q-fill-in-wrap" class="fill-in-box" style="display: none;">
+          <input type="text" id="input-fill-in" class="fill-in-input" placeholder="Ketik jawaban Anda di sini..." autocomplete="off">
+          <button type="button" id="btn-submit-fill" class="self-btn-primary" style="width: auto; padding: 0 20px;">Kirim</button>
+        </div>
+
+        <!-- Tombol Konfirmasi Multi-Select -->
+        <div id="q-multi-select-action" style="display: none; margin-bottom: 16px;">
+          <button type="button" id="btn-submit-multi" class="self-btn-primary">
+            ✓ Konfirmasi Pilihan Jawaban
+          </button>
+        </div>
+
+        <!-- Banner Feedback Jawaban (Benar / Salah) -->
+        <div id="q-feedback-box" class="self-feedback-card">
+          <div id="q-feedback-title" class="feedback-title"></div>
+          <div id="q-feedback-desc" class="feedback-desc"></div>
+        </div>
+
+        <!-- Tombol Lanjut Soal Berikutnya -->
+        <button type="button" id="btn-next-question" class="self-btn-primary" style="display: none; margin-top: 10px;">
+          <span>Soal Berikutnya ➔</span>
+        </button>
+
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- SCREEN 3: HASIL AKHIR & REVIEW SOAL            -->
+    <!-- ============================================== -->
+    <section id="screen-self-result" class="self-screen">
+      
+      <!-- Kartu Skor & Trophy -->
+      <div class="result-header-card">
+        <div class="result-trophy">🏆</div>
+        <h2 style="font-size: 22px; font-weight: 800; margin-bottom: 6px;">Kuis Selesai!</h2>
+        <div id="res-score-val" class="result-score-big">0 pts</div>
+        <div id="res-accuracy-val" class="result-accuracy">Akurasi: 0% (0 dari 0 Benar)</div>
+
+        <div class="result-saved-badge">
+          <span>✓</span>
+          <span>Hasil Berhasil Disimpan di Server Dosen</span>
+        </div>
+      </div>
+
+      <!-- Detail Informasi Mahasiswa -->
+      <div class="self-card" style="margin-bottom: 20px; font-size: 14px;">
+        <div style="display: flex; justify-content: space-between; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 8px;">
+          <span style="color: var(--text-muted);">Nama Mahasiswa:</span>
+          <strong id="res-summary-name">-</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 8px;">
+          <span style="color: var(--text-muted);">NIM:</span>
+          <strong id="res-summary-nim">-</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 8px;">
+          <span style="color: var(--text-muted);">Topik Kuis:</span>
+          <strong id="res-summary-quiz">-</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+          <span style="color: var(--text-muted);">Catatan Keluar Layar:</span>
+          <span id="res-summary-cheats" style="color: #ffd54f; font-weight: 700;">0x</span>
+        </div>
+      </div>
+
+      <!-- Rincian Review Soal Lengkap -->
+      <div class="review-section-title">
+        <span>📖 Pembahasan & Rincian Soal</span>
+      </div>
+      <div id="self-review-list"></div>
+
+      <!-- Tombol Kembali / Selesai -->
+      <div style="margin-top: 14px; text-align: center;">
+        <button type="button" id="btn-restart-quiz" class="self-btn-secondary" style="width: 100%; padding: 14px;">
+          🔄 Kerjakan Ulang Kuis Mandiri
+        </button>
+      </div>
+
+    </section>
+
+  </div>
+
+  <!-- Prism.js Syntax Highlighting -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-java.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+  <!-- Self Quiz Script -->
+  <script src="/js/self.js"></script>
+</body>
+</html>

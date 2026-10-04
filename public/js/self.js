@@ -610,24 +610,50 @@
     window.location.reload();
   });
 
-  // 8. Anti-Cheat & Screen Visibility Detection
-  function handleVisibilityChange() {
-    if (document.hidden && selfState.hasAnswered === false && selfState.sessionToken) {
-      selfState.tabSwitches++;
-      cheatSwitchCount.innerText = selfState.tabSwitches;
-      cheatBanner.style.display = 'flex';
-      saveStateToLocal();
-    }
+  // 8. Anti-Cheat & Screen Visibility Detection (Single counter per screen exit)
+  let isCurrentlyAway = false;
+  let lastTabSwitchTime = 0;
+
+  function handleFocusLost() {
+    // Hanya hitung saat kuis sedang berjalan dan soal aktif belum selesai dijawab
+    if (selfState.hasAnswered !== false || !selfState.sessionToken) return;
+
+    const now = Date.now();
+    // Cegah multi-trigger dari rentetan event blur & visibilitychange saat beralih window/tab
+    if (isCurrentlyAway || (now - lastTabSwitchTime < 2000)) return;
+
+    isCurrentlyAway = true;
+    lastTabSwitchTime = now;
+
+    selfState.tabSwitches++;
+    cheatSwitchCount.innerText = selfState.tabSwitches;
+    cheatBanner.style.display = 'flex';
+    saveStateToLocal();
   }
 
-  document.addEventListener('visibilitychange', handleVisibilityChange);
-  window.addEventListener('blur', () => {
-    if (selfState.hasAnswered === false && selfState.sessionToken) {
-      selfState.tabSwitches++;
-      cheatSwitchCount.innerText = selfState.tabSwitches;
-      cheatBanner.style.display = 'flex';
-      saveStateToLocal();
+  function handleFocusGained() {
+    // Saat user kembali ke window, reset status away setelah stabil
+    setTimeout(() => {
+      if (!document.hidden && (document.hasFocus ? document.hasFocus() : true)) {
+        isCurrentlyAway = false;
+      }
+    }, 400);
+  }
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      handleFocusLost();
+    } else {
+      handleFocusGained();
     }
+  });
+
+  window.addEventListener('blur', () => {
+    handleFocusLost();
+  });
+
+  window.addEventListener('focus', () => {
+    handleFocusGained();
   });
 
   // 9. Helper Storage & Switch Screen

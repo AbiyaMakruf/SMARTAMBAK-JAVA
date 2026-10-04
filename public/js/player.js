@@ -207,26 +207,41 @@ document.addEventListener('keyup', (e) => {
 });
 
 // 4. Focus Loss & Tab/App-Switch Detection
-let blurCooldown = false;
+let isCurrentlyAway = false;
+let lastFocusLostTime = 0;
+
 function handleFocusLost() {
   const activeQuizScreens = ['question', 'submitted', 'result'];
   if (!activeQuizScreens.includes(currentScreenKey)) return;
 
   activatePrivacyShield();
 
-  if (!blurCooldown) {
-    blurCooldown = true;
-    tabSwitchCount++;
-    socket.emit('player_focus_lost');
-    showTabSwitchWarning();
-    setTimeout(() => { blurCooldown = false; }, 1500);
-  }
+  const now = Date.now();
+  if (isCurrentlyAway || (now - lastFocusLostTime < 2000)) return;
+
+  isCurrentlyAway = true;
+  lastFocusLostTime = now;
+
+  tabSwitchCount++;
+  socket.emit('player_focus_lost');
+  showTabSwitchWarning();
+}
+
+function handleFocusGained() {
+  setTimeout(() => {
+    if (!document.hidden && (document.hasFocus ? document.hasFocus() : true)) {
+      isCurrentlyAway = false;
+    }
+  }, 400);
 }
 
 window.addEventListener('blur', handleFocusLost);
+window.addEventListener('focus', handleFocusGained);
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) {
     handleFocusLost();
+  } else {
+    handleFocusGained();
   }
 });
 

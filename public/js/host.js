@@ -1262,6 +1262,9 @@ const statSelfTotal = document.getElementById('stat-self-total');
 const statSelfAvg = document.getElementById('stat-self-avg');
 const statSelfHighest = document.getElementById('stat-self-highest');
 const countSelfRecords = document.getElementById('count-self-records');
+const hostSelfActiveTitle = document.getElementById('host-self-active-title');
+const hostSelfActiveDetail = document.getElementById('host-self-active-detail');
+const btnSelfGotoSettings = document.getElementById('btn-self-goto-settings');
 
 if (inputSelfQuizLink) {
   inputSelfQuizLink.value = `${window.location.origin}/self`;
@@ -1283,9 +1286,40 @@ if (btnCopySelfLink) {
   });
 }
 
+if (btnSelfGotoSettings) {
+  btnSelfGotoSettings.addEventListener('click', () => {
+    if (modalSelfQuiz) modalSelfQuiz.style.display = 'none';
+    if (modalSettings) modalSettings.style.display = 'flex';
+  });
+}
+
+function updateHostSelfQuizBadge() {
+  if (hostSelfActiveTitle) {
+    let title = 'Kuis Aktif';
+    if (selectHostQuiz && selectHostQuiz.selectedOptions && selectHostQuiz.selectedOptions[0]) {
+      title = selectHostQuiz.selectedOptions[0].text;
+    } else if (hostQuizBadge) {
+      title = hostQuizBadge.innerText.replace('🎯', '').replace('☕', '').trim();
+    }
+    hostSelfActiveTitle.innerText = title;
+  }
+
+  if (hostSelfActiveDetail) {
+    const total = hostState.totalQuestions || 0;
+    const avail = hostState.availableQuestions || total;
+    const isRandom = !!hostState.randomizeQuestions;
+    if (hostState.questionLimit && hostState.questionLimit > 0) {
+      hostSelfActiveDetail.innerText = `${total} Soal Digunakan (dari bank ${avail} soal)${isRandom ? ' • 🎲 Soal Diacak' : ''}`;
+    } else {
+      hostSelfActiveDetail.innerText = `${total} Soal Aktif (Semua)${isRandom ? ' • 🎲 Soal Diacak' : ''}`;
+    }
+  }
+}
+
 if (btnOpenSelfQuiz) {
   btnOpenSelfQuiz.addEventListener('click', () => {
     if (modalSelfQuiz) modalSelfQuiz.style.display = 'flex';
+    updateHostSelfQuizBadge();
     loadSelfQuizRecords();
   });
 }
@@ -1297,7 +1331,10 @@ if (btnCloseSelfQuiz) {
 }
 
 if (btnSelfRefresh) {
-  btnSelfRefresh.addEventListener('click', loadSelfQuizRecords);
+  btnSelfRefresh.addEventListener('click', () => {
+    updateHostSelfQuizBadge();
+    loadSelfQuizRecords();
+  });
 }
 
 if (btnSelfClear) {
@@ -1317,6 +1354,7 @@ if (btnSelfClear) {
 }
 
 async function loadSelfQuizRecords() {
+  updateHostSelfQuizBadge();
   if (!tbodySelfRecords) return;
   try {
     tbodySelfRecords.innerHTML = '<tr><td colspan="8" style="padding: 18px; text-align: center; color: var(--text-muted);">Memuat data rekap...</td></tr>';

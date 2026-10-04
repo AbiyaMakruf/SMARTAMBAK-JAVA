@@ -11,6 +11,10 @@ async function testSelfQuizSystem() {
   const hostSocket = io(SERVER_URL);
   await new Promise(r => hostSocket.on('connect', r));
 
+  hostSocket.emit('host_join');
+  hostSocket.emit('host_reset_quiz');
+  await new Promise(r => setTimeout(r, 200));
+
   let hostReceivedSubmission = null;
   hostSocket.on('self_quiz_submission_received', (data) => {
     hostReceivedSubmission = data;
@@ -129,6 +133,30 @@ async function testSelfQuizSystem() {
   const csvDownloadText = await csvDownloadRes.text();
   if (!csvDownloadText.includes('21010045')) throw new Error('Downloaded CSV missing expected student');
   console.log('✅ CSV download API working smoothly.');
+
+  // 7. Verify Host Question Limit Override for Self Quiz
+  console.log('📌 Test 7: Testing host setting question limit to 20 and verifying self quiz follows host...');
+  hostSocket.emit('host_set_question_limit', { count: 20 });
+  await new Promise(r => setTimeout(r, 300));
+
+  const startRes2 = await fetch(`${SERVER_URL}/api/self-quiz/start`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      name: 'Siti Rahma',
+      nim: '21010099'
+    })
+  });
+  const startData2 = await startRes2.json();
+  console.log(`✅ Started Self Quiz for Siti Rahma: questionsCount=${startData2.totalQuestions}`);
+  if (startData2.totalQuestions !== 20) {
+    throw new Error(`Expected Siti Rahma to receive exactly 20 questions as limited by host, but got ${startData2.totalQuestions}!`);
+  }
+  console.log('✅ Host question limit successfully applied to self quiz!');
+
+  // Reset limit back to 0
+  hostSocket.emit('host_set_question_limit', { count: 0 });
+  await new Promise(r => setTimeout(r, 300));
 
   // Cleanup
   hostSocket.disconnect();

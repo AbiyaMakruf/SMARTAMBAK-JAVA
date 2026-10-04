@@ -2,723 +2,859 @@
   {
     "id": 1,
     "type": "multiple_choice",
-    "timeLimit": 15,
-    "question": "Berdasarkan studi industri (Sculley et al. - Hidden Technical Debt in Machine Learning Systems), manakah pernyataan yang paling tepat mengenai proporsi kode Machine Learning dalam sistem produksi?",
+    "question": "A financial analyst needs to declare a variable in Java to store a client's stock portfolio balance, which includes dollars and cents (e.g., $12450.75). Which primitive data type is the most appropriate?",
     "code": null,
     "options": [
-      "Kode Machine Learning hanya membentuk porsi kecil (sekitar 5-10%), sedangkan mayoritas sistem terdiri dari infrastruktur pendukung, manajemen data, dan monitoring",
-      "Kode Machine Learning mencakup lebih dari 90% dari keseluruhan arsitektur perangkat lunak di produksi",
-      "Infrastruktur pendukung dan manajemen data tidak diperlukan jika kode algoritma ML sudah memiliki akurasi di atas 95%",
-      "Kode Machine Learning sama persis dengan kode perangkat lunak konvensional sehingga tidak memiliki technical debt"
+      "int",
+      "boolean",
+      "double",
+      "char"
     ],
-    "correctAnswer": 0,
-    "explanation": "Dalam paper klasik Google oleh Sculley et al., disorot bahwa kode ML inti sebenarnya hanyalah kotak kecil di tengah ekosistem yang luas. Sebagian besar kompleksitas justru berada pada pipeline data, konfigurasi, verifikasi, manajemen sumber daya, dan sistem monitoring."
+    "correctAnswer": 2,
+    "timeLimit": 9,
+    "explanation": "In Java, double is the standard 64-bit floating-point primitive type used for representing numbers with fractional decimal points, making it ideal for financial balances and currency values."
   },
   {
     "id": 2,
     "type": "true_false",
-    "timeLimit": 10,
-    "question": "Dalam sistem Machine Learning di produksi, performa model dapat menurun seiring waktu (data drift) meskipun tidak ada satu baris kode pun yang diubah.",
-    "code": "// Karakteristik ML: Bergantung pada input data dunia nyata",
+    "question": "According to standard Java naming conventions, variable names representing business metrics (such as quarterly sales) should start with an uppercase letter, for example: double QuarterlySales = 450000.0;.",
+    "code": "double QuarterlySales = 450000.0;",
     "options": [
       "True",
       "False"
     ],
-    "correctAnswer": 0,
-    "explanation": "Benar! Berbeda dari software tradisional yang perilakunya statis selama kode tidak berubah, model ML sangat bergantung pada data dunia nyata. Perubahan perilaku pengguna, tren, atau lingkungan dapat menyebabkan data drift yang mendegradasi performa model."
+    "correctAnswer": 1,
+    "timeLimit": 9,
+    "explanation": "Java uses lowerCamelCase for variable and method identifiers (e.g., quarterlySales). Identifiers starting with an uppercase letter are conventionally reserved for class names."
   },
   {
     "id": 3,
     "type": "multiple_choice",
-    "timeLimit": 15,
-    "question": "Apakah perbedaan paling fundamental antara DevOps konvensional dan MLOps dalam pengelolaan siklus hidup software?",
-    "code": null,
+    "question": "A warehouse logistics manager runs the following Java code to calculate how many full shipment pallets can be packed. What will be printed to the console?",
+    "code": "int totalUnits = 45;\nint palletCapacity = 10;\nint fullPallets = totalUnits / palletCapacity;\nSystem.out.println(\"Pallets: \" + fullPallets);",
     "options": [
-      "DevOps hanya mengelola siklus versi Kode (Code), sedangkan MLOps harus mengelola Kode, Data, dan Model biner secara simultan",
-      "DevOps mewajibkan Continuous Integration (CI), sedangkan MLOps melarang otomatisasi pengujian",
-      "DevOps hanya diperuntukkan bagi sistem operasi Linux, sedangkan MLOps hanya berjalan di cloud",
-      "DevOps berfokus pada kecepatan komputasi GPU, sedangkan MLOps hanya menggunakan CPU"
+      "Pallets: 4.5",
+      "Pallets: 4",
+      "Pallets: 5",
+      "A compilation error occurs"
     ],
-    "correctAnswer": 0,
-    "explanation": "Siklus hidup MLOps jauh lebih dinamis karena melibatkan tiga pilar utama: Kode, Data, dan Model. Model ML dibentuk dari kombinasi Kode + Data, sehingga versioning data dan artefak model menjadi kebutuhan mutlak yang tidak ada pada DevOps biasa."
+    "correctAnswer": 1,
+    "timeLimit": 14,
+    "explanation": "In Java, integer division (int / int) automatically truncates the decimal fraction rather than rounding. Therefore, 45 / 10 evaluates strictly to 4."
   },
   {
     "id": 4,
-    "type": "true_false",
-    "timeLimit": 10,
-    "question": "Pada Google MLOps Maturity Level 0, proses ekstraksi data, pelatihan model, dan deployment model dilakukan secara otomatis melalui pipeline CI/CD penuh.",
-    "code": "// Google MLOps Maturity Level 0",
-    "options": [
-      "True",
-      "False"
+    "type": "fill_in",
+    "question": "Fill in the blank to complete the statement that initializes a Scanner object named input to read transactional data entered by a user via the console:",
+    "code": "Scanner input = new Scanner(System._____);",
+    "correctAnswers": [
+      "in"
     ],
-    "correctAnswer": 1,
-    "explanation": "Salah! Google MLOps Maturity Level 0 adalah level manual (Manual Process). Pada level ini, data scientist melatih model secara manual di script/notebook terpisah, hand-off ke tim ops secara manual, dan tidak terdapat otomatisasi pipeline CI/CD."
+    "timeLimit": 9,
+    "explanation": "System.in represents the standard input stream (keyboard input from the console)."
   },
   {
     "id": 5,
     "type": "multiple_choice",
-    "timeLimit": 15,
-    "question": "Ciri pembeda utama pada Google MLOps Maturity Level 1 (ML Pipeline Automation) dibandingkan Level 0 adalah adanya kemampuan...",
-    "code": null,
+    "question": "An e-commerce store evaluates invoice totals using the following expression. What is the final value of invoiceTotal printed to the console?",
+    "code": "double invoiceTotal = 100.0 + 50.0 * 2.0 - 20.0 / 4.0;\nSystem.out.println(invoiceTotal);",
     "options": [
-      "Continuous Training (CT) di mana pipeline pelatihan model dieksekusi secara otomatis saat ada data baru",
-      "Penghapusan seluruh peran Data Engineer dan digantikan oleh cloud provider",
-      "Model dapat berjalan tanpa memerlukan komputer server atau kontainer",
-      "Semua model biner disimpan langsung di repository GitHub publik"
+      "145.0",
+      "195.0",
+      "270.0",
+      "70.0"
     ],
-    "correctAnswer": 0,
-    "explanation": "Level 1 memperkenalkan otomatisasi pipeline pelatihan model untuk continuous training (CT). Hal ini memungkinkan sistem melatih ulang model secara otomatis begitu ada pemicu data baru atau penurunan performa."
+    "correctAnswer": 1,
+    "timeLimit": 14,
+    "explanation": "Multiplication and division take precedence over addition and subtraction: 50.0 * 2.0 = 100.0, 20.0 / 4.0 = 5.0, then 100.0 + 100.0 - 5.0 = 195.0."
   },
   {
     "id": 6,
+    "type": "multiple_choice",
+    "question": "A marketing team generates automated customer greeting banners using the code snippet below. What is the exact output displayed on the console?",
+    "code": "String customerName = \"Sophia\";\nint rewardPoints = 250;\nSystem.out.println(\"Customer: \" + customerName + \" | Points: \" + rewardPoints + 50);",
+    "options": [
+      "Customer: Sophia | Points: 300",
+      "Customer: Sophia | Points: 25050",
+      "Customer: Sophia | Points: 250 + 50",
+      "Compilation error"
+    ],
+    "correctAnswer": 1,
+    "timeLimit": 9,
+    "explanation": "The + operator evaluates left-to-right. Once a String is encountered, subsequent + operations perform string concatenation: \"Points: \" + 250 gives \"Points: 250\", then + 50 gives \"Points: 25050\"."
+  },
+  {
+    "id": 7,
     "type": "true_false",
-    "timeLimit": 10,
-    "question": "Git sangat efisien dan direkomendasikan untuk melacak serta menyimpan file dataset mentah dan model binary berukuran gigabyte secara langsung di GitHub.",
-    "code": null,
+    "question": "The following Java assignment compiles without error because Java automatically rounds floating-point numbers to integers: int targetSales = 75000.85;",
+    "code": "int targetSales = 75000.85;",
     "options": [
       "True",
       "False"
     ],
     "correctAnswer": 1,
-    "explanation": "Salah! Git dirancang untuk file teks baris demi baris, bukan binary berukuran masif. Menyimpan file model besar (seperti .pkl, .pt, .onnx) atau dataset raksasa di Git membuat repositori membengkak drastis. Itulah alasan tools seperti DVC (Data Version Control) digunakan."
-  },
-  {
-    "id": 7,
-    "type": "multi_select",
-    "timeLimit": 20,
-    "question": "Pilih 2 peran penting dari tools DVC (Data Version Control) dalam ekosistem MLOps modern:",
-    "code": null,
-    "options": [
-      "Menyimpan pointer/hash metadata versi data ke git commit tanpa menyimpan file besar langsung di repo Git",
-      "Menggantikan fungsi web browser untuk menampilkan halaman antarmuka web klien",
-      "Menyambungkan penyimpanan file data/model ke remote storage seperti S3, GCS, atau Google Drive",
-      "Mengompilasi source code Python menjadi file biner mesin secara otomatis"
-    ],
-    "correctAnswers": [
-      0,
-      2
-    ],
-    "explanation": "DVC melacak dataset dan model berukuran besar dengan membuat file pointer meta kecil (.dvc) yang dimasukkan ke Git, sementara data aslinya disimpan dengan aman di remote storage (S3, GCS, NAS, Google Drive)."
+    "timeLimit": 14,
+    "explanation": "Java does not allow assigning a double to an int without an explicit cast (int), because it causes loss of decimal precision."
   },
   {
     "id": 8,
-    "type": "multi_select",
-    "timeLimit": 20,
-    "question": "Manakah 2 faktor penyebab utama timbulnya 'GAP' atau kesenjangan operasional antara Data Scientist dan tim IT Operations sebelum era MLOps?",
-    "code": null,
-    "options": [
-      "Data Scientist berfokus pada kecepatan eksperimen, optimasi metrik akurasi, dan kode dinamis",
-      "Tim IT Operations memprioritaskan stabilitas sistem, uptime 24/7, keamanan, dan keandalan produksi",
-      "Data Scientist hanya menggunakan hardware mainframe, sedangkan IT Operations menggunakan laptop",
-      "IT Operations tidak memahami dasar matematika penambahan dan pengurangan"
-    ],
+    "type": "fill_in",
+    "question": "A retail store packs orders into standard cartons holding 6 items each. Fill in the blank with the correct Java arithmetic operator to calculate the leftover loose units:",
+    "code": "int totalItems = 38;\nint cartonCapacity = 6;\nint leftoverUnits = totalItems _____ cartonCapacity;\n// leftoverUnits should evaluate to 2",
     "correctAnswers": [
-      0,
-      1
+      "%"
     ],
-    "explanation": "Jurang pemisah (GAP) terjadi karena perbedaan prioritas: Data Scientist berorientasi pada riset, kecepatan eksplorasi, dan akurasi model, sedangkan IT Operations berorientasi pada stabilitas infrastruktur, tata kelola keamanan, dan pemeliharaan uptime sistem."
+    "timeLimit": 14,
+    "explanation": "The modulus operator (%) calculates the integer remainder of division: 38 % 6 is 2."
   },
   {
     "id": 9,
-    "type": "fill_in",
-    "timeLimit": 25,
-    "question": "Platform open-source populer yang digunakan untuk pelacakan eksperimen (experiment tracking) dan manajemen siklus hidup model dalam MLOps adalah ML_____",
-    "code": null,
-    "correctAnswers": [
-      "flow",
-      "mlflow"
+    "type": "multiple_choice",
+    "question": "Trace the variable values in this retail pricing calculation. What is printed to the screen?",
+    "code": "double basePrice = 200.0;\ndouble promotionalDiscount = 0.20;\ndouble currentPrice = basePrice * (1.0 - promotionalDiscount);\nbasePrice = 250.0;\nSystem.out.println(\"Current: \" + currentPrice + \", Base: \" + basePrice);",
+    "options": [
+      "Current: 200.0, Base: 250.0",
+      "Current: 160.0, Base: 250.0",
+      "Current: 200.0, Base: 200.0",
+      "Current: 160.0, Base: 200.0"
     ],
-    "explanation": "MLflow adalah platform open-source terkemuka yang menyediakan komponen Tracking, Projects, Models, dan Model Registry untuk mengelola siklus hidup end-to-end Machine Learning."
+    "correctAnswer": 1,
+    "timeLimit": 18,
+    "explanation": "currentPrice is calculated once as 200.0 * 0.80 = 160.0. Updating basePrice to 250.0 later does not change currentPrice."
   },
   {
     "id": 10,
-    "type": "fill_in",
-    "timeLimit": 25,
-    "question": "Otomatisasi proses pelatihan ulang model Machine Learning secara berkelanjutan saat ada data baru dalam pipeline MLOps disebut Continuous _____ (singkatan: CT).",
+    "type": "multiple_choice",
+    "question": "A business student writes a program to capture the full legal name of a vendor company (e.g., \"Acme Supply Logistics\"). Which Scanner method must be used to ensure the entire line including spaces is captured?",
     "code": null,
-    "correctAnswers": [
-      "training",
-      "ct",
-      "continuous training"
+    "options": [
+      "scanner.next();",
+      "scanner.nextLine();",
+      "scanner.readString();",
+      "scanner.nextWord();"
     ],
-    "explanation": "Continuous Training (CT) adalah salah satu karakteristik kunci MLOps yang membedakannya dari DevOps, di mana sistem secara otomatis melatih kembali model saat ada data baru atau deteksi drift."
+    "correctAnswer": 1,
+    "timeLimit": 18,
+    "explanation": "scanner.nextLine() reads all text up to the newline, whereas scanner.next() stops at the first whitespace delimiter."
   },
   {
     "id": 11,
     "type": "multiple_choice",
-    "timeLimit": 15,
-    "question": "Komponen MLflow yang berfungsi sebagai repositori terpusat untuk mengelola tahapan siklus hidup model (seperti Staging, Production, dan Archived) adalah...",
+    "question": "Which comparison operator must be used in a Java if condition to check whether an applicant's credit score is exactly equal to 750?",
     "code": null,
     "options": [
-      "MLflow Model Registry",
-      "MLflow Tracking",
-      "MLflow Projects",
-      "MLflow Pipelines"
+      "=",
+      "==",
+      "===",
+      "equals"
     ],
-    "correctAnswer": 0,
-    "explanation": "MLflow Model Registry menyediakan penyimpanan model terpusat, antarmuka kolaboratif, versi model bertahap, dan pengelolaan transisi siklus hidup model dari Staging menuju Production hingga Archived."
+    "correctAnswer": 1,
+    "timeLimit": 9,
+    "explanation": "In Java, == is the equality comparison operator for primitive values. A single = is assignment."
   },
   {
     "id": 12,
     "type": "true_false",
-    "timeLimit": 10,
-    "question": "Fungsi mlflow.autolog() secara otomatis mencatat parameter, metrik evaluasi, dan artefak model dari library populer seperti Scikit-Learn dan TensorFlow tanpa perlu menulis kode logging manual satu per satu.",
-    "code": "import mlflow\nmlflow.autolog()",
+    "question": "In the conditional expression (annualRevenue >= 1000000 && yearsInBusiness > 3), both sub-conditions must be true for a commercial loan application to be approved.",
+    "code": "if (annualRevenue >= 1000000 && yearsInBusiness > 3)",
     "options": [
       "True",
       "False"
     ],
     "correctAnswer": 0,
-    "explanation": "Benar! mlflow.autolog() adalah fitur praktis yang mengaitkan (hook) fungsi pelatihan framework populer untuk mencatat hyperparameter, metrik loss/akurasi, dan artefak model ke MLflow Tracking secara otomatis."
+    "timeLimit": 9,
+    "explanation": "The logical AND operator (&&) requires both left and right expressions to be true."
   },
   {
     "id": 13,
     "type": "multiple_choice",
-    "timeLimit": 15,
-    "question": "Dalam GitHub Actions, berkas konfigurasi otomatisasi pipeline CI/CD harus disimpan dalam format YAML pada direktori repositori...",
-    "code": null,
+    "question": "A wholesale supplier applies tiered bulk discounts to purchase orders. What discount percentage will be printed?",
+    "code": "int orderQuantity = 250;\ndouble discountRate = 0.0;\n\nif (orderQuantity >= 500) {\n    discountRate = 0.20;\n} else if (orderQuantity >= 200) {\n    discountRate = 0.10;\n} else if (orderQuantity >= 100) {\n    discountRate = 0.05;\n} else {\n    discountRate = 0.0;\n}\nSystem.out.println(\"Discount: \" + (discountRate * 100) + \"%\");",
     "options": [
-      ".github/workflows",
-      ".git/actions",
-      "config/github",
-      "scripts/ci_cd"
+      "Discount: 20.0%",
+      "Discount: 10.0%",
+      "Discount: 5.0%",
+      "Discount: 0.0%"
     ],
-    "correctAnswer": 0,
-    "explanation": "GitHub Actions mendeteksi seluruh konfigurasi alur kerja (workflow files) yang berformat .yml atau .yaml di dalam folder .github/workflows/ pada root repositori."
+    "correctAnswer": 1,
+    "timeLimit": 14,
+    "explanation": "250 >= 500 is false, but 250 >= 200 is true, so discountRate is set to 0.10 (10.0%). Subsequent branches are skipped."
   },
   {
     "id": 14,
-    "type": "true_false",
-    "timeLimit": 10,
-    "question": "Git adalah Centralized Version Control System (CVCS) yang mewajibkan developer selalu terhubung ke server internet pusat agar bisa melakukan commit lokal.",
-    "code": null,
-    "options": [
-      "True",
-      "False"
+    "type": "fill_in",
+    "question": "A customer qualifies for free delivery if their cart total is at least $50.0 OR if they have a VIP membership. Fill in the blank with the appropriate Java logical operator:",
+    "code": "if (cartTotal >= 50.0 _____ isVipMember == true) {\n    System.out.println(\"Free Delivery Granted\");\n}",
+    "correctAnswers": [
+      "||"
     ],
-    "correctAnswer": 1,
-    "explanation": "Salah! Git adalah Distributed Version Control System (DVCS). Setiap pengembang memiliki salinan lokal lengkap dari seluruh riwayat repositori, sehingga operasi commit, branching, dan inspecting history dapat dilakukan secara offline."
+    "timeLimit": 9,
+    "explanation": "The logical OR operator (||) evaluates to true if either operand is true."
   },
   {
     "id": 15,
     "type": "multiple_choice",
-    "timeLimit": 15,
-    "question": "Dalam pengelolaan metadata ML, manakah perbedaan yang benar antara hyperparameter dan internal model parameter?",
-    "code": null,
+    "question": "Consider the following code snippet evaluating employee bonuses. What bonus amount does the employee receive?",
+    "code": "double salesTarget = 100000.0;\ndouble actualSales = 95000.0;\nint tenureYears = 4;\ndouble bonus = 0.0;\n\nif (actualSales >= salesTarget || tenureYears >= 5) {\n    bonus = 2000.0;\n} else if (actualSales >= 90000.0 && !(tenureYears < 3)) {\n    bonus = 1000.0;\n} else {\n    bonus = 250.0;\n}\nSystem.out.println(\"Bonus: $\" + bonus);",
     "options": [
-      "Hyperparameter diatur oleh engineer sebelum training (misal: learning rate), sedangkan internal parameter dipelajari otomatis oleh model selama training (misal: bobot/weights)",
-      "Hyperparameter dihasilkan setelah model selesai dievaluasi, sedangkan internal parameter ditentukan oleh pengguna cloud",
-      "Hyperparameter hanya ada pada model regresi linear, sedangkan internal parameter hanya ada pada decision tree",
-      "Hyperparameter tidak memengaruhi performa model sama sekali"
+      "Bonus: $2000.0",
+      "Bonus: $1000.0",
+      "Bonus: $250.0",
+      "Bonus: $0.0"
     ],
-    "correctAnswer": 0,
-    "explanation": "Hyperparameters adalah konfigurasi eksternal yang disetel oleh praktisi data sebelum pelatihan (seperti learning rate, n_estimators, max_depth), sedangkan internal parameters adalah nilai matematis (weights, biases) yang dipelajari algoritma dari data."
+    "correctAnswer": 1,
+    "timeLimit": 18,
+    "explanation": "In the else if: 95000 >= 90000 is true, and !(4 < 3) is !(false) which is true. true && true produces true, awarding $1000.0."
   },
   {
     "id": 16,
     "type": "true_false",
-    "timeLimit": 10,
-    "question": "Pada konfigurasi GitHub Actions, beberapa job yang didefinisikan dalam satu workflow secara default akan dieksekusi secara paralel kecuali ditentukan dependensi dengan kata kunci needs.",
-    "code": null,
+    "question": "To verify if a customer entered the promo code \"SUMMER20\", using promoCode == \"SUMMER20\" is always guaranteed to work reliably in Java regardless of how the string was input.",
+    "code": "if (promoCode == \"SUMMER20\")",
     "options": [
       "True",
       "False"
     ],
-    "correctAnswer": 0,
-    "explanation": "Benar! GitHub Actions menjalankan jobs secara paralel secara default untuk mempercepat waktu eksekusi. Jika ada urutan tertentu (misal: deploy hanya setelah test sukses), digunakan atribut needs: [job_id]."
+    "correctAnswer": 1,
+    "timeLimit": 14,
+    "explanation": "In Java, == checks memory references. For String content comparison, promoCode.equals(\"SUMMER20\") should always be used."
   },
   {
     "id": 17,
-    "type": "multi_select",
-    "timeLimit": 20,
-    "question": "Pilih 2 method dari MLflow Tracking API berikut yang digunakan untuk mencatat metadata secara manual ke dalam active run:",
-    "code": null,
+    "type": "multiple_choice",
+    "question": "An automated warehouse security system evaluates safety doors. What is the output?",
+    "code": "boolean isDoorClosed = false;\nboolean isAlarmArmed = true;\n\nif (!isDoorClosed && isAlarmArmed) {\n    System.out.println(\"WARNING: Breach detected!\");\n} else {\n    System.out.println(\"Status normal.\");\n}",
     "options": [
-      "mlflow.log_param()",
-      "mlflow.delete_repo()",
-      "mlflow.log_metric()",
-      "mlflow.execute_query()"
+      "WARNING: Breach detected!",
+      "Status normal.",
+      "No output because isDoorClosed is false.",
+      "A compiler syntax error."
     ],
-    "correctAnswers": [
-      0,
-      2
-    ],
-    "explanation": "mlflow.log_param(key, value) digunakan untuk mencatat konfigurasi input/hyperparameter, dan mlflow.log_metric(key, value) digunakan untuk mencatat metrik skalar evaluasi seperti akurasi atau loss."
+    "correctAnswer": 0,
+    "timeLimit": 14,
+    "explanation": "!isDoorClosed inverts false to true. Since isAlarmArmed is also true, true && true triggers the warning."
   },
   {
     "id": 18,
-    "type": "multi_select",
-    "timeLimit": 20,
-    "question": "Manakah 2 komponen inti dalam arsitektur GitHub Actions yang bertindak masing-masing sebagai pemicu alur kerja dan mesin eksekutor pekerjaan?",
-    "code": null,
+    "type": "multiple_choice",
+    "question": "A financial tax underwriting software computes tax liabilities with nested conditionals. What is the resulting taxOwed?",
+    "code": "double taxableIncome = 45000.0;\nboolean hasDependents = true;\ndouble taxRate = 0.20;\n\nif (taxableIncome > 50000.0) {\n    taxRate = 0.25;\n} else {\n    if (hasDependents) {\n        taxRate = 0.15;\n    }\n}\ndouble taxOwed = taxableIncome * taxRate;\nSystem.out.println(\"Tax: $\" + taxOwed);",
     "options": [
-      "Events (pemicu seperti git push atau pull_request)",
-      "Compiler (pengubah kode python menjadi assembly)",
-      "Runners (server mesin virtual yang mengeksekusi jobs)",
-      "Spreadsheet (antarmuka pencatat tabel commit)"
+      "Tax: $11250.0",
+      "Tax: $9000.0",
+      "Tax: $6750.0",
+      "Tax: $4500.0"
     ],
-    "correctAnswers": [
-      0,
-      2
-    ],
-    "explanation": "GitHub Actions digerakkan oleh Events (peristiwa pemicu seperti push, PR, atau schedule cron) dan Jobs yang dieksekusi di atas Runners (server virtual/kontainer lingkungan eksekusi)."
+    "correctAnswer": 2,
+    "timeLimit": 18,
+    "explanation": "45000.0 > 50000.0 is false. Inside else, hasDependents is true, setting taxRate to 0.15. 45000.0 * 0.15 = 6750.0."
   },
   {
     "id": 19,
-    "type": "fill_in",
-    "timeLimit": 25,
-    "question": "Komponen MLflow yang menyediakan antarmuka web dan API untuk mencatat parameter, metrik, dan artefak eksperimen disebut MLflow _____",
+    "type": "multiple_choice",
+    "question": "A human resources manager wants to print payroll stub numbers from 1 to 12 for the months of the year. Which for loop header accomplishes this correctly?",
     "code": null,
-    "correctAnswers": [
-      "tracking",
-      "mlflow tracking"
+    "options": [
+      "for (int month = 1; month <= 12; month++)",
+      "for (int month = 1; month < 12; month++)",
+      "for (int month = 0; month <= 12; month++)",
+      "for (int month = 12; month > 1; month--)"
     ],
-    "explanation": "MLflow Tracking adalah komponen logging inti yang menyimpan parameter, versi kode, metrik, dan output file artefak dari setiap eksperimen machine learning."
+    "correctAnswer": 0,
+    "timeLimit": 9,
+    "explanation": "Initializing at 1 and running while month <= 12 increments through months 1 to 12 inclusive."
   },
   {
     "id": 20,
     "type": "fill_in",
-    "timeLimit": 25,
-    "question": "File konfigurasi standar tempat mendefinisikan environment perangkat lunak dan titik masuk (entry points) pada MLflow Projects adalah file _____",
-    "code": null,
+    "question": "Fill in the blank with the appropriate assignment shortcut operator to accumulate daily register receipts into weeklyRevenue:",
+    "code": "double weeklyRevenue = 0.0;\n// Inside loop processing each day's sales:\nweeklyRevenue _____ dailySale;",
     "correctAnswers": [
-      "mlproject",
-      "mlproject file"
+      "+="
     ],
-    "explanation": "MLproject adalah berkas teks (YAML syntax) yang mendeskripsikan dependensi lingkungan (Conda/Docker) dan perintah eksekusi kode proyek MLflow agar dapat direproduksi oleh orang lain."
+    "timeLimit": 9,
+    "explanation": "+= adds dailySale to weeklyRevenue and reassigns the result back to weeklyRevenue."
   },
   {
     "id": 21,
-    "type": "multiple_choice",
-    "timeLimit": 15,
-    "question": "Apakah tanggung jawab utama seorang Machine Learning Engineer dalam siklus hidup proyek data?",
-    "code": null,
-    "options": [
-      "Mengubah model prototipe menjadi sistem skala produksi yang scalable, andal, dan terintegrasi dengan pipeline otomatis",
-      "Hanya membuat dashboard visualisasi laporan bulanan untuk jajaran manajemen eksekutif",
-      "Menangani instalasi kabel fisik jaringan fiber optic di ruang server data center",
-      "Melakukan penjualan produk perangkat lunak secara langsung kepada calon investor"
-    ],
-    "correctAnswer": 0,
-    "explanation": "Machine Learning Engineer menjembatani dunia sains data dan rekayasa perangkat lunak. Peran utamanya adalah mengemas prototipe model menjadi layanan produksi yang tangguh, scalable, terautomasi, dan terpantau dengan baik."
-  },
-  {
-    "id": 22,
     "type": "true_false",
-    "timeLimit": 10,
-    "question": "Dimensi kualitas data 'Relevan' mensyaratkan agar kita mengumpulkan sebanyak mungkin fitur tanpa memikirkan kaitannya dengan tujuan bisnis prediksi.",
+    "question": "A do-while loop is guaranteed to execute its code block at least once, even if the loop's test condition is false from the very start.",
     "code": null,
     "options": [
       "True",
       "False"
     ],
+    "correctAnswer": 0,
+    "timeLimit": 9,
+    "explanation": "A do-while loop evaluates its condition at the bottom after executing the loop body at least once."
+  },
+  {
+    "id": 22,
+    "type": "multiple_choice",
+    "question": "An accountant writes a program to count down the remaining amortization years on equipment. What is the exact output?",
+    "code": "int yearsRemaining = 3;\nwhile (yearsRemaining > 0) {\n    System.out.print(yearsRemaining + \" \");\n    yearsRemaining--;\n}",
+    "options": [
+      "3 2 1 0 ",
+      "3 2 1 ",
+      "2 1 0 ",
+      "3 2 "
+    ],
     "correctAnswer": 1,
-    "explanation": "Salah! Relevansi data berarti fitur yang dikumpulkan harus memiliki hubungan substantif dan bermakna terhadap problem bisnis yang ingin dipecahkan, bukan sekadar menimbun data yang tidak berguna (noise)."
+    "timeLimit": 14,
+    "explanation": "The loop prints 3, 2, 1. When yearsRemaining reaches 0, the condition 0 > 0 is false, stopping the loop."
   },
   {
     "id": 23,
     "type": "multiple_choice",
-    "timeLimit": 15,
-    "question": "Proses pembersihan, transformasi tipe data, penanganan nilai kosong, dan penggabungan berbagai format data mentah agar siap dilatih oleh model disebut...",
-    "code": null,
+    "question": "A finance officer runs an annual compound growth model simulating an investment of $10,000 growing at 10% per year. What will be printed?",
+    "code": "double investment = 10000.0;\nint years = 0;\nwhile (investment < 12500.0) {\n    investment = investment * 1.10;\n    years++;\n}\nSystem.out.println(\"Years required: \" + years);",
     "options": [
-      "Data Wrangling / Preprocessing",
-      "Model Inference",
-      "Hyperparameter Pruning",
-      "Continuous Deployment"
+      "Years required: 2",
+      "Years required: 3",
+      "Years required: 4",
+      "Years required: 5"
     ],
-    "correctAnswer": 0,
-    "explanation": "Data Wrangling (atau Data Preprocessing) adalah rangkaian langkah untuk membersihkan, menstrukturkan, dan mentransformasikan dataset mentah menjadi format yang bersih dan konsisten untuk pemodelan ML."
+    "correctAnswer": 1,
+    "timeLimit": 18,
+    "explanation": "Year 1: 11000.0. Year 2: 12100.0. Year 3: 13310.0 (which is >= 12500.0, ending the loop at 3 years)."
   },
   {
     "id": 24,
-    "type": "true_false",
-    "timeLimit": 10,
-    "question": "Data riwayat transaksi penjualan internal perusahaan dari sistem ERP/CRM dikategorikan sebagai Data Internal.",
-    "code": null,
+    "type": "multiple_choice",
+    "question": "A corporate payroll schedule counts pay periods occurring every two weeks across an 8-week cycle. What sequence is output?",
+    "code": "for (int week = 2; week <= 8; week += 2) {\n    System.out.print(week + \" \");\n}",
     "options": [
-      "True",
-      "False"
+      "2 3 4 5 6 7 8 ",
+      "2 4 6 8 ",
+      "4 6 8 ",
+      "2 4 6 "
     ],
-    "correctAnswer": 0,
-    "explanation": "Benar! Data internal adalah data primer yang dimiliki, dihasilkan, dan dikendalikan langsung oleh organisasi/perusahaan dari operasional bisnisnya sendiri."
+    "correctAnswer": 1,
+    "timeLimit": 14,
+    "explanation": "Starting at 2 and stepping by += 2 produces 2, 4, 6, 8. At 10, the condition <= 8 fails."
   },
   {
     "id": 25,
-    "type": "multiple_choice",
-    "timeLimit": 15,
-    "question": "Jika sebuah dataset pelanggan memiliki persentase baris kosong (missing values) yang sangat masif hingga 80% pada variabel kunci, dimensi kualitas data apakah yang paling terganggu?",
-    "code": null,
+    "type": "true_false",
+    "question": "In a transaction auditing loop, the continue keyword completely terminates the entire loop and prevents any remaining transactions from being audited.",
+    "code": "for (int i = 1; i <= totalReceipts; i++) {\n    if (isVoided(i)) {\n        continue;\n    }\n    audit(i);\n}",
     "options": [
-      "Kelengkapan (Completeness)",
-      "Kemewahan (Luxury)",
-      "Kerahasiaan (Secrecy)",
-      "Popularitas (Popularity)"
+      "True",
+      "False"
     ],
-    "correctAnswer": 0,
-    "explanation": "Dimensi Kelengkapan (Completeness) mengukur seberapa penuh data tanpa adanya nilai yang hilang atau tidak tercatat pada entitas yang diharapkan."
+    "correctAnswer": 1,
+    "timeLimit": 14,
+    "explanation": "continue skips the remainder of the current iteration only and moves to the next iteration; it does not terminate the loop."
   },
   {
     "id": 26,
+    "type": "multiple_choice",
+    "question": "Identify the critical business logic defect in the following customer queue processing script:",
+    "code": "int customerCount = 10;\nwhile (customerCount > 0) {\n    System.out.println(\"Processing customer order...\");\n    if (customerCount == 5) {\n        System.out.println(\"Express lane break\");\n    }\n}",
+    "options": [
+      "customerCount is never decremented, creating an infinite loop.",
+      "You cannot use an if statement inside a while loop in Java.",
+      "customerCount must be initialized to 0.",
+      "customerCount > 0 throws an out-of-memory exception."
+    ],
+    "correctAnswer": 0,
+    "timeLimit": 18,
+    "explanation": "Because customerCount is never decremented, customerCount > 0 remains true infinitely."
+  },
+  {
+    "id": 27,
+    "type": "multiple_choice",
+    "question": "A regional sales director calculates the sum of shifts for 2 store branches over 3 sales shifts using nested loops. What is the final value of totalShiftsLogged?",
+    "code": "int totalShiftsLogged = 0;\nfor (int branch = 1; branch <= 2; branch++) {\n    for (int shift = 1; shift <= 3; shift++) {\n        totalShiftsLogged++;\n    }\n}\nSystem.out.println(\"Total: \" + totalShiftsLogged);",
+    "options": [
+      "Total: 5",
+      "Total: 6",
+      "Total: 9",
+      "Total: 4"
+    ],
+    "correctAnswer": 1,
+    "timeLimit": 23,
+    "explanation": "The outer loop runs 2 times and the inner loop runs 3 times for each outer step: 2 * 3 = 6."
+  },
+  {
+    "id": 28,
+    "type": "multiple_choice",
+    "question": "A developer writes a method to calculate the profit margin ratio and return it for further accounting calculations. Which return type must be used in the method declaration?",
+    "code": "public static _____ calculateMargin(double revenue, double cost)",
+    "options": [
+      "void",
+      "double",
+      "boolean",
+      "return"
+    ],
+    "correctAnswer": 1,
+    "timeLimit": 9,
+    "explanation": "A profit margin ratio is a numerical decimal value, requiring double as the method return type."
+  },
+  {
+    "id": 29,
     "type": "true_false",
-    "timeLimit": 10,
-    "question": "Dalam pengembangan Machine Learning yang bertanggung jawab, kepatuhan etika data dan regulasi privasi (seperti UU PDP atau GDPR) wajib dipatuhi sejak fase pengumpulan data.",
+    "question": "A static method defined inside a class can be called directly from the main method of the same class without having to create an object instance using new.",
     "code": null,
     "options": [
       "True",
       "False"
     ],
     "correctAnswer": 0,
-    "explanation": "Benar! Etika data, perlindungan privasi konsumen, persetujuan penggunaan data (consent), dan ketaatan hukum harus diterapkan sejak awal pengumpulan data (privacy by design), bukan setelah model dirilis."
-  },
-  {
-    "id": 27,
-    "type": "multi_select",
-    "timeLimit": 20,
-    "question": "Pilih 2 dari 5 dimensi utama kualitas data yang wajib dijaga dalam rekayasa data machine learning:",
-    "code": null,
-    "options": [
-      "Akurat (data mencerminkan fakta sebenarnya tanpa kesalahan input)",
-      "Subjektif (data bergantung pada opini pribadi masing-masing pengamat)",
-      "Konsisten (format dan definisi data seragam di seluruh sistem)",
-      "Viral (data banyak diperbincangkan di media sosial)"
-    ],
-    "correctAnswers": [
-      0,
-      2
-    ],
-    "explanation": "Lima dimensi kualitas data meliputi Relevan, Akurat, Lengkap, Konsisten, dan Andal (Reliable). Akurat dan Konsisten merupakan dua pilar fundamental agar model tidak menghasilkan garbage-in garbage-out."
-  },
-  {
-    "id": 28,
-    "type": "multi_select",
-    "timeLimit": 20,
-    "question": "Manakah 2 tugas yang secara spesifik merupakan tanggung jawab tim Data Engineer?",
-    "code": null,
-    "options": [
-      "Membangun dan memelihara pipeline ETL/ELT yang efisien untuk mengekstrak dan memuat data",
-      "Membuat presentasi kampanye pemasaran produk ke pelanggan retail",
-      "Merancang arsitektur penyimpanan data skala besar seperti Data Lake dan Data Warehouse",
-      "Mengajar model deep learning untuk bermain catur melawan grandmaster"
-    ],
-    "correctAnswers": [
-      0,
-      2
-    ],
-    "explanation": "Data Engineer bertugas membangun infrastruktur fondasi data: merancang pipeline data ingestion (ETL/ELT), memastikan skalabilitas database, dan mengelola Data Lake/Warehouse untuk digunakan Data Scientist dan Analyst."
-  },
-  {
-    "id": 29,
-    "type": "fill_in",
-    "timeLimit": 25,
-    "question": "Fase investigasi awal untuk menganalisis statistik deskriptif, pola persebaran, dan korelasi antar fitur data disingkat sebagai tahap _____",
-    "code": null,
-    "correctAnswers": [
-      "eda",
-      "exploratory data analysis"
-    ],
-    "explanation": "Exploratory Data Analysis (EDA) adalah proses eksplorasi mendalam menggunakan visualisasi dan ringkasan statistik untuk memahami karakteristik data sebelum masuk ke tahap modeling."
+    "timeLimit": 9,
+    "explanation": "Static methods belong to the class and can be invoked directly from other static contexts like main."
   },
   {
     "id": 30,
     "type": "fill_in",
-    "timeLimit": 25,
-    "question": "Dimensi kualitas data yang menjamin data bebas dari kesalahan nilai dan merepresentasikan kebenaran faktual di dunia nyata disebut dimensi data yang _____",
-    "code": null,
+    "question": "Fill in the blank with the required Java keyword to send the calculated sales tax value back to the caller of the method:",
+    "code": "public static double calculateTax(double amount, double taxRate) {\n    double tax = amount * taxRate;\n    _____ tax;\n}",
     "correctAnswers": [
-      "akurat",
-      "akurasi",
-      "accuracy"
+      "return"
     ],
-    "explanation": "Akurat (Accuracy) memastikan nilai-nilai pada dataset sesuai dengan kenyataan sebenarnya, bebas dari typo, kesalahan sensor, atau kalkulasi keliru."
+    "timeLimit": 9,
+    "explanation": "The return keyword passes the calculated value back to the caller."
   },
   {
     "id": 31,
     "type": "multiple_choice",
-    "timeLimit": 15,
-    "question": "Dalam analogi restoran untuk model serving, bagaimanakah peran API didefinisikan?",
-    "code": null,
+    "question": "Examine the method signature: public static double calculateShipping(double weight, boolean isInternational). Which of the following method calls is syntactically valid?",
+    "code": "public static double calculateShipping(double weight, boolean isInternational)",
     "options": [
-      "Sebagai Pelayan (Waiter) yang menerima pesanan klien dan mengantarkan hasil prediksi tanpa membiarkan klien masuk langsung ke dapur model",
-      "Sebagai Bahan Makanan mentah yang diimpor dari pasar luar",
-      "Sebagai Gedung Bangunan tempat restoran didirikan",
-      "Sebagai Resep Rahasia yang dicetak di menu buku makanan"
+      "calculateShipping(\"15.5\", true);",
+      "calculateShipping(15.5, false);",
+      "calculateShipping(true, 15.5);",
+      "calculateShipping(15.5);"
     ],
-    "correctAnswer": 0,
-    "explanation": "Analogi pelayan (waiter): Klien berinteraksi melalui API endpoint (pelayan). Klien mengirim input (pesanan), pelayan meneruskan ke model di backend (koki), dan mengembalikan prediksi JSON (makanan) secara terisolasi dan aman."
+    "correctAnswer": 1,
+    "timeLimit": 14,
+    "explanation": "The call must supply a double followed by a boolean to match the method parameters."
   },
   {
     "id": 32,
     "type": "true_false",
-    "timeLimit": 10,
-    "question": "Membagikan file model biner (.pkl) secara langsung kepada seluruh aplikasi klien untuk di-load masing-masing adalah arsitektur serving yang sangat disarankan di produksi.",
-    "code": null,
+    "question": "In the code below, the value of retailPrice printed in the main method will be 80.0:",
+    "code": "public static void applyDiscount(double price) {\n    price = price - 20.0;\n}\npublic static void main(String[] args) {\n    double retailPrice = 100.0;\n    applyDiscount(retailPrice);\n    System.out.println(retailPrice);\n}",
     "options": [
       "True",
       "False"
     ],
     "correctAnswer": 1,
-    "explanation": "Salah! Mengakses file model langsung menimbulkan tightly coupled architecture, risiko pembengkakan memori klien, bahaya keamanan deserialisasi (pickle vulnerability), serta kesulitan versi pembaruan model."
+    "timeLimit": 14,
+    "explanation": "Java is pass-by-value. Modifications to the parameter inside applyDiscount do not affect the original retailPrice in main (which remains 100.0)."
   },
   {
     "id": 33,
-    "type": "multiple_choice",
-    "timeLimit": 15,
-    "question": "Komponen Docker yang berjalan sebagai proses background sistem dan bertugas membangun, menjalankan, dan mengelola image serta kontainer adalah...",
-    "code": null,
-    "options": [
-      "Docker Daemon (dockerd)",
-      "Docker Client (CLI)",
-      "Docker Hub",
-      "Docker Desktop GUI"
+    "type": "fill_in",
+    "question": "Fill in the blank with the appropriate return type for a method that inspects customer payment records and returns true if overdue or false if current:",
+    "code": "public static _____ isAccountOverdue(int daysLate) {\n    return daysLate > 30;\n}",
+    "correctAnswers": [
+      "boolean"
     ],
-    "correctAnswer": 0,
-    "explanation": "Docker Daemon (dockerd) adalah proses latar belakang persisten yang mendengarkan request Docker API dan mengelola objek seperti images, containers, networks, dan volumes."
+    "timeLimit": 14,
+    "explanation": "daysLate > 30 produces a boolean (true/false) value, so the method return type must be boolean."
   },
   {
     "id": 34,
-    "type": "true_false",
-    "timeLimit": 10,
-    "question": "Docker Container adalah instance aktif yang dijalankan dari cetak biru (blueprint) statis yang disebut Docker Image.",
-    "code": null,
+    "type": "multiple_choice",
+    "question": "A corporate financial reporting class contains these two method declarations. What programming concept does this demonstrate?",
+    "code": "public static void generateReport(int year) { ... }\npublic static void generateReport(int year, int quarter) { ... }",
     "options": [
-      "True",
-      "False"
+      "Method Overriding",
+      "Method Overloading",
+      "Method Recursion",
+      "Variable Shadowing"
     ],
-    "correctAnswer": 0,
-    "explanation": "Benar! Docker Image adalah template read-only (blueprint paket aplikasi), sedangkan Docker Container adalah instance runnable yang diisolasi dan dieksekusi dari image tersebut."
+    "correctAnswer": 1,
+    "timeLimit": 14,
+    "explanation": "Method overloading allows multiple methods to share the same name with different parameter lists."
   },
   {
     "id": 35,
     "type": "multiple_choice",
-    "timeLimit": 15,
-    "question": "Perintah Docker CLI untuk menjalankan kontainer di latar belakang (detached mode) dengan memetakan port host 5005 ke port container 8080 adalah...",
-    "code": null,
+    "question": "Trace the execution of this modular pricing program. What is printed to the console?",
+    "code": "public static double addFee(double amount) {\n    return amount + 15.0;\n}\npublic static double applyTax(double amount) {\n    return amount * 1.10;\n}\npublic static void main(String[] args) {\n    double subtotal = 100.0;\n    double finalTotal = applyTax(addFee(subtotal));\n    System.out.println(\"Final: $\" + finalTotal);\n}",
     "options": [
-      "docker run -d -p 5005:8080 nama_image",
-      "docker build -t 5005:8080 nama_image",
-      "docker push -p 5005:8080 nama_image",
-      "docker stop -d 5005:8080 nama_image"
+      "Final: $125.0",
+      "Final: $126.5",
+      "Final: $115.0",
+      "Final: $110.0"
     ],
-    "correctAnswer": 0,
-    "explanation": "Opsi -d berarti detached mode (berjalan di background) dan -p 5005:8080 memetakan port 5005 pada host ke port 8080 di dalam container."
+    "correctAnswer": 1,
+    "timeLimit": 18,
+    "explanation": "addFee(100.0) returns 115.0. Then applyTax(115.0) computes 115.0 * 1.10 = 126.5."
   },
   {
     "id": 36,
     "type": "true_false",
-    "timeLimit": 10,
-    "question": "MLflow Models memiliki fitur terintegrasi untuk membangun kontainer Docker (mlflow models build-docker) sehingga model dapat langsung di-deploy secara seragam.",
+    "question": "A method declared with the void return type can contain a return; statement without an expression to exit the method early.",
     "code": null,
     "options": [
       "True",
       "False"
     ],
     "correctAnswer": 0,
-    "explanation": "Benar! MLflow menyediakan utilitas bawaan mlflow models build-docker untuk mengemas model beserta seluruh runtime dependencies ke dalam image Docker siap pakai."
+    "timeLimit": 9,
+    "explanation": "A bare return; statement without an expression is legal in void methods to exit early."
   },
   {
     "id": 37,
-    "type": "multi_select",
-    "timeLimit": 20,
-    "question": "Pilih 2 tantangan teknis utama dalam melayani inferensi model machine learning (model serving) di lingkungan produksi:",
-    "code": null,
-    "options": [
-      "Menekan latensi respons inferensi agar seminimal mungkin untuk kebutuhan sistem real-time",
-      "Mengganti seluruh sistem operasi server menjadi DOS",
-      "Mengelola alokasi sumber daya komputasi (CPU/GPU/RAM) saat terjadi lonjakan beban permintaan",
-      "Menghapus seluruh fitur keamanan SSL/TLS dari endpoint API"
-    ],
-    "correctAnswers": [
-      0,
-      2
-    ],
-    "explanation": "Dua tantangan utama model serving adalah menjaga latensi inferensi tetap rendah dan mengelola pemanfaatan sumber daya komputasi (CPU/GPU/RAM) secara efisien saat traffic melonjak."
-  },
-  {
-    "id": 38,
-    "type": "multi_select",
-    "timeLimit": 20,
-    "question": "Manakah 2 komponen inti dari arsitektur Docker yang bekerja sama menerima perintah pengguna dan mengeksekusi operasi kontainer?",
-    "code": null,
-    "options": [
-      "Docker Client (antarmuka baris perintah tempat user mengetik instruksi)",
-      "Docker Daemon (layanan background yang memproses perintah dan mengelola container)",
-      "VGA Driver Card",
-      "BIOS Rom Chip"
-    ],
-    "correctAnswers": [
-      0,
-      1
-    ],
-    "explanation": "Arsitektur Docker mengadopsi model client-server: Docker Client (CLI) mengirim perintah melalui REST API ke Docker Daemon (dockerd) yang melakukan pekerjaan berat mengelola container."
-  },
-  {
-    "id": 39,
-    "type": "fill_in",
-    "timeLimit": 25,
-    "question": "Paket perangkat lunak statis berisi kode, runtime, dependensi, dan pustaka sistem yang menjadi cetak biru container dinamakan Docker _____",
-    "code": null,
-    "correctAnswers": [
-      "image",
-      "images",
-      "docker image"
-    ],
-    "explanation": "Docker Image adalah cetak biru (blueprint) statis yang berisi seluruh file dan konfigurasi yang diperlukan untuk menjalankan sebuah aplikasi dalam kontainer."
-  },
-  {
-    "id": 40,
-    "type": "fill_in",
-    "timeLimit": 25,
-    "question": "Layanan repositori cloud resmi yang digunakan untuk mencari, mengunggah, dan membagikan Docker images secara global adalah Docker _____",
-    "code": null,
-    "correctAnswers": [
-      "hub",
-      "docker hub"
-    ],
-    "explanation": "Docker Hub adalah registry container berbasis cloud terbesar di dunia untuk meng-host dan mendistribusikan Docker images."
-  },
-  {
-    "id": 41,
     "type": "multiple_choice",
-    "timeLimit": 15,
-    "question": "Bagaimanakah pembagian peran yang tepat antara Prometheus dan Grafana dalam arsitektur monitoring sistem machine learning?",
-    "code": null,
+    "question": "An ERP system determines end-of-year executive bonus eligibility through the following method. What is the resulting bonus printed to the screen?",
+    "code": "public static double calculateBonus(double salary, int performanceScore, boolean kpiMet) {\n    if (!kpiMet) {\n        return 0.0;\n    }\n    double bonusPercentage;\n    if (performanceScore >= 90) {\n        bonusPercentage = 0.20;\n    } else if (performanceScore >= 75) {\n        bonusPercentage = 0.10;\n    } else {\n        bonusPercentage = 0.05;\n    }\n    return salary * bonusPercentage;\n}\n\npublic static void main(String[] args) {\n    double managerBonus = calculateBonus(80000.0, 82, true);\n    System.out.println(\"Bonus: $\" + managerBonus);\n}",
     "options": [
-      "Prometheus bertugas mengumpulkan dan menyimpan data metrik time-series, sedangkan Grafana memvisualisasikannya dalam dashboard interaktif",
-      "Prometheus bertugas melatih algoritma deep learning, sedangkan Grafana bertugas melakukan deploy ke Kubernetes",
-      "Prometheus hanya mencatat kode error, sedangkan Grafana adalah database relational SQL",
-      "Prometheus bertugas menghapus data lama, sedangkan Grafana bertugas mengompilasi kode Python"
-    ],
-    "correctAnswer": 0,
-    "explanation": "Prometheus mengumpulkan metrik dari target endpoint dan menyimpannya dalam database time-series. Grafana kemudian membaca data time-series tersebut dan menampilkannya sebagai grafik visual yang interaktif dan mudah dianalisis."
-  },
-  {
-    "id": 42,
-    "type": "true_false",
-    "timeLimit": 10,
-    "question": "Threshold Statis adalah pendekatan alerting di mana batas ambang peringatan dapat beradaptasi secara otomatis berdasarkan standar deviasi riwayat data masa lalu.",
-    "code": null,
-    "options": [
-      "True",
-      "False"
+      "Bonus: $16000.0",
+      "Bonus: $8000.0",
+      "Bonus: $4000.0",
+      "Bonus: $0.0"
     ],
     "correctAnswer": 1,
-    "explanation": "Salah! Threshold Statis adalah ambang batas tetap yang ditentukan secara manual di awal (misal: CPU > 80%). Pendekatan yang beradaptasi dengan pola riwayat data adalah Dynamic (Adaptive) Thresholding."
+    "timeLimit": 23,
+    "explanation": "kpiMet is true. performanceScore is 82 (>= 75 is true), giving bonusPercentage = 0.10. 80000.0 * 0.10 = 8000.0."
   },
   {
-    "id": 43,
     "type": "multiple_choice",
-    "timeLimit": 15,
-    "question": "Teknik optimasi model ML untuk memangkas neuron atau bobot parameter yang tidak berkontribusi signifikan guna memperkecil ukuran model dan mempercepat inferensi disebut...",
-    "code": null,
+    "timeLimit": 14,
+    "question": "A customer service ticket routing system inspects incoming email subjects for urgent customer requests. What will be printed to the console?",
+    "code": "String subject = \"Urgent: Refund requested for Order #4921\";\nboolean isPriority = subject.toLowerCase().contains(\"urgent\");\nSystem.out.println(\"Priority ticket: \" + isPriority);",
     "options": [
-      "Model Pruning",
-      "Data Ingestion",
-      "Overfitting Boosting",
-      "Database Sharding"
+      "Priority ticket: true",
+      "Priority ticket: false",
+      "Priority ticket: Urgent",
+      "Compilation error"
     ],
     "correctAnswer": 0,
-    "explanation": "Model Pruning membuang koneksi atau bobot yang redundan pada jaringan saraf/model. Hasilnya model memiliki footprint memori lebih kecil dan latensi inferensi yang jauh lebih cepat."
+    "explanation": "subject.toLowerCase() converts the string to lowercase (\"urgent: refund requested for order #4921\"), and .contains(\"urgent\") returns true because the substring exists in the text.",
+    "id": 38
   },
   {
-    "id": 44,
-    "type": "true_false",
-    "timeLimit": 10,
-    "question": "Fitur Horizontal Pod Autoscaler (HPA) di Kubernetes mampu menambah atau mengurangi jumlah pod secara dinamis berdasarkan metrik seperti penggunaan CPU atau lonjakan permintaan.",
-    "code": null,
-    "options": [
-      "True",
-      "False"
-    ],
-    "correctAnswer": 0,
-    "explanation": "Benar! HPA secara otomatis mengatur skala jumlah replika pod dalam cluster Kubernetes berdasarkan utilisasi CPU, memori, atau custom metrics lainnya."
-  },
-  {
-    "id": 45,
     "type": "multiple_choice",
-    "timeLimit": 15,
-    "question": "Algoritma load balancing yang mendistribusikan lalu lintas permintaan ke setiap instance model secara bergiliran satu per satu secara berurutan dinamakan...",
-    "code": null,
+    "timeLimit": 14,
+    "question": "A billing portal cleanses user-entered invoice codes before database storage to eliminate accidental leading and trailing spaces. What value will be printed to the console?",
+    "code": "String rawInput = \"   INV-2024-99   \";\nString cleanedCode = rawInput.trim();\nSystem.out.println(cleanedCode.length());",
     "options": [
-      "Round Robin",
-      "Random Shuffle",
-      "Greedy Search",
-      "Binary Splitting"
+      "11",
+      "17",
+      "14",
+      "9"
     ],
     "correctAnswer": 0,
-    "explanation": "Metode Round Robin mendistribusikan request baru ke server-server berikutnya secara melingkar dan bergiliran sehingga beban dibagi secara merata ke seluruh instance yang aktif."
+    "explanation": "The original raw string has 17 characters (3 leading spaces + 11 characters \"INV-2024-99\" + 3 trailing spaces). The .trim() method removes all whitespace from both ends, resulting in \"INV-2024-99\" which has a length of 11.",
+    "id": 39
   },
   {
-    "id": 46,
-    "type": "true_false",
-    "timeLimit": 10,
-    "question": "Teknik Quantization memperkecil ukuran model dengan cara mengubah representasi bobot dari floating-point 32-bit (FP32) menjadi tipe integer berpresisi lebih rendah seperti INT8.",
-    "code": null,
+    "type": "multiple_choice",
+    "timeLimit": 14,
+    "question": "An operations specialist extracts the 4-digit fiscal year from a standardized purchase order batch code using substring(3, 7). What is printed?",
+    "code": "String batchCode = \"PO-2024-BATCH-08\";\nString fiscalYear = batchCode.substring(3, 7);\nSystem.out.println(\"Fiscal Year: \" + fiscalYear);",
     "options": [
-      "True",
-      "False"
+      "Fiscal Year: 2024",
+      "Fiscal Year: -202",
+      "Fiscal Year: 2024-",
+      "Fiscal Year: PO-2"
     ],
     "correctAnswer": 0,
-    "explanation": "Benar! Quantization mengonversi angka floating point presisi tinggi (FP32/FP16) menjadi integer (INT8), menghemat konsumsi memori dan mempercepat kalkulasi inferensi di hardware produksi."
+    "explanation": "In Java, substring(beginIndex, endIndex) is inclusive of beginIndex (index 3 is '2') and exclusive of endIndex (index 7 is '-'). Characters at indices 3, 4, 5, and 6 are extracted, yielding \"2024\".",
+    "id": 40
   },
   {
-    "id": 47,
-    "type": "multi_select",
-    "timeLimit": 20,
-    "question": "Pilih 2 metrik berikut yang tergolong sebagai Metrik Sistem (Infrastruktur) dalam monitoring model ML di server produksi:",
+    "type": "multiple_choice",
+    "timeLimit": 9,
+    "question": "A retail point-of-sale system extracts the product SKU number by taking all characters starting from index 4 of the item code. What is printed?",
+    "code": "String itemCode = \"SKU-98421\";\nString skuNumber = itemCode.substring(4);\nSystem.out.println(\"SKU: \" + skuNumber);",
+    "options": [
+      "SKU: 98421",
+      "SKU: -98421",
+      "SKU: SKU-",
+      "SKU: 8421"
+    ],
+    "correctAnswer": 0,
+    "explanation": "When substring is called with a single argument beginIndex, it extracts characters starting from that index all the way to the end of the string. Index 4 is '9', so \"98421\" is extracted.",
+    "id": 41
+  },
+  {
+    "type": "multiple_choice",
+    "timeLimit": 9,
+    "question": "An online corporate portal validates whether an employee's newly created password satisfies the minimum length requirement. What will be printed?",
+    "code": "String password = \"Corp#2024\";\nif (password.length() >= 8) {\n    System.out.println(\"Password accepted\");\n} else {\n    System.out.println(\"Password too short\");\n}",
+    "options": [
+      "Password accepted",
+      "Password too short",
+      "Compilation error: length is not a method",
+      "Runtime error: NullPointerException"
+    ],
+    "correctAnswer": 0,
+    "explanation": "\"Corp#2024\" contains 9 characters (C-o-r-p-#-2-0-2-4). Since 9 >= 8 evaluates to true, \"Password accepted\" is printed.",
+    "id": 42
+  },
+  {
+    "type": "multiple_choice",
+    "timeLimit": 14,
+    "question": "An e-commerce discount engine compares a user-entered promo code with the store voucher. What is printed to the console?",
+    "code": "String voucher = \"DISCOUNT10\";\nString userInput = new String(\"DISCOUNT10\");\nboolean sameRef = (voucher == userInput);\nboolean sameValue = voucher.equals(userInput);\nSystem.out.println(sameRef + \" \" + sameValue);",
+    "options": [
+      "false true",
+      "true true",
+      "true false",
+      "false false"
+    ],
+    "correctAnswer": 0,
+    "explanation": "In Java, == compares memory references (which are different because userInput was created with new String()), while .equals() compares the actual character contents (both contain \"DISCOUNT10\").",
+    "id": 43
+  },
+  {
+    "type": "multiple_choice",
+    "timeLimit": 14,
+    "question": "A sales compensation system awards a salesperson either a $500 base commission or 5% of sales, whichever is higher, but capped at a $5,000 ceiling. What is printed?",
+    "code": "double baseCommission = 500.0;\ndouble salesVolume = 80000.0;\ndouble earnedRate = salesVolume * 0.05; // 4000.0\n\ndouble actualCommission = Math.max(baseCommission, earnedRate);\ndouble finalPayout = Math.min(actualCommission, 5000.0);\nSystem.out.println(\"Payout: $\" + finalPayout);",
+    "options": [
+      "Payout: $4000.0",
+      "Payout: $500.0",
+      "Payout: $5000.0",
+      "Payout: $4500.0"
+    ],
+    "correctAnswer": 0,
+    "explanation": "Math.max(500.0, 4000.0) yields 4000.0. Then Math.min(4000.0, 5000.0) yields 4000.0, which is printed as Payout: $4000.0.",
+    "id": 44
+  },
+  {
+    "type": "multiple_choice",
+    "timeLimit": 9,
+    "question": "A customer loyalty program calculates reward points and rounds to the nearest whole integer using Math.round(). What is printed?",
+    "code": "double unroundedPoints = 124.68;\nlong finalPoints = Math.round(unroundedPoints);\nSystem.out.println(\"Points: \" + finalPoints);",
+    "options": [
+      "Points: 125",
+      "Points: 124",
+      "Points: 124.7",
+      "Points: 120"
+    ],
+    "correctAnswer": 0,
+    "explanation": "Math.round(124.68) rounds floating-point numbers to the nearest whole number (returning a long when passing a double). 124.68 rounds up to 125.",
+    "id": 45
+  },
+  {
+    "type": "multiple_choice",
+    "timeLimit": 14,
+    "question": "A finance officer computes the future value of a $1,000 investment growing at 10% annual compound interest over 2 years: FV = P * (1 + r)^t. What will be printed?",
+    "code": "double principal = 1000.0;\ndouble rate = 0.10;\nint years = 2;\n\ndouble futureValue = principal * Math.pow(1.0 + rate, years);\nSystem.out.println(\"Future Value: $\" + futureValue);",
+    "options": [
+      "Future Value: $1210.0",
+      "Future Value: $1200.0",
+      "Future Value: $1100.0",
+      "Future Value: $1020.0"
+    ],
+    "correctAnswer": 0,
+    "explanation": "Math.pow(1.10, 2) evaluates to 1.10^2 = 1.21. Multiplying by 1000.0 yields 1210.0.",
+    "id": 46
+  },
+  {
+    "type": "multiple_choice",
+    "timeLimit": 9,
+    "question": "An internal auditor calculates the absolute variance between actual operating expenses and budgeted expenses so that variances in either direction are positive. What is printed?",
+    "code": "double budget = 25000.0;\ndouble actual = 28400.0;\ndouble variance = Math.abs(budget - actual);\nSystem.out.println(\"Variance: $\" + variance);",
+    "options": [
+      "Variance: $3400.0",
+      "Variance: $-3400.0",
+      "Variance: $53400.0",
+      "Variance: $0.0"
+    ],
+    "correctAnswer": 0,
+    "explanation": "budget - actual gives 25000.0 - 28400.0 = -3400.0. Math.abs(-3400.0) returns the absolute (positive) magnitude of the value, which is 3400.0.",
+    "id": 47
+  },
+  {
+    "type": "multiple_choice",
+    "timeLimit": 9,
+    "question": "An operations manager evaluates an Economic Order Quantity formula containing double batchSize = Math.sqrt(64.0);. What value does batchSize hold?",
     "code": null,
     "options": [
-      "Latensi respons inferensi API (ms)",
-      "Throughput jumlah request per detik (RPS)",
-      "Area Under ROC Curve (AUC-ROC)",
-      "F1-Score prediksi klasifikasi"
+      "8.0",
+      "32.0",
+      "16.0",
+      "4096.0"
     ],
-    "correctAnswers": [
-      0,
-      1
-    ],
-    "explanation": "Latensi respons dan throughput RPS adalah metrik sistem/infrastruktur yang memantau performa teknis server. Sedangkan AUC-ROC dan F1-Score adalah metrik model yang memantau kualitas prediksi matematis."
+    "correctAnswer": 0,
+    "explanation": "Math.sqrt(x) computes the positive square root of a double value. The square root of 64.0 is 8.0.",
+    "id": 48
   },
   {
-    "id": 48,
-    "type": "multi_select",
-    "timeLimit": 20,
-    "question": "Manakah 2 keuntungan utama dari pendekatan Horizontal Scaling (Scaling Out) dibandingkan Vertical Scaling (Scaling Up)?",
+    "type": "multiple_choice",
+    "timeLimit": 9,
+    "question": "Which Java statement correctly creates (instantiates) a new object of the Product class and assigns it to a reference variable named item?",
     "code": null,
     "options": [
-      "Fleksibilitas tinggi dalam menambah atau mengurangi instance model sesuai fluktuasi beban kerja",
-      "Meningkatkan ketersediaan (high availability) dan toleransi kesalahan karena jika 1 instance mati, instance lain tetap melayani",
-      "Bebas dari kebutuhan load balancer karena semua proses berjalan di 1 mesin fisik",
-      "Menghilangkan kebutuhan sistem operasi pada komputer server"
+      "Product item = new Product();",
+      "Product item = create Product();",
+      "new Product item = Product();",
+      "item = Product.new();"
     ],
-    "correctAnswers": [
-      0,
-      1
-    ],
-    "explanation": "Horizontal scaling (menambah jumlah instance) menawarkan elastisitas tinggi dan reliabilitas/fault-tolerance lebih baik dibandingkan vertical scaling yang dibatasi oleh limit fisik hardware tunggal."
+    "correctAnswer": 0,
+    "explanation": "In Java, object instantiation requires the new keyword followed by the constructor invocation: ClassName variableName = new ClassName();.",
+    "id": 49
   },
   {
-    "id": 49,
-    "type": "fill_in",
-    "timeLimit": 25,
-    "question": "Bahasa kueri fleksibel yang digunakan oleh Prometheus untuk mengolah, memfilter, dan mengagregasi data metrik time-series disebut _____",
-    "code": null,
-    "correctAnswers": [
-      "promql",
-      "prom ql"
+    "type": "multiple_choice",
+    "timeLimit": 14,
+    "question": "An accountant inspects two bank account reference variables. What will be printed when acc1.getBalance() is invoked?",
+    "code": "BankAccount acc1 = new BankAccount(\"Checking\", 500.0);\nBankAccount acc2 = acc1;\nacc2.deposit(200.0);\nSystem.out.println(\"Balance: $\" + acc1.getBalance());",
+    "options": [
+      "Balance: $700.0",
+      "Balance: $500.0",
+      "Balance: $200.0",
+      "Compilation error"
     ],
-    "explanation": "PromQL (Prometheus Query Language) memungkinkan pengguna memilih dan mengagregasi data time-series secara real-time baik untuk keperluan visualisasi di Grafana maupun aturan alerting."
+    "correctAnswer": 0,
+    "explanation": "In Java, reference variables store memory references. BankAccount acc2 = acc1 copies the reference, meaning both variables point to the exact same BankAccount object in the heap. A deposit via acc2 modifies the shared object.",
+    "id": 50
   },
   {
-    "id": 50,
-    "type": "fill_in",
-    "timeLimit": 25,
-    "question": "Platform visualisasi metrik open-source berbasis dashboard interaktif yang paling populer dipadukan dengan Prometheus adalah _____",
+    "type": "multiple_choice",
+    "timeLimit": 9,
+    "question": "In object-oriented programming for business software, which analogy best explains the relationship between a Class and an Object?",
     "code": null,
-    "correctAnswers": [
-      "grafana"
+    "options": [
+      "A Class is a blueprint (e.g., an Invoice template), while an Object is a specific filled-out instance (e.g., Invoice #1002 for Acme Corp)",
+      "A Class is a single transaction record, while an Object is the whole database table",
+      "An Object is the blueprint, while a Class is the instance created in memory",
+      "Classes and Objects are identical terms that can be used interchangeably in Java"
     ],
-    "explanation": "Grafana adalah tool visualisasi multi-platform open-source terkemuka yang menyajikan grafik dan bagan interaktif dari berbagai sumber data termasuk Prometheus."
+    "correctAnswer": 0,
+    "explanation": "A Class defines attributes and behaviors (the template or blueprint), while an Object is a concrete instance created from that class containing actual state data.",
+    "id": 51
+  },
+  {
+    "type": "multiple_choice",
+    "timeLimit": 9,
+    "question": "Which of the following statements is TRUE regarding constructors in Java?",
+    "code": null,
+    "options": [
+      "A constructor must have the exact same name as the class and must NOT have any return type (not even void)",
+      "A constructor must always declare a void return type",
+      "A class can only have one constructor defined",
+      "A constructor is called manually whenever an existing object needs to be updated"
+    ],
+    "correctAnswer": 0,
+    "explanation": "In Java, a constructor's name must strictly match the class name, and it has no return type. If a return type like void is added, Java treats it as a standard method, not a constructor.",
+    "id": 52
+  },
+  {
+    "type": "multiple_choice",
+    "timeLimit": 14,
+    "question": "Trace the execution of this constructor in an HR payroll application. What is the role of this.salary = salary;?",
+    "code": "public class Employee {\n    String name;\n    double salary;\n\n    public Employee(String name, double salary) {\n        this.name = name;\n        this.salary = salary;\n    }\n}\n// In main:\nEmployee emp = new Employee(\"Alice\", 65000.0);\nSystem.out.println(emp.name + \" earns $\" + emp.salary);",
+    "options": [
+      "It assigns the incoming parameter salary to the instance variable salary of the current object",
+      "It deletes the previous salary from memory",
+      "It calculates the net tax on Alice's salary",
+      "It creates a new Employee class definition"
+    ],
+    "correctAnswer": 0,
+    "explanation": "The this keyword refers to the current object instance, resolving shadowing between the parameter name 'salary' and the instance variable 'this.salary'.",
+    "id": 53
+  },
+  {
+    "type": "multiple_choice",
+    "timeLimit": 14,
+    "question": "A developer writes a Customer class with a custom parameterized constructor public Customer(String name) { ... }, but writes NO no-argument constructor. What happens if someone writes Customer c = new Customer();?",
+    "code": null,
+    "options": [
+      "A compilation error occurs because Java no longer provides the default no-argument constructor once a custom constructor is defined",
+      "Java automatically runs the default constructor and sets name to \"default\"",
+      "The code compiles and runs, setting name to null without error",
+      "The code crashes at runtime with a NullPointerException"
+    ],
+    "correctAnswer": 0,
+    "explanation": "Java automatically provides an implicit default no-argument constructor ONLY if no constructors are explicitly defined. Once you write any constructor, the automatic default constructor is no longer provided.",
+    "id": 54
+  },
+  {
+    "type": "multiple_choice",
+    "timeLimit": 9,
+    "question": "A Product class has a private double unitPrice; field. Which of the following is the standard, correctly implemented getter method for unitPrice?",
+    "code": "public class Product {\n    private double unitPrice;\n    \n    // Which getter method follows Java conventions?\n}",
+    "options": [
+      "public double getUnitPrice() { return this.unitPrice; }",
+      "public void getUnitPrice(double price) { this.unitPrice = price; }",
+      "private double getUnitPrice() { return unitPrice; }",
+      "public static double getUnitPrice() { return unitPrice; }"
+    ],
+    "correctAnswer": 0,
+    "explanation": "A standard getter method is public, has a return type matching the variable type (double), takes no arguments, and returns the field's value.",
+    "id": 55
+  },
+  {
+    "type": "multiple_choice",
+    "timeLimit": 9,
+    "question": "A retail inventory class uses a setter method to prevent invalid stock numbers. Why do professional business applications use setter methods instead of making fields public?",
+    "code": "public void setStock(int quantity) {\n    if (quantity >= 0) {\n        this.stock = quantity;\n    } else {\n        System.out.println(\"Invalid stock quantity\");\n    }\n}",
+    "options": [
+      "Setters allow data validation and business rules to be enforced before modifying internal state",
+      "Setters make code run twice as fast",
+      "Setters automatically save values directly to an external database",
+      "Setters prevent variables from using RAM"
+    ],
+    "correctAnswer": 0,
+    "explanation": "Encapsulating fields with setters protects object integrity by validating inputs (e.g. stock >= 0, price > 0) before modifying internal state.",
+    "id": 56
+  },
+  {
+    "type": "multiple_choice",
+    "timeLimit": 9,
+    "question": "What is the primary definition and goal of Encapsulation in Java business systems?",
+    "code": null,
+    "options": [
+      "Declaring instance variables as private and providing public getters/setters to control access to internal state",
+      "Writing as many static methods as possible in a single class file",
+      "Allowing any external class to directly edit variables without restrictions",
+      "Combining multiple loops into a single while condition"
+    ],
+    "correctAnswer": 0,
+    "explanation": "Encapsulation bundles data (attributes) and code (methods) together while hiding internal details (private fields) and controlling access via public methods.",
+    "id": 57
+  },
+  {
+    "type": "multiple_choice",
+    "timeLimit": 9,
+    "question": "Which access modifier in Java restricts visibility so that a field or method can ONLY be accessed from within the exact same class where it is declared?",
+    "code": null,
+    "options": [
+      "private",
+      "public",
+      "protected",
+      "default (package-private)"
+    ],
+    "correctAnswer": 0,
+    "explanation": "The private modifier provides the highest level of restriction: private members are invisible to all other classes, even subclasses or classes in the same package.",
+    "id": 58
+  },
+  {
+    "type": "multiple_choice",
+    "timeLimit": 9,
+    "question": "In Java, what is the visibility level of a variable declared without any access modifier keyword (for example: double balance;)?",
+    "code": null,
+    "options": [
+      "Default (Package-Private): accessible only by classes within the same package",
+      "Global: accessible by any program anywhere in the world",
+      "Private: accessible only within the same class",
+      "Protected: accessible only by subclasses in other packages"
+    ],
+    "correctAnswer": 0,
+    "explanation": "When no access modifier is specified, Java applies \"default\" access (package-private), meaning only classes in the exact same package can access the member.",
+    "id": 59
+  },
+  {
+    "type": "multiple_choice",
+    "timeLimit": 9,
+    "question": "In the UML Class Diagram below, what do the symbols '+' and '-' in front of the class members represent?",
+    "code": "+-----------------------------------+\n|            BankAccount            |\n+-----------------------------------+\n| - accountNumber: String           |\n| - balance: double                 |\n+-----------------------------------+\n| + deposit(amount: double): void   |\n| + getBalance(): double            |\n+-----------------------------------+",
+    "options": [
+      "+ represents public visibility, while - represents private visibility",
+      "+ means add money, while - means withdraw money",
+      "+ represents static methods, while - represents non-static methods",
+      "+ represents positive numbers, while - represents negative numbers"
+    ],
+    "correctAnswer": 0,
+    "explanation": "In standard UML Class Diagrams: '+' denotes public visibility, '-' denotes private visibility, '#' denotes protected, and '~' denotes default (package-private).",
+    "id": 60
   }
 ]

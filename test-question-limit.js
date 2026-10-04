@@ -114,6 +114,8 @@ async function testQuestionLimit() {
   }
 
   // Cleanup
+  hostSocket.emit('host_toggle_randomize_questions', { enabled: false });
+  await new Promise(r => setTimeout(r, 200));
   hostSocket.disconnect();
   p1Socket.disconnect();
   console.log('🎉 ALL QUESTION LIMIT TESTS PASSED PERFECTLY!');

@@ -265,46 +265,39 @@ app.get('/api/self-quiz/config', (req, res) => {
 // Start Self Quiz
 app.post('/api/self-quiz/start', (req, res) => {
   try {
-    const { name, nim, quizId } = req.body || {};
+    const { name, nim } = req.body || {};
     if (!name || !name.trim()) {
       return res.status(400).json({ error: 'Nama lengkap wajib diisi!' });
     }
 
-    let targetQuestions = [];
-    let chosenQuizTitle = currentQuizTitle;
-    let chosenQuizId = currentQuizId;
+    // Always use the active quiz set and settings configured by the host
+    const chosenQuizTitle = currentQuizTitle;
+    const chosenQuizId = currentQuizId;
 
-    if (quizId && quizId !== currentQuizId) {
-      const setFile = path.join(quizSetsDir, `${quizId}.json`);
-      if (fs.existsSync(setFile)) {
-        const setData = JSON.parse(fs.readFileSync(setFile, 'utf8'));
-        targetQuestions = Array.isArray(setData.questions) ? setData.questions : [];
-        chosenQuizTitle = setData.title || quizId;
-        chosenQuizId = setData.id || quizId;
-      }
-    }
-
-    if (targetQuestions.length === 0) {
-      targetQuestions = rawQuizQuestions.length > 0 ? rawQuizQuestions : questions;
-      chosenQuizTitle = currentQuizTitle;
-      chosenQuizId = currentQuizId;
-    }
-
-    if (targetQuestions.length === 0) {
+    if (!rawQuizQuestions || rawQuizQuestions.length === 0) {
       return res.status(400).json({ error: 'Bank soal kuis saat ini kosong.' });
     }
 
-    // Apply question limit and randomize if configured
-    let sessionPool = [...targetQuestions];
+    // Use questions pool respecting host's question limit and randomize settings
+    let sessionPool = [];
     if (gameState.randomizeQuestions) {
-      for (let i = sessionPool.length - 1; i > 0; i--) {
+      const pool = [...rawQuizQuestions];
+      for (let i = pool.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
-        [sessionPool[i], sessionPool[j]] = [sessionPool[j], sessionPool[i]];
+        [pool[i], pool[j]] = [pool[j], pool[i]];
       }
+      const limit = Number(gameState.questionLimit) || 0;
+      if (limit > 0 && limit < pool.length) {
+        sessionPool = pool.slice(0, limit);
+      } else {
+        sessionPool = pool;
+      }
+    } else {
+      sessionPool = [...questions];
     }
-    const limit = Number(gameState.questionLimit) || 0;
-    if (limit > 0 && limit < sessionPool.length) {
-      sessionPool = sessionPool.slice(0, limit);
+
+    if (sessionPool.length === 0) {
+      sessionPool = [...rawQuizQuestions];
     }
 
     const sessionToken = crypto.randomUUID ? crypto.randomUUID() : (Date.now() + '-' + Math.random().toString(36).substring(2));

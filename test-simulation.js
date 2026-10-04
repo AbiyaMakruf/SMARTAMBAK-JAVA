@@ -23,6 +23,8 @@ async function runSimulation() {
       console.log('✅ Host connected.');
       hostSocket.emit('host_join');
       hostSocket.emit('host_reset_quiz');
+      hostSocket.emit('host_toggle_randomize_questions', { enabled: false });
+      hostSocket.emit('host_set_question_limit', { count: 0 });
       setTimeout(resolve, 200);
     });
   });
@@ -173,13 +175,14 @@ async function runSimulation() {
     const lateSocket = io(SERVER_URL);
     let latePlayerJoined = false;
     let latePlayerScore = 0;
+    let currentActiveQId = null;
 
-    const submitLateAnswer = () => {
+    const submitLateAnswer = (qId) => {
       let correctAns = 1;
       try {
         const quizData = JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'quiz_sets', `${activeQuizId}.json`), 'utf8'));
-        const q1 = quizData.questions[0];
-        correctAns = q1.correctAnswer !== undefined ? q1.correctAnswer : (q1.correctAnswers ? q1.correctAnswers[0] : 1);
+        const targetQ = quizData.questions.find(q => q.id === (qId || currentActiveQId)) || quizData.questions[0];
+        correctAns = targetQ.correctAnswer !== undefined ? targetQ.correctAnswer : (targetQ.correctAnswers ? targetQ.correctAnswers[0] : 1);
       } catch (e) {
         console.error('Failed to read quiz for correct answer:', e);
       }
@@ -192,14 +195,16 @@ async function runSimulation() {
 
     lateSocket.on('join_success', (data) => {
       latePlayerJoined = true;
+      if (data.currentQuestion) currentActiveQId = data.currentQuestion.id;
       console.log(`✅ Late Student joined mid-game! Status: ${data.status}, isLateJoiner: ${data.isLateJoiner}, missed: ${data.missedCount}`);
       if (data.status === 'QUESTION_ACTIVE') {
-        submitLateAnswer();
+        submitLateAnswer(currentActiveQId);
       }
     });
 
-    lateSocket.on('new_question', () => {
-      submitLateAnswer();
+    lateSocket.on('new_question', (data) => {
+      if (data && data.id) currentActiveQId = data.id;
+      submitLateAnswer(currentActiveQId);
     });
 
     const lateResultPromise = new Promise((res) => {

@@ -29,7 +29,8 @@
   const formStart = document.getElementById('form-self-start');
   const inputName = document.getElementById('input-self-name');
   const inputNim = document.getElementById('input-self-nim');
-  const selectQuizSet = document.getElementById('select-self-quiz-set');
+  const selfActiveQuizTitle = document.getElementById('self-active-quiz-title');
+  const selfActiveQuizMeta = document.getElementById('self-active-quiz-meta');
   const btnStartQuiz = document.getElementById('btn-start-self-quiz');
 
   // Question screen elements
@@ -88,28 +89,24 @@
       const data = await res.json();
 
       selfState.watermarkEnabled = !!data.watermarkEnabled;
+      selfState.quizId = data.activeQuizId || 'java';
+      selfState.quizTitle = data.activeQuizTitle || 'Interactive Quiz';
 
-      // Isi dropdown quiz set
-      selectQuizSet.innerHTML = '';
-      if (Array.isArray(data.quizSets) && data.quizSets.length > 0) {
-        data.quizSets.forEach(set => {
-          const opt = document.createElement('option');
-          opt.value = set.id;
-          opt.textContent = `${set.title} (${set.count} soal)`;
-          if (set.id === data.activeQuizId) {
-            opt.selected = true;
-          }
-          selectQuizSet.appendChild(opt);
-        });
-      } else {
-        const opt = document.createElement('option');
-        opt.value = data.activeQuizId || 'java';
-        opt.textContent = `${data.activeQuizTitle || 'Interactive Quiz'} (${data.totalQuestions} soal)`;
-        selectQuizSet.appendChild(opt);
+      if (selfActiveQuizTitle) {
+        selfActiveQuizTitle.innerText = data.activeQuizTitle || 'Interactive Quiz';
+      }
+
+      if (selfActiveQuizMeta) {
+        if (data.questionLimit && data.questionLimit > 0 && data.availableQuestions) {
+          selfActiveQuizMeta.innerText = `📝 ${data.totalQuestions} Soal Digunakan (dari bank ${data.availableQuestions} soal)${data.randomizeQuestions ? ' • 🎲 Soal Diacak' : ''}`;
+        } else {
+          selfActiveQuizMeta.innerText = `📝 ${data.totalQuestions || 0} Soal Aktif (Semua)${data.randomizeQuestions ? ' • 🎲 Soal Diacak' : ''}`;
+        }
       }
     } catch (e) {
       console.error('Failed to load quiz config:', e);
-      selectQuizSet.innerHTML = '<option value="">Default Quiz</option>';
+      if (selfActiveQuizTitle) selfActiveQuizTitle.innerText = 'Kuis Aktif';
+      if (selfActiveQuizMeta) selfActiveQuizMeta.innerText = '📝 Memuat soal...';
     }
 
     // Periksa apakah ada sesi tersimpan di localStorage
@@ -139,7 +136,6 @@
     e.preventDefault();
     const name = inputName.value.trim();
     const nim = inputNim.value.trim() || '-';
-    const chosenQuizId = selectQuizSet.value;
 
     if (!name) return;
 
@@ -150,7 +146,7 @@
       const resp = await fetch('/api/self-quiz/start', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, nim, quizId: chosenQuizId })
+        body: JSON.stringify({ name, nim })
       });
       const data = await resp.json();
 

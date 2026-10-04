@@ -397,9 +397,19 @@ body {
   color: #fff;
   font-size: 16px;
   outline: none;
+  font-family: inherit;
 }
 .fill-in-input:focus {
   border-color: #7c4dff;
+  box-shadow: 0 0 0 3px rgba(124, 77, 255, 0.25);
+}
+@media (max-width: 480px) {
+  .fill-in-box {
+    flex-direction: column;
+  }
+  .fill-in-box #btn-submit-fill {
+    width: 100% !important;
+  }
 }
 
 /* Instant Question Feedback */

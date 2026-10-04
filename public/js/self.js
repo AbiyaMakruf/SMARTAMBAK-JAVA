@@ -272,6 +272,20 @@
     qFeedbackBox.style.display = 'none';
     btnNextQuestion.style.display = 'none';
 
+    // Reset fill-in elements state
+    if (btnSubmitFill) {
+      btnSubmitFill.disabled = false;
+      btnSubmitFill.removeAttribute('disabled');
+      btnSubmitFill.style.pointerEvents = 'auto';
+      btnSubmitFill.style.opacity = '1';
+      btnSubmitFill.innerText = 'Kirim';
+    }
+    if (inputFillIn) {
+      inputFillIn.disabled = false;
+      inputFillIn.removeAttribute('disabled');
+      inputFillIn.value = '';
+    }
+
     // Render by Type
     const shapes = ['▲', '◆', '●', '■'];
 
@@ -333,16 +347,34 @@
       qFillInWrap.style.display = 'flex';
       inputFillIn.value = '';
       inputFillIn.disabled = false;
-      inputFillIn.focus();
+      inputFillIn.removeAttribute('disabled');
 
-      const doSubmitFill = () => {
+      if (btnSubmitFill) {
+        btnSubmitFill.disabled = false;
+        btnSubmitFill.removeAttribute('disabled');
+        btnSubmitFill.style.pointerEvents = 'auto';
+        btnSubmitFill.style.opacity = '1';
+        btnSubmitFill.innerText = 'Kirim';
+      }
+
+      setTimeout(() => {
+        try { inputFillIn.focus(); } catch (e) {}
+      }, 50);
+
+      const doSubmitFill = (e) => {
+        if (e && e.preventDefault) e.preventDefault();
         if (selfState.hasAnswered) return;
         const val = inputFillIn.value.trim();
         if (!val) {
           alert('Ketik jawaban Anda sebelum mengirim.');
+          inputFillIn.focus();
           return;
         }
         inputFillIn.disabled = true;
+        if (btnSubmitFill) {
+          btnSubmitFill.disabled = true;
+          btnSubmitFill.innerText = 'Mengirim...';
+        }
         submitAnswer(val, []);
       };
 
@@ -350,7 +382,7 @@
       inputFillIn.onkeydown = (e) => {
         if (e.key === 'Enter') {
           e.preventDefault();
-          doSubmitFill();
+          doSubmitFill(e);
         }
       };
     }

@@ -649,7 +649,19 @@ function renderQuestion(q) {
   const optionsContainer = document.getElementById('options-container');
   const fillInContainer = document.getElementById('fill-in-container');
   const fillInInput = document.getElementById('fill-in-input');
-  fillInInput.value = '';
+  const btnSubmitFill = document.getElementById('btn-submit-fill');
+  if (fillInInput) {
+    fillInInput.value = '';
+    fillInInput.disabled = false;
+    fillInInput.removeAttribute('disabled');
+  }
+  if (btnSubmitFill) {
+    btnSubmitFill.disabled = false;
+    btnSubmitFill.removeAttribute('disabled');
+    btnSubmitFill.style.pointerEvents = 'auto';
+    btnSubmitFill.style.opacity = '1';
+    btnSubmitFill.innerText = 'Submit Answer';
+  }
 
   optionsContainer.innerHTML = '';
 
@@ -779,18 +791,31 @@ function submitAnswer(ans) {
 }
 
 // Fill-in submit listener
-document.getElementById('btn-submit-fill').addEventListener('click', () => {
-  const val = document.getElementById('fill-in-input').value.trim();
-  submitAnswer(val);
-});
+const btnSubmitFillEl = document.getElementById('btn-submit-fill');
+const fillInInputEl = document.getElementById('fill-in-input');
 
-document.getElementById('fill-in-input').addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') {
-    e.preventDefault();
-    const val = document.getElementById('fill-in-input').value.trim();
+if (btnSubmitFillEl && fillInInputEl) {
+  const doLiveSubmitFill = (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    const val = fillInInputEl.value.trim();
+    if (!val) {
+      alert('Ketik jawaban Anda sebelum mengirim.');
+      fillInInputEl.focus();
+      return;
+    }
+    btnSubmitFillEl.disabled = true;
+    fillInInputEl.disabled = true;
     submitAnswer(val);
-  }
-});
+  };
+
+  btnSubmitFillEl.onclick = doLiveSubmitFill;
+  fillInInputEl.onkeydown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      doLiveSubmitFill(e);
+    }
+  };
+}
 
 // Individual question result
 socket.on('player_question_result', (data) => {
